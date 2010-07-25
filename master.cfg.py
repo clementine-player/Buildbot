@@ -79,7 +79,7 @@ c['schedulers'] = [
   sched_linux,
   sched_winmac,
   sched_deb,
-#  sched_ppa,
+  sched_ppa,
 ]
 
 
