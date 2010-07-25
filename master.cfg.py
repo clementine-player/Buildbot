@@ -19,6 +19,7 @@ SVNURL     = "http://clementine-player.googlecode.com/svn/trunk/"
 UPLOADBASE = "/var/www/clementine-player.org/builds"
 WORKDIR    = "build/bin"
 CMAKE_ENV  = {'BUILDBOT_REVISION': WithProperties("%(got_revision)s")}
+SVN_ARGS   = {"svnurl": SVNURL, "extra_args": ['--accept', 'theirs-full']}
 
 
 # Basic config
@@ -85,7 +86,7 @@ c['schedulers'] = [
 # Builders
 def MakeLinuxBuilder(type):
   f = factory.BuildFactory()
-  f.addStep(SVN(svnurl=SVNURL))
+  f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(workdir=WORKDIR, command=[
       "cmake", "..",
       "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
@@ -109,7 +110,7 @@ def MakeDebBuilder(arch, chroot=None):
   dpkg_cmd  = schroot_cmd + ["dpkg-buildpackage", "-b", "-uc", "-us"]
 
   f = factory.BuildFactory()
-  f.addStep(SVN(svnurl=SVNURL))
+  f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(command=cmake_cmd, workdir=WORKDIR))
   f.addStep(ShellCommand(command=dpkg_cmd, env=CMAKE_ENV))
   f.addStep(FileUpload(
@@ -124,7 +125,7 @@ def MakeMingwBuilder(type, suffix, strip):
   test_env.update({'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode/5:Formats/FileformatsTest.GstCanDecode/6'})
 
   f = factory.BuildFactory()
-  f.addStep(SVN(svnurl=SVNURL))
+  f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(workdir=WORKDIR, env=CMAKE_ENV, command=[
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/home/buildbot/Toolchain-mingw32.cmake",
@@ -148,7 +149,7 @@ def MakeMingwBuilder(type, suffix, strip):
 
 def MakeMacBuilder():
   f = factory.BuildFactory()
-  f.addStep(SVN(svnurl=SVNURL))
+  f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(
       workdir=WORKDIR,
       env={'PKG_CONFIG_PATH': '/usr/local/lib/pkgconfig'},
