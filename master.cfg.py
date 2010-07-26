@@ -18,7 +18,7 @@ DEBVERSION = "0.4.90"
 SVNURL     = "http://clementine-player.googlecode.com/svn/trunk/"
 UPLOADBASE = "/var/www/clementine-player.org/builds"
 WORKDIR    = "build/bin"
-CMAKE_ENV  = {'BUILDBOT_REVISION': WithProperties("%(got_revision)s")}
+CMAKE_ENV  = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
 SVN_ARGS   = {"svnurl": SVNURL, "extra_args": ['--accept', 'theirs-full']}
 
 
