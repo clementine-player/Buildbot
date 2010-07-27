@@ -14,14 +14,15 @@ from buildbot.steps.python_twisted import Trial
 
 import clementine_passwords
 
-DEBVERSION = "0.4.90"
-SVNBASEURL = "http://clementine-player.googlecode.com/svn/"
-TRUNK      = SVNBASEURL + "trunk/"
-MINGW_DEPS = SVNBASEURL + "mingw-deps/"
-UPLOADBASE = "/var/www/clementine-player.org/builds"
-WORKDIR    = "build/bin"
-CMAKE_ENV  = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
-SVN_ARGS   = {"svnurl": TRUNK, "extra_args": ['--accept', 'theirs-full']}
+DEBVERSION  = "0.4.90"
+SVNBASEURL  = "http://clementine-player.googlecode.com/svn/"
+TRUNK       = SVNBASEURL + "trunk/"
+MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
+UPLOADBASE  = "/var/www/clementine-player.org/builds"
+WORKDIR     = "build/bin"
+CMAKE_ENV   = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
+SVN_ARGS    = {"svnurl": TRUNK, "extra_args": ['--accept', 'theirs-full']}
+ZAPHOD_JOBS = "-j4"
 
 def split_file(path):
   pieces = path.split('/')
@@ -40,7 +41,7 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': clementine_passwords.PORT,
   'slaves': [
-    BuildSlave("zaphod",    clementine_passwords.ZAPHOD),
+    BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2),
     BuildSlave("Chopstick", clementine_passwords.CHOPSTICK),
   ],
   'sources': [
@@ -109,7 +110,7 @@ def MakeLinuxBuilder(type):
       "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
       "-DCMAKE_BUILD_TYPE=" + type,
   ]))
-  f.addStep(Compile(workdir=WORKDIR, command=["make"]))
+  f.addStep(Compile(workdir=WORKDIR, command=["make", ZAPHOD_JOBS]))
   f.addStep(Test(workdir=WORKDIR, command=[
       "xvfb-run",
       "-a",
@@ -150,7 +151,7 @@ def MakeMingwBuilder(type, suffix, strip):
       "-DQT_UIC_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/uic",
       "-DCMAKE_BUILD_TYPE=" + type
   ]))
-  f.addStep(Compile(command=["make"], workdir=WORKDIR, env=CMAKE_ENV))
+  f.addStep(Compile(command=["make", ZAPHOD_JOBS], workdir=WORKDIR, env=CMAKE_ENV))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=[
       "xvfb-run",
       "-a",
