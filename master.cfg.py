@@ -15,11 +15,22 @@ from buildbot.steps.python_twisted import Trial
 import clementine_passwords
 
 DEBVERSION = "0.4.90"
-SVNURL     = "http://clementine-player.googlecode.com/svn/trunk/"
+SVNBASEURL = "http://clementine-player.googlecode.com/svn/"
+TRUNK      = SVNBASEURL + "trunk/"
+MINGW_DEPS = SVNBASEURL + "mingw-deps/"
 UPLOADBASE = "/var/www/clementine-player.org/builds"
 WORKDIR    = "build/bin"
 CMAKE_ENV  = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
-SVN_ARGS   = {"svnurl": SVNURL, "extra_args": ['--accept', 'theirs-full']}
+SVN_ARGS   = {"svnurl": TRUNK, "extra_args": ['--accept', 'theirs-full']}
+
+def split_file(path):
+  pieces = path.split('/')
+  if pieces[0] == 'branches':
+    return ('/'.join(pieces[0:2]),
+            '/'.join(pieces[2:]))
+  if pieces[0] == 'trunk':
+    return (None, '/'.join(pieces[1:]))
+  return (pieces[0], '/'.join(pieces[1:]))
 
 
 # Basic config
@@ -34,16 +45,17 @@ c = BuildmasterConfig = {
   ],
   'sources': [
     SVNPoller(
-      svnurl=SVNURL,
+      svnurl=SVNBASEURL,
       pollinterval=60*60, # seconds
       histmax=10,
       svnbin='/usr/bin/svn',
+      split_file=split_file,
     ),
   ],
   'status': [
     html.WebStatus(
       http_port="tcp:8010:interface=127.0.0.1",
-      allowForce=False
+      allowForce=True,
     ),
     mail.MailNotifier(
       fromaddr="buildmaster@zaphod.purplehatstands.com",
@@ -75,11 +87,16 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
 ])
 
+sched_mingw = Scheduler(name="mingw", branch="mingw-deps", treeStableTimer=2*60, builderNames=[
+  "MinGW deps"
+])
+
 c['schedulers'] = [
   sched_linux,
   sched_winmac,
   sched_deb,
   sched_ppa,
+  sched_mingw,
 ]
 
 
@@ -185,6 +202,15 @@ def MakePPABuilder():
   ))
   return f
 
+def MakeMinGWDepsBuilder():
+  schroot_cmd = ["schroot", "-p", "-c", "mingw", "-d", "/src", "--"]
+
+  f = factory.BuildFactory()
+  f.addStep(ShellCommand(command=schroot_cmd + ["svn", "up"]))
+  f.addStep(ShellCommand(command=schroot_cmd + ["make", "clean"]))
+  f.addStep(ShellCommand(command=schroot_cmd + ["make"]))
+  return f
+
 def BuilderDef(name, dir, factory, slave="zaphod"):
   return {
     'name': name,
@@ -202,5 +228,6 @@ c['builders'] = [
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'dbg', strip=False)),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'rel', strip=True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="Chopstick"),
+  BuilderDef("MinGW deps",       "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
 ]
 
