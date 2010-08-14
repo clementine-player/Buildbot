@@ -127,15 +127,16 @@ def MakeDebBuilder(arch, chroot=None):
   cmake_cmd = schroot_cmd + ["cmake", ".."]
   dpkg_cmd  = schroot_cmd + ["dpkg-buildpackage", "-b", "-uc", "-us"]
 
+  deb_filename = "../clementine_" + DEBVERSION + "~%(got_revision)s_" + arch + ".deb"
+
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(command=cmake_cmd, workdir=WORKDIR))
   f.addStep(ShellCommand(command=dpkg_cmd, env=CMAKE_ENV))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc="../clementine_%s_%s.deb" % (DEBVERSION, arch),
-      masterdest=WithProperties(UPLOADBASE +
-        "/ubuntu-lucid/clementine_r%(got_revision)s_" + arch + ".deb")))
+      slavesrc=WithProperties("../" + deb_filename),
+      masterdest=WithProperties(UPLOADBASE + "/ubuntu-lucid/" + deb_filename)))
   return f
 
 def MakeMingwBuilder(type, suffix, strip):
