@@ -140,26 +140,29 @@ def MakeDebBuilder(arch, chroot=None):
   return f
 
 def MakeMingwBuilder(type, suffix, strip):
+  schroot_cmd = ["schroot", "-p", "-c", "mingw", "--"]
+
   test_env = dict(CMAKE_ENV)
   test_env.update({'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode/5:Formats/FileformatsTest.GstCanDecode/6'})
 
+  build_env = dict(CMAKE_ENV)
+  build_env.update({'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'})
+
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(workdir=WORKDIR, env=CMAKE_ENV, command=[
+  f.addStep(ShellCommand(workdir=WORKDIR, env=build_env, command=schroot_cmd + [
       "cmake", "..",
-      "-DCMAKE_TOOLCHAIN_FILE=/home/buildbot/Toolchain-mingw32.cmake",
-      "-DQT_MOC_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/moc",
-      "-DQT_UIC_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/uic",
+      "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
       "-DCMAKE_BUILD_TYPE=" + type
   ]))
-  f.addStep(Compile(command=["make", ZAPHOD_JOBS], workdir=WORKDIR, env=CMAKE_ENV))
-  f.addStep(Test(workdir=WORKDIR, env=test_env, command=[
+  f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, env=CMAKE_ENV))
+  f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
       "-a",
       "-n", "30",
       "make", "test"
   ]))
-  f.addStep(ShellCommand(command=["makensis", "clementine.nsi"], workdir="build/dist/windows"))
+  f.addStep(ShellCommand(command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows"))
   f.addStep(FileUpload(
       mode=0644,
       slavesrc="dist/windows/ClementineSetup.exe",
