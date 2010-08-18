@@ -127,7 +127,7 @@ def MakeDebBuilder(arch, chroot=None):
   cmake_cmd = schroot_cmd + ["cmake", ".."]
   dpkg_cmd  = schroot_cmd + ["dpkg-buildpackage", "-b", "-uc", "-us"]
 
-  deb_filename = "clementine_" + DEBVERSION + "~%(got_revision)s_" + arch + ".deb"
+  deb_filename = "clementine_" + DEBVERSION + "~r%(got_revision)s_" + arch + ".deb"
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
