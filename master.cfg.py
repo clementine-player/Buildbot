@@ -153,7 +153,9 @@ def MakeMingwBuilder(type, suffix, strip):
   f.addStep(ShellCommand(workdir=WORKDIR, env=build_env, command=schroot_cmd + [
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
-      "-DCMAKE_BUILD_TYPE=" + type
+      "-DCMAKE_BUILD_TYPE=" + type,
+      "-DQT_HEADERS_DIR=/target/include",
+      "-DQT_LIBRARY_DIR=/target/bin",
   ]))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, env=CMAKE_ENV))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
