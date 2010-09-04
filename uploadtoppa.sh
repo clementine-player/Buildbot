@@ -15,7 +15,7 @@ svn export -r $BUILDBOT_REVISION $REPO $DIRECTORY
 
 # Generate changelog and maketarball.sh
 cd $BASE/$DIRECTORY/bin
-cmake .. -DBUILDBOT_REVISION=$BUILDBOT_REVISION -DDEB_DIST=$DIST
+cmake .. -DBUILDBOT_REVISION=$BUILDBOT_REVISION -DDEB_DIST=$DIST -DWITH_DEBIAN=ON
 rm -rfv $BASE/$DIRECTORY/bin/*
 
 # Create the tarball

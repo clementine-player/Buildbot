@@ -43,6 +43,7 @@ c = BuildmasterConfig = {
   'slaves': [
     BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2),
     BuildSlave("Chopstick", clementine_passwords.CHOPSTICK),
+    BuildSlave("grunthos",  clementine_passwords.GRUNTHOS, max_builds=1),
   ],
   'sources': [
     SVNPoller(
@@ -84,6 +85,10 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Lucid 32-bit",
 ])
 
+sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
+  "Rpm Fedora 13 64-bit",
+])
+
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
 ])
@@ -96,6 +101,7 @@ c['schedulers'] = [
   sched_linux,
   sched_winmac,
   sched_deb,
+  sched_rpm,
   sched_ppa,
   sched_mingw,
 ]
@@ -105,12 +111,12 @@ c['schedulers'] = [
 def MakeLinuxBuilder(type):
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(workdir=WORKDIR, command=[
+  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, command=[
       "cmake", "..",
       "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
       "-DCMAKE_BUILD_TYPE=" + type,
   ]))
-  f.addStep(Compile(workdir=WORKDIR, command=["make", ZAPHOD_JOBS]))
+  f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=["make", ZAPHOD_JOBS]))
   f.addStep(Test(workdir=WORKDIR, command=[
       "xvfb-run",
       "-a",
@@ -124,19 +130,36 @@ def MakeDebBuilder(arch, chroot=None):
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
 
-  cmake_cmd = schroot_cmd + ["cmake", ".."]
-  dpkg_cmd  = schroot_cmd + ["dpkg-buildpackage", "-b", "-uc", "-us"]
+  cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON"]
 
   deb_filename = "clementine_" + DEBVERSION + "~r%(got_revision)s_" + arch + ".deb"
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(command=cmake_cmd, workdir=WORKDIR))
-  f.addStep(ShellCommand(command=dpkg_cmd, env=CMAKE_ENV))
+  f.addStep(ShellCommand(command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "deb"], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("../" + deb_filename),
+      slavesrc=WithProperties("bin/clementine.deb"),
       masterdest=WithProperties(UPLOADBASE + "/ubuntu-lucid/" + deb_filename)))
+  return f
+
+def MakeRpmBuilder(distro, arch, chroot):
+  rpm_filename = "clementine-r%(got_revision)s." + distro + "." + arch + ".rpm"
+
+  f = factory.BuildFactory()
+  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV, command=[
+      "cmake", "..",
+      "-DRPM_DISTRO=" + distro,
+      "-DRPM_ARCH=" + arch,
+      "-DMOCK_CHROOT=" + chroot,
+  ]))
+  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV))
+  f.addStep(FileUpload(
+      mode=0644,
+      slavesrc="bin/clementine.rpm",
+      masterdest=WithProperties(UPLOADBASE + "/fedora-13/" + rpm_filename)))
   return f
 
 def MakeMingwBuilder(type, suffix, strip):
@@ -150,21 +173,21 @@ def MakeMingwBuilder(type, suffix, strip):
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(workdir=WORKDIR, env=build_env, command=schroot_cmd + [
+  f.addStep(ShellCommand(workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
       "-DCMAKE_BUILD_TYPE=" + type,
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
   ]))
-  f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, env=CMAKE_ENV))
+  f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
       "-a",
       "-n", "30",
       "make", "test"
   ]))
-  f.addStep(ShellCommand(command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows"))
+  f.addStep(ShellCommand(command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows", haltOnFailure=True))
   f.addStep(FileUpload(
       mode=0644,
       slavesrc="dist/windows/ClementineSetup.exe",
@@ -185,16 +208,17 @@ def MakeMacBuilder():
         "-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.6.sdk",
         "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.6",
       ],
+      haltOnFailure=True,
   ))
-  f.addStep(Compile(command=["make", "-j2"], workdir=WORKDIR))
+  f.addStep(Compile(command=["make", "-j2"], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(Test(
       command=["make", "test", "-j2"],
       workdir=WORKDIR,
       env={'DYLD_FRAMEWORK_PATH': '/usr/local/Trolltech/Qt-4.7.0/lib',
           'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode*:SongLoaderTest.LoadRemote*'}))
-  f.addStep(ShellCommand(command=["make", "install"], workdir=WORKDIR))
-  f.addStep(ShellCommand(command=["make", "bundle"], workdir=WORKDIR))
-  f.addStep(ShellCommand(command=["make", "dmg"], workdir=WORKDIR))
+  f.addStep(ShellCommand(command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(ShellCommand(command=["make", "bundle"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(ShellCommand(command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(FileUpload(
       mode=0644,
       slavesrc="bin/clementine.dmg",
@@ -231,6 +255,8 @@ c['builders'] = [
   BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release')),
   BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64')),
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386', chroot='lucid-32')),
+  BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64'), slave="grunthos"),
+  BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386'), slave="grunthos"),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder()),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'dbg', strip=False)),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'rel', strip=True)),
