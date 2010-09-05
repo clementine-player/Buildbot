@@ -21,7 +21,7 @@ MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 WORKDIR     = "build/bin"
 CMAKE_ENV   = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
-SVN_ARGS    = {"svnurl": TRUNK, "extra_args": ['--accept', 'theirs-full']}
+SVN_ARGS    = {"svnurl": TRUNK, "always_purge": True}
 ZAPHOD_JOBS = "-j4"
 
 def split_file(path):
@@ -87,6 +87,7 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
   "Rpm Fedora 13 64-bit",
+  "Rpm Fedora 13 32-bit",
 ])
 
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
@@ -130,14 +131,15 @@ def MakeDebBuilder(arch, chroot=None):
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
 
-  cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON"]
+  cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON", "-DDEB_ARCH=" + arch]
+  make_cmd  = schroot_cmd + ["make", "deb", ZAPHOD_JOBS]
 
   deb_filename = "clementine_" + DEBVERSION + "~r%(got_revision)s_" + arch + ".deb"
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR))
-  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "deb"], workdir=WORKDIR, haltOnFailure=True))
+  f.addStep(ShellCommand(command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR, env=CMAKE_ENV))
+  f.addStep(Compile(command=make_cmd, haltOnFailure=True, workdir=WORKDIR, env=CMAKE_ENV))
   f.addStep(FileUpload(
       mode=0644,
       slavesrc=WithProperties("bin/clementine.deb"),
