@@ -16,12 +16,11 @@ import clementine_passwords
 
 DEBVERSION  = "0.4.90"
 SVNBASEURL  = "http://clementine-player.googlecode.com/svn/"
-TRUNK       = SVNBASEURL + "trunk/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 WORKDIR     = "build/bin"
 CMAKE_ENV   = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
-SVN_ARGS    = {"svnurl": TRUNK, "always_purge": True}
+SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True}
 ZAPHOD_JOBS = "-j4"
 
 def split_file(path):
@@ -134,7 +133,8 @@ def MakeDebBuilder(arch, chroot=None):
   cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON", "-DDEB_ARCH=" + arch]
   make_cmd  = schroot_cmd + ["make", "deb", ZAPHOD_JOBS]
 
-  deb_filename = "clementine_" + DEBVERSION + "~r%(got_revision)s_" + arch + ".deb"
+  deb_filename = "clementine_%(version:-" + DEBVERSION + ")s" + \
+      "%(revision:+~r)s%(revision)s_" + arch + ".deb"
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
@@ -147,7 +147,8 @@ def MakeDebBuilder(arch, chroot=None):
   return f
 
 def MakeRpmBuilder(distro, arch, chroot):
-  rpm_filename = "clementine-r%(got_revision)s." + distro + "." + arch + ".rpm"
+  rpm_filename = "clementine-%(version:-" + DEBVERSION + ")s" + \
+      "%(revision:+.r)s%(revision)s." + distro + "." + arch + ".rpm"
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
@@ -173,6 +174,9 @@ def MakeMingwBuilder(type, suffix, strip):
   build_env = dict(CMAKE_ENV)
   build_env.update({'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'})
 
+  exe_filename = "ClementineSetup-%(version:-" + DEBVERSION + ")s" + \
+      "%(revision:+.r)s%(revision)s-" + suffix + ".exe"
+
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
@@ -181,6 +185,17 @@ def MakeMingwBuilder(type, suffix, strip):
       "-DCMAKE_BUILD_TYPE=" + type,
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
+  ]))
+  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+      "sh", "-c",
+      "ln -svf /src/clementine-deps/* ../dist/windows/",
+  ]))
+  f.addStep(ShellCommand(workdir="build/dist/windows", haltOnFailure=True, command=schroot_cmd + [
+      "ln", "-svf", "../../bin/clementine.exe", ".",
+  ]))
+  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+      "sh", "-c",
+      "ln -svf /src/clementine-deps/* tests/",
   ]))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
@@ -193,7 +208,7 @@ def MakeMingwBuilder(type, suffix, strip):
   f.addStep(FileUpload(
       mode=0644,
       slavesrc="dist/windows/ClementineSetup.exe",
-      masterdest=WithProperties(UPLOADBASE + "/win32/ClementineSetup-r%(got_revision)s-" + suffix + ".exe")))
+      masterdest=WithProperties(UPLOADBASE + "/win32/" + exe_filename)))
   return f
 
 def MakeMacBuilder():
