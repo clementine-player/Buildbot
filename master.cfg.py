@@ -23,6 +23,12 @@ CMAKE_ENV   = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
 SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True}
 ZAPHOD_JOBS = "-j4"
 
+DISABLED_TESTS = [
+  'Formats/FileformatsTest.*',
+  'SongLoaderTest.*'
+]
+TEST_ENV = {'GTEST_FILTER': '-' + ':'.join(DISABLED_TESTS) }
+
 def split_file(path):
   pieces = path.split('/')
   if pieces[0] == 'branches':
@@ -117,7 +123,7 @@ def MakeLinuxBuilder(type):
       "-DCMAKE_BUILD_TYPE=" + type,
   ]))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=["make", ZAPHOD_JOBS]))
-  f.addStep(Test(workdir=WORKDIR, command=[
+  f.addStep(Test(workdir=WORKDIR, env=TEST_ENV, command=[
       "xvfb-run",
       "-a",
       "-n", "10",
@@ -169,7 +175,7 @@ def MakeMingwBuilder(type, suffix, strip):
   schroot_cmd = ["schroot", "-p", "-c", "mingw", "--"]
 
   test_env = dict(CMAKE_ENV)
-  test_env.update({'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode/5:Formats/FileformatsTest.GstCanDecode/6'})
+  test_env.update(TEST_ENV)
 
   build_env = dict(CMAKE_ENV)
   build_env.update({'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'})
@@ -212,6 +218,12 @@ def MakeMingwBuilder(type, suffix, strip):
   return f
 
 def MakeMacBuilder():
+  test_env = dict(TEST_ENV)
+  test_env.update({
+    'DYLD_FRAMEWORK_PATH': '/usr/local/Trolltech/Qt-4.7.0/lib',
+    'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode*:SongLoaderTest.LoadRemote*',
+  })
+
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(
@@ -231,8 +243,7 @@ def MakeMacBuilder():
   f.addStep(Test(
       command=["make", "test", "-j2"],
       workdir=WORKDIR,
-      env={'DYLD_FRAMEWORK_PATH': '/usr/local/Trolltech/Qt-4.7.0/lib',
-          'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode*:SongLoaderTest.LoadRemote*'}))
+      env=TEST_ENV))
   f.addStep(ShellCommand(command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(ShellCommand(command=["make", "bundle"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(ShellCommand(command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
