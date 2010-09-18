@@ -88,6 +88,8 @@ sched_winmac = Scheduler(name="winmac", branch=None, treeStableTimer=2*60, build
 sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Lucid 64-bit",
   "Deb Lucid 32-bit",
+  "Deb Maverick 64-bit",
+  "Deb Maverick 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -97,6 +99,7 @@ sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
 
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
+  "PPA Maverick",
 ])
 
 sched_mingw = Scheduler(name="mingw", branch="mingw-deps", treeStableTimer=2*60, builderNames=[
@@ -131,12 +134,12 @@ def MakeLinuxBuilder(type):
   ]))
   return f
 
-def MakeDebBuilder(arch, chroot=None):
+def MakeDebBuilder(arch, dist, chroot=None):
   schroot_cmd = []
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
 
-  cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON", "-DDEB_ARCH=" + arch]
+  cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON", "-DDEB_ARCH=" + arch, "-DDEB_DIST=" + dist]
   make_cmd  = schroot_cmd + ["make", "deb", ZAPHOD_JOBS]
 
   deb_filename = "clementine_%(version:-" + DEBVERSION + ")s" + \
@@ -149,7 +152,7 @@ def MakeDebBuilder(arch, chroot=None):
   f.addStep(FileUpload(
       mode=0644,
       slavesrc=WithProperties("bin/clementine.deb"),
-      masterdest=WithProperties(UPLOADBASE + "/ubuntu-lucid/" + deb_filename)))
+      masterdest=WithProperties(UPLOADBASE + "/ubuntu-" + dist + "/" + deb_filename)))
   return f
 
 def MakeRpmBuilder(distro, arch, chroot):
@@ -253,10 +256,17 @@ def MakeMacBuilder():
       masterdest=WithProperties(UPLOADBASE + "/mac/clementine-r%(got_revision)s-rel.dmg")))
   return f
 
-def MakePPABuilder():
+def MakePPABuilder(dist, chroot=None):
+  schroot_cmd = []
+  if chroot is not None:
+    schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
+
+  ppa_env = dict(CMAKE_ENV)
+  ppa_env.update({'DIST': dist})
+
   f = factory.BuildFactory()
-  f.addStep(ShellCommand(command=["/home/buildbot/uploadtoppa.sh"],
-    env=CMAKE_ENV,
+  f.addStep(ShellCommand(command=schroot_cmd + ["/home/buildbot/uploadtoppa.sh"],
+    env=ppa_env,
     workdir="build",
   ))
   return f
@@ -281,11 +291,14 @@ def BuilderDef(name, dir, factory, slave="zaphod"):
 c['builders'] = [
   BuilderDef("Linux Debug",      "clementine_linux_debug",   MakeLinuxBuilder('Debug')),
   BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release')),
-  BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64')),
-  BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386', chroot='lucid-32')),
+  BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64', 'lucid')),
+  BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
+  BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
+  BuilderDef("Deb Maverick 32-bit", "clementine_deb_maverick_32", MakeDebBuilder('i386',  'maverick', chroot='maverick-32')),
   BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64'), slave="grunthos"),
   BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386'), slave="grunthos"),
-  BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder()),
+  BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
+  BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'dbg', strip=False)),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'rel', strip=True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="Chopstick"),

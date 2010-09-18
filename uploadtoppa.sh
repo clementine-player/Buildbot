@@ -1,6 +1,5 @@
 #!/bin/sh -e
 
-DIST=lucid
 PPA=ppa:me-davidsansome/clementine-dev
 REPO=https://clementine-player.googlecode.com/svn/trunk
 
