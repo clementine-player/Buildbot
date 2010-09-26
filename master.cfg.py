@@ -14,7 +14,7 @@ from buildbot.steps.python_twisted import Trial
 
 import clementine_passwords
 
-DEBVERSION  = "0.4.90"
+DEBVERSION  = "0.5.90"
 SVNBASEURL  = "http://clementine-player.googlecode.com/svn/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
