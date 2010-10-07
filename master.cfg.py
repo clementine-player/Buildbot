@@ -20,7 +20,7 @@ MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 WORKDIR     = "build/bin"
 CMAKE_ENV   = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
-SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True}
+SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True, "mode": "clobber"}
 ZAPHOD_JOBS = "-j4"
 
 DISABLED_TESTS = [
@@ -90,6 +90,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Lucid 32-bit",
   "Deb Maverick 64-bit",
   "Deb Maverick 32-bit",
+  "Deb Squeeze 64-bit",
+  "Deb Squeeze 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -134,7 +136,7 @@ def MakeLinuxBuilder(type):
   ]))
   return f
 
-def MakeDebBuilder(arch, dist, chroot=None):
+def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   schroot_cmd = []
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
@@ -152,7 +154,7 @@ def MakeDebBuilder(arch, dist, chroot=None):
   f.addStep(FileUpload(
       mode=0644,
       slavesrc=WithProperties("bin/clementine.deb"),
-      masterdest=WithProperties(UPLOADBASE + "/ubuntu-" + dist + "/" + deb_filename)))
+      masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/" + deb_filename)))
   return f
 
 def MakeRpmBuilder(distro, arch, chroot):
@@ -295,6 +297,8 @@ c['builders'] = [
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
   BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
   BuilderDef("Deb Maverick 32-bit", "clementine_deb_maverick_32", MakeDebBuilder('i386',  'maverick', chroot='maverick-32')),
+  BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
+  BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64'), slave="grunthos"),
   BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386'), slave="grunthos"),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
