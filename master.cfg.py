@@ -47,8 +47,8 @@ c = BuildmasterConfig = {
   'slavePortnum': clementine_passwords.PORT,
   'slaves': [
     BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2),
-    BuildSlave("Chopstick", clementine_passwords.CHOPSTICK),
-    BuildSlave("grunthos",  clementine_passwords.GRUNTHOS, max_builds=1),
+    BuildSlave("Chopstick", clementine_passwords.CHOPSTICK, notify_on_missing="john.maguire@gmail.com"),
+    BuildSlave("grunthos",  clementine_passwords.GRUNTHOS, max_builds=1, notify_on_missing="me@davidsansome.com"),
   ],
   'sources': [
     SVNPoller(
