@@ -102,6 +102,7 @@ sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
   "PPA Maverick",
+  "PPA Natty",
 ])
 
 sched_mingw = Scheduler(name="mingw", branch="mingw-deps", treeStableTimer=2*60, builderNames=[
@@ -303,6 +304,7 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386'), slave="grunthos"),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
+  BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'dbg', strip=False)),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'rel', strip=True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="Chopstick"),
