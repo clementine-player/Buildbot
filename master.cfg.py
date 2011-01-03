@@ -19,7 +19,6 @@ SVNBASEURL  = "http://clementine-player.googlecode.com/svn/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 WORKDIR     = "build/bin"
-CMAKE_ENV   = {'BUILDBOT_REVISION': WithProperties("%(revision)s")}
 SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True, "mode": "clobber"}
 ZAPHOD_JOBS = "-j4"
 
@@ -38,6 +37,20 @@ def split_file(path):
     return (None, '/'.join(pieces[1:]))
   return (pieces[0], '/'.join(pieces[1:]))
 
+class OutputFinder(ShellCommand):
+  def __init__(self, pattern=None, **kwargs):
+    if pattern is None:
+      ShellCommand.__init__(self, **kwargs)
+    else:
+      ShellCommand.__init__(self,
+        name="get output filename",
+        command=["sh", "-c", "basename `ls " + pattern + "|head -n 1`"],
+        **kwargs
+      )
+
+  def commandComplete(self, cmd):
+    filename = self.getLog('stdio').readlines()[0].strip()
+    self.setProperty("output-filename", filename)
 
 # Basic config
 c = BuildmasterConfig = {
@@ -123,7 +136,7 @@ c['schedulers'] = [
 def MakeLinuxBuilder(type):
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, command=[
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
       "cmake", "..",
       "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
       "-DCMAKE_BUILD_TYPE=" + type,
@@ -145,82 +158,74 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON", "-DDEB_ARCH=" + arch, "-DDEB_DIST=" + dist]
   make_cmd  = schroot_cmd + ["make", "deb", ZAPHOD_JOBS]
 
-  deb_filename = "clementine_%(version:-" + DEBVERSION + ")s" + \
-      "%(revision:+~r)s%(revision)s_" + arch + ".deb"
-
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR, env=CMAKE_ENV))
-  f.addStep(Compile(command=make_cmd, haltOnFailure=True, workdir=WORKDIR, env=CMAKE_ENV))
+  f.addStep(ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(Compile(command=make_cmd, haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("bin/clementine.deb"),
-      masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/" + deb_filename)))
+      slavesrc=WithProperties("bin/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/%(output-filename)s")))
   return f
 
 def MakeRpmBuilder(distro, arch, chroot):
-  rpm_filename = "clementine-%(version:-" + DEBVERSION + ")s" + \
-      "%(revision:+.r)s%(revision)s." + distro + "." + arch + ".rpm"
-
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV, command=[
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
       "cmake", "..",
       "-DRPM_DISTRO=" + distro,
       "-DRPM_ARCH=" + arch,
       "-DMOCK_CHROOT=" + chroot,
   ]))
-  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV))
+  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True))
+  f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc="bin/clementine.rpm",
-      masterdest=WithProperties(UPLOADBASE + "/fedora-13/" + rpm_filename)))
+      slavesrc=WithProperties("bin/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/fedora-13/%(output-filename)s")))
   return f
 
 def MakeMingwBuilder(type, suffix, strip):
   schroot_cmd = ["schroot", "-p", "-c", "mingw", "--"]
 
-  test_env = dict(CMAKE_ENV)
-  test_env.update(TEST_ENV)
+  test_env = dict(TEST_ENV)
 
-  build_env = dict(CMAKE_ENV)
-  build_env.update({'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'})
-
-  exe_filename = "ClementineSetup-%(version:-" + DEBVERSION + ")s" + \
-      "%(revision:+.r)s%(revision)s-" + suffix + ".exe"
+  build_env = {'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'}
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
       "-DCMAKE_BUILD_TYPE=" + type,
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
   ]))
-  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+  f.addStep(ShellCommand(name="link dependencies", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
       "ln -svf /src/clementine-deps/* ../dist/windows/",
   ]))
-  f.addStep(ShellCommand(workdir="build/dist/windows", haltOnFailure=True, command=schroot_cmd + [
+  f.addStep(ShellCommand(name="link output", workdir="build/dist/windows", haltOnFailure=True, command=schroot_cmd + [
       "ln", "-svf", "../../bin/clementine.exe", ".",
   ]))
-  f.addStep(ShellCommand(workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+  f.addStep(ShellCommand(name="test", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
       "ln -svf /src/clementine-deps/* tests/",
   ]))
-  f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True, env=CMAKE_ENV))
+  f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
       "-a",
       "-n", "30",
       "make", "test"
   ]))
-  f.addStep(ShellCommand(command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows", haltOnFailure=True))
+  f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows", haltOnFailure=True))
+  f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc="dist/windows/ClementineSetup.exe",
-      masterdest=WithProperties(UPLOADBASE + "/win32/" + exe_filename)))
+      slavesrc=WithProperties("dist/windows/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
   return f
 
 def MakeMacBuilder():
@@ -233,6 +238,7 @@ def MakeMacBuilder():
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(
+      name="cmake",
       workdir=WORKDIR,
       env={'PKG_CONFIG_PATH': '/usr/local/lib/pkgconfig'},
       command=[
@@ -250,13 +256,14 @@ def MakeMacBuilder():
       command=["make", "test", "-j2"],
       workdir=WORKDIR,
       env=TEST_ENV))
-  f.addStep(ShellCommand(command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
-  f.addStep(ShellCommand(command=["make", "bundle"], haltOnFailure=True, workdir=WORKDIR))
-  f.addStep(ShellCommand(command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(ShellCommand(name="install", command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(ShellCommand(name="bundle", command=["make", "bundle"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(ShellCommand(name="dmg", command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc="bin/clementine.dmg",
-      masterdest=WithProperties(UPLOADBASE + "/mac/clementine-r%(got_revision)s-rel.dmg")))
+      slavesrc=WithProperties("bin/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/mac/%(output-filename)s")))
   return f
 
 def MakePPABuilder(dist, chroot=None):
@@ -264,11 +271,11 @@ def MakePPABuilder(dist, chroot=None):
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
 
-  ppa_env = dict(CMAKE_ENV)
-  ppa_env.update({'DIST': dist})
+  ppa_env = {'DIST': dist}
 
   f = factory.BuildFactory()
   f.addStep(ShellCommand(command=schroot_cmd + ["/home/buildbot/uploadtoppa.sh"],
+    name="upload",
     env=ppa_env,
     workdir="build",
   ))
@@ -278,9 +285,9 @@ def MakeMinGWDepsBuilder():
   schroot_cmd = ["schroot", "-p", "-c", "mingw", "-d", "/src", "--"]
 
   f = factory.BuildFactory()
-  f.addStep(ShellCommand(command=schroot_cmd + ["svn", "up"]))
-  f.addStep(ShellCommand(command=schroot_cmd + ["make", "clean"]))
-  f.addStep(ShellCommand(command=schroot_cmd + ["make"]))
+  f.addStep(ShellCommand(name="checkout", command=schroot_cmd + ["svn", "up"]))
+  f.addStep(ShellCommand(name="clean", command=schroot_cmd + ["make", "clean"]))
+  f.addStep(ShellCommand(name="compile", command=schroot_cmd + ["make"]))
   return f
 
 def BuilderDef(name, dir, factory, slave="zaphod"):
@@ -305,8 +312,8 @@ c['builders'] = [
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
-  BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'dbg', strip=False)),
-  BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'rel', strip=True)),
+  BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', strip=False)),
+  BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', strip=True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="Chopstick"),
   BuilderDef("MinGW deps",       "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
 ]
