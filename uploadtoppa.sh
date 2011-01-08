@@ -10,11 +10,11 @@ DIRECTORY=clementine
 rm -rfv $BASE/$DIRECTORY $BASE/*.diff.gz $BASE/*.tar.gz $BASE/*.dsc $BASE/*_source.changes
 
 # Checkout
-svn export -r $BUILDBOT_REVISION $REPO $DIRECTORY
+svn checkout $REPO $DIRECTORY
 
 # Generate changelog and maketarball.sh
 cd $BASE/$DIRECTORY/bin
-cmake .. -DBUILDBOT_REVISION=$BUILDBOT_REVISION -DDEB_DIST=$DIST -DWITH_DEBIAN=ON
+cmake .. -DDEB_DIST=$DIST -DWITH_DEBIAN=ON
 rm -rfv $BASE/$DIRECTORY/bin/*
 
 # Create the tarball
@@ -22,6 +22,7 @@ cd $BASE/$DIRECTORY/dist
 ./maketarball.sh
 mv -v $BASE/$DIRECTORY/dist/*.orig.tar.gz $BASE/
 rm -v $BASE/$DIRECTORY/dist/*.tar.gz
+find $BASE/$DIRECTORY/ -depth -path '*/.svn*' -delete
 
 # Build the deb
 cd $BASE/$DIRECTORY
