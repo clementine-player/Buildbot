@@ -59,7 +59,7 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': clementine_passwords.PORT,
   'slaves': [
-    BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2),
+    BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2, notify_on_missing="me@davidsansome.com"),
     BuildSlave("Chopstick", clementine_passwords.CHOPSTICK, notify_on_missing="john.maguire@gmail.com"),
     BuildSlave("grunthos",  clementine_passwords.GRUNTHOS, max_builds=1, notify_on_missing="me@davidsansome.com"),
   ],
@@ -257,7 +257,6 @@ def MakeMacBuilder():
       workdir=WORKDIR,
       env=TEST_ENV))
   f.addStep(ShellCommand(name="install", command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
-  f.addStep(ShellCommand(name="bundle", command=["make", "bundle"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(ShellCommand(name="dmg", command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
   f.addStep(FileUpload(
