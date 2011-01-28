@@ -15,7 +15,7 @@ from buildbot.steps.python_twisted import Trial
 import clementine_passwords
 
 DEBVERSION  = "0.6.90"
-SVNBASEURL  = "http://clementine-player.googlecode.com/svn/"
+SVNBASEURL  = "http://svn.clementine-player.org/clementine-mirror/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 WORKDIR     = "build/bin"
@@ -66,7 +66,7 @@ c = BuildmasterConfig = {
   'sources': [
     SVNPoller(
       svnurl=SVNBASEURL,
-      pollinterval=60*60, # seconds
+      pollinterval=60*5, # seconds
       histmax=10,
       svnbin='/usr/bin/svn',
       split_file=split_file,
@@ -110,6 +110,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
   "Rpm Fedora 13 64-bit",
   "Rpm Fedora 13 32-bit",
+  "Rpm Fedora 14 64-bit",
+  "Rpm Fedora 14 32-bit",
 ])
 
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
@@ -169,7 +171,7 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
       masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/%(output-filename)s")))
   return f
 
-def MakeRpmBuilder(distro, arch, chroot):
+def MakeRpmBuilder(distro, arch, chroot, upload_ver):
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
@@ -183,7 +185,7 @@ def MakeRpmBuilder(distro, arch, chroot):
   f.addStep(FileUpload(
       mode=0644,
       slavesrc=WithProperties("bin/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/fedora-13/%(output-filename)s")))
+      masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
   return f
 
 def MakeMingwBuilder(type, suffix, strip):
@@ -245,7 +247,6 @@ def MakeMacBuilder():
         "cmake", "..",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_OSX_ARCHITECTURES=i386",
-        "-DQT_QMAKE_EXECUTABLE=/usr/local/Trolltech/Qt-4.7.0/bin/qmake",
         "-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.6.sdk",
         "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.6",
       ],
@@ -306,8 +307,10 @@ c['builders'] = [
   BuilderDef("Deb Maverick 32-bit", "clementine_deb_maverick_32", MakeDebBuilder('i386',  'maverick', chroot='maverick-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
-  BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64'), slave="grunthos"),
-  BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386'), slave="grunthos"),
+  BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13'), slave="grunthos"),
+  BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13'), slave="grunthos"),
+  BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14'), slave="grunthos"),
+  BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14'), slave="grunthos"),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
