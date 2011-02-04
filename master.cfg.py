@@ -90,6 +90,7 @@ c = BuildmasterConfig = {
 sched_linux = Scheduler(name="linux", branch=None, treeStableTimer=2*60, builderNames=[
   "Linux Debug",
   "Linux Release",
+  "Linux Clang",
 ])
 
 sched_winmac = Scheduler(name="winmac", branch=None, treeStableTimer=2*60, builderNames=[
@@ -135,14 +136,20 @@ c['schedulers'] = [
 
 
 # Builders
-def MakeLinuxBuilder(type):
+def MakeLinuxBuilder(type, clang=False):
+  cmake_args = [
+    "cmake", "..",
+    "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
+    "-DCMAKE_BUILD_TYPE=" + type,
+  ]
+
+  if clang:
+    cmake_args.append("-DCMAKE_C_COMPILER=clang")
+    cmake_args.append("-DCMAKE_CXX_COMPILER=clang++")
+
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
-      "cmake", "..",
-      "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
-      "-DCMAKE_BUILD_TYPE=" + type,
-  ]))
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_args))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=["make", ZAPHOD_JOBS]))
   f.addStep(Test(workdir=WORKDIR, env=TEST_ENV, command=[
       "xvfb-run",
@@ -301,6 +308,7 @@ def BuilderDef(name, dir, factory, slave="zaphod"):
 c['builders'] = [
   BuilderDef("Linux Debug",      "clementine_linux_debug",   MakeLinuxBuilder('Debug')),
   BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release')),
+  BuilderDef("Linux Clang",      "clementine_linux_clang", MakeLinuxBuilder('Release', clang=True)),
   BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64', 'lucid')),
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
   BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
