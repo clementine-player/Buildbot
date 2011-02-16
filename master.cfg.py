@@ -126,6 +126,10 @@ sched_mingw = Scheduler(name="mingw", branch="mingw-deps", treeStableTimer=2*60,
   "MinGW deps"
 ])
 
+sched_doc = Dependent(name="doc", upstream=sched_linux, builderNames=[
+  "Python docs",
+])
+
 c['schedulers'] = [
   sched_linux,
   sched_winmac,
@@ -133,6 +137,7 @@ c['schedulers'] = [
   sched_rpm,
   sched_ppa,
   sched_mingw,
+  sched_doc,
 ]
 
 
