@@ -9,7 +9,7 @@ from buildbot.scheduler import Scheduler, Dependent
 from buildbot.status import html, mail
 from buildbot.steps.source import SVN
 from buildbot.steps.shell import Compile, ShellCommand, Test
-from buildbot.steps.transfer import FileUpload
+from buildbot.steps.transfer import FileUpload, DirectoryUpload
 from buildbot.steps.python_twisted import Trial
 
 import clementine_passwords
@@ -18,6 +18,7 @@ DEBVERSION  = "0.6.90"
 SVNBASEURL  = "http://svn.clementine-player.org/clementine-mirror/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
+UPLOADDOCS  = "/var/www/clementine-player.org/docs/unstable"
 WORKDIR     = "build/bin"
 SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True, "mode": "clobber"}
 ZAPHOD_JOBS = "-j4"
@@ -157,6 +158,26 @@ def MakeLinuxBuilder(type, clang=False):
       "-n", "10",
       "make", "test"
   ]))
+  return f
+
+def MakeDocBuilder():
+  cmake_args = [
+    "cmake", "..",
+    "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
+  ]
+
+  f = factory.BuildFactory()
+  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_args))
+  f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=[
+    "xvfb-run",
+    "-a", "-n", "20",
+    "make", "pythondocs", ZAPHOD_JOBS,
+  ]))
+  f.addStep(DirectoryUpload(
+    slavesrc="bin/doc/python/output",
+    masterdest=UPLOADDOCS,
+  ))
   return f
 
 def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
@@ -308,7 +329,7 @@ def BuilderDef(name, dir, factory, slave="zaphod"):
 c['builders'] = [
   BuilderDef("Linux Debug",      "clementine_linux_debug",   MakeLinuxBuilder('Debug')),
   BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release')),
-  BuilderDef("Linux Clang",      "clementine_linux_clang", MakeLinuxBuilder('Release', clang=True)),
+  BuilderDef("Linux Clang",      "clementine_linux_clang",   MakeLinuxBuilder('Release', clang=True)),
   BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64', 'lucid')),
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
   BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
@@ -326,5 +347,6 @@ c['builders'] = [
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', strip=True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="Chopstick"),
   BuilderDef("MinGW deps",       "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
+  BuilderDef("Python docs",      "clementine_pythondocs",    MakeDocBuilder()),
 ]
 
