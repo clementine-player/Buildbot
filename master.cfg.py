@@ -61,7 +61,7 @@ c = BuildmasterConfig = {
   'slavePortnum': clementine_passwords.PORT,
   'slaves': [
     BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2, notify_on_missing="me@davidsansome.com"),
-    BuildSlave("Chopstick", clementine_passwords.CHOPSTICK, notify_on_missing="john.maguire@gmail.com"),
+    BuildSlave("zarquon",   clementine_passwords.ZARQUON, notify_on_missing="me@davidsansome.com"),
     BuildSlave("grunthos",  clementine_passwords.GRUNTHOS, max_builds=1, notify_on_missing="me@davidsansome.com"),
   ],
   'sources': [
@@ -285,11 +285,11 @@ def MakeMacBuilder():
       ],
       haltOnFailure=True,
   ))
-  f.addStep(Compile(command=["make", "-j2"], workdir=WORKDIR, haltOnFailure=True))
-  f.addStep(Test(
-      command=["make", "test", "-j2"],
-      workdir=WORKDIR,
-      env=TEST_ENV))
+  f.addStep(Compile(command=["make"], workdir=WORKDIR, haltOnFailure=True))
+#  f.addStep(Test(
+#      command=["make", "test"],
+#      workdir=WORKDIR,
+#      env=TEST_ENV))
   f.addStep(ShellCommand(name="install", command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(ShellCommand(name="dmg", command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
@@ -350,7 +350,7 @@ c['builders'] = [
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', strip=False)),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', strip=True)),
-  BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="Chopstick"),
+  BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
   BuilderDef("MinGW deps",       "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
   BuilderDef("Python docs",      "clementine_pythondocs",    MakeDocBuilder()),
 ]
