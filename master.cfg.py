@@ -169,6 +169,7 @@ def MakeDocBuilder():
   cmake_args = [
     "cmake", "..",
     "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
+    "-DENABLE_SCRIPTING_PYTHON=ON",
   ]
 
   f = factory.BuildFactory()
