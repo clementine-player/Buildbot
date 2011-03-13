@@ -92,6 +92,7 @@ sched_linux = Scheduler(name="linux", branch=None, treeStableTimer=2*60, builder
   "Linux Debug",
   "Linux Release",
   "Linux Clang",
+  "Linux Minimal",
 ])
 
 sched_winmac = Scheduler(name="winmac", branch=None, treeStableTimer=2*60, builderNames=[
@@ -142,7 +143,7 @@ c['schedulers'] = [
 
 
 # Builders
-def MakeLinuxBuilder(type, clang=False):
+def MakeLinuxBuilder(type, clang=False, disable_everything=False):
   cmake_args = [
     "cmake", "..",
     "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
@@ -152,6 +153,28 @@ def MakeLinuxBuilder(type, clang=False):
   if clang:
     cmake_args.append("-DCMAKE_C_COMPILER=clang")
     cmake_args.append("-DCMAKE_CXX_COMPILER=clang++")
+
+  if disable_everything:
+    cmake_args += [
+      "-DBUNDLE_PROJECTM_PRESETS=OFF",
+      "-DENABLE_DBUS=OFF",
+      "-DENABLE_DEVICEKIT=OFF",
+      "-DENABLE_GIO=OFF",
+      "-DENABLE_IMOBILEDEVICE=OFF",
+      "-DENABLE_LIBGPOD=OFF",
+      "-DENABLE_LIBLASTFM=OFF",
+      "-DENABLE_LIBMTP=OFF",
+      "-DENABLE_REMOTE=OFF",
+      "-DENABLE_SCRIPTING_ARCHIVES=OFF",
+      "-DENABLE_SCRIPTING_PYTHON=OFF",
+      "-DENABLE_SOUNDMENU=OFF",
+      "-DENABLE_SPARKLE=OFF",
+      "-DENABLE_VISUALISATIONS=OFF",
+      "-DENABLE_WIIMOTEDEV=OFF",
+      "-DUSE_SYSTEM_PROJECTM=OFF",
+      "-DUSE_SYSTEM_QTSINGLEAPPLICATION=OFF",
+      "-DUSE_SYSTEM_QXT=OFF",
+    ]
 
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
@@ -336,6 +359,7 @@ c['builders'] = [
   BuilderDef("Linux Debug",      "clementine_linux_debug",   MakeLinuxBuilder('Debug')),
   BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release')),
   BuilderDef("Linux Clang",      "clementine_linux_clang",   MakeLinuxBuilder('Release', clang=True)),
+  BuilderDef("Linux Minimal",    "clementine_linux_minimal", MakeLinuxBuilder('Release', disable_everything=True)),
   BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64', 'lucid')),
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
   BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
