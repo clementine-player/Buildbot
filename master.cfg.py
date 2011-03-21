@@ -106,6 +106,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Lucid 32-bit",
   "Deb Maverick 64-bit",
   "Deb Maverick 32-bit",
+  "Deb Natty 64-bit",
+  "Deb Natty 32-bit",
   "Deb Squeeze 64-bit",
   "Deb Squeeze 32-bit",
 ])
@@ -364,6 +366,8 @@ c['builders'] = [
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
   BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
   BuilderDef("Deb Maverick 32-bit", "clementine_deb_maverick_32", MakeDebBuilder('i386',  'maverick', chroot='maverick-32')),
+  BuilderDef("Deb Natty 64-bit", "clementine_deb_natty_64", MakeDebBuilder('amd64', 'natty', chroot='natty-64')),
+  BuilderDef("Deb Natty 32-bit", "clementine_deb_natty_32", MakeDebBuilder('i386',  'natty', chroot='natty-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13'), slave="grunthos"),
