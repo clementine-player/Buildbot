@@ -152,6 +152,7 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
     "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
     "-DCMAKE_BUILD_TYPE=" + type,
   ]
+  test_env = dict(TEST_ENV)
 
   if clang:
     cmake_args.append("-DCMAKE_C_COMPILER=clang")
@@ -160,6 +161,7 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
   if gcc460:
     cmake_args.append("-DCMAKE_C_COMPILER=/usr/local/gcc-4.6.0/bin/gcc")
     cmake_args.append("-DCMAKE_CXX_COMPILER=/usr/local/gcc-4.6.0/bin/g++")
+    test_env['LD_LIBRARY_PATH'] = '/usr/local/gcc-4.6.0/lib64'
 
   if disable_everything:
     cmake_args += [
@@ -187,7 +189,7 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_args))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=["make", ZAPHOD_JOBS]))
-  f.addStep(Test(workdir=WORKDIR, env=TEST_ENV, command=[
+  f.addStep(Test(workdir=WORKDIR, env=test_env, command=[
       "xvfb-run",
       "-a",
       "-n", "10",
