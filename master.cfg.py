@@ -7,8 +7,9 @@ from buildbot.process import factory
 from buildbot.process.properties import WithProperties
 from buildbot.scheduler import Scheduler, Dependent
 from buildbot.status import html, mail
+from buildbot.steps.master import MasterShellCommand
 from buildbot.steps.source import SVN
-from buildbot.steps.shell import Compile, ShellCommand, Test
+from buildbot.steps.shell import Compile, ShellCommand, Test, SetProperty
 from buildbot.steps.transfer import FileUpload, DirectoryUpload
 from buildbot.steps.python_twisted import Trial
 
@@ -19,6 +20,7 @@ SVNBASEURL  = "http://svn.clementine-player.org/clementine-mirror/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 UPLOADDOCS  = "/var/www/clementine-player.org/docs/unstable"
+SPOTIFYBASE = "/var/www/clementine-player.org/spotify"
 WORKDIR     = "build/bin"
 SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True, "mode": "clobber"}
 ZAPHOD_JOBS = "-j4"
@@ -45,7 +47,7 @@ class OutputFinder(ShellCommand):
     else:
       ShellCommand.__init__(self,
         name="get output filename",
-        command=["sh", "-c", "basename `ls " + pattern + "|head -n 1`"],
+        command=["sh", "-c", "basename `ls -d " + pattern + "|head -n 1`"],
         **kwargs
       )
 
@@ -195,6 +197,42 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
       "-n", "10",
       "make", "test"
   ]))
+  return f
+
+def MakeSpotifyBlobBuilder(chroot=None):
+  schroot_cmd = []
+  if chroot is not None:
+    schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
+
+  cmake_args = [
+    "cmake", "..",
+    "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
+    "-DPROTOBUF_INCLUDE_DIR=/usr/local/protobuf-2.4.0a/include",
+    "-DPROTOBUF_PROTOC_EXECUTABLE=/usr/local/protobuf-2.4.0a/bin/protoc",
+    "-DPROTOBUF_LITE_LIBRARY=/usr/local/protobuf-2.4.0a/lib/libprotobuf-lite.a",
+    "-DCMAKE_INSTALL_PREFIX=%s/installprefix" % WORKDIR,
+  ]
+
+  cmake_cmd = schroot_cmd + cmake_args
+  make_cmd  = schroot_cmd + ["make"]
+
+  f = factory.BuildFactory()
+  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_cmd))
+  f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=make_cmd + ["clementine-spotifyblob", ZAPHOD_JOBS]))
+  f.addStep(Compile(workdir=WORKDIR + "/spotifyblob/blob", haltOnFailure=True, command=make_cmd + ["install", ZAPHOD_JOBS]))
+  f.addStep(ShellCommand(name="strip", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + ["sh", "-c", "strip spotify/version*/blob"]))
+  f.addStep(OutputFinder(pattern="bin/spotify/version*-*bit"))
+  f.addStep(SetProperty(command="echo " + SPOTIFYBASE, property="spotifybase"))
+  f.addStep(MasterShellCommand(command=WithProperties("""
+    mkdir %(spotifybase)s/%(output-filename)s || true;
+    chmod 0775 %(spotifybase)s/%(output-filename)s || true;
+    ln -s %(spotifybase)s/`echo %(output-filename)s | sed 's/.*-/common-/'`/* %(spotifybase)s/%(output-filename)s/ || true
+  """)))
+  f.addStep(FileUpload(
+    mode=0644,
+    slavesrc=WithProperties("bin/spotify/%(output-filename)s/blob"),
+    masterdest=WithProperties(SPOTIFYBASE + "/%(output-filename)s/blob")))
   return f
 
 def MakeDocBuilder():
@@ -370,6 +408,8 @@ c['builders'] = [
   BuilderDef("Linux Clang",      "clementine_linux_clang",   MakeLinuxBuilder('Release', clang=True)),
   BuilderDef("Linux GCC 4.6.0",  "clementine_linux_gcc460",  MakeLinuxBuilder('Release', gcc460=True)),
   BuilderDef("Linux Minimal",    "clementine_linux_minimal", MakeLinuxBuilder('Release', disable_everything=True)),
+  BuilderDef("Spotify blob 32-bit", "clementine_spotify_32", MakeSpotifyBlobBuilder(chroot='lucid-32')),
+  BuilderDef("Spotify blob 64-bit", "clementine_spotify_64", MakeSpotifyBlobBuilder()),
   BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64', 'lucid')),
   BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
   BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
