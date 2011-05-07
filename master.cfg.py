@@ -128,12 +128,18 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Natty",
 ])
 
-sched_mingw = Scheduler(name="mingw", branch="mingw-deps", treeStableTimer=2*60, builderNames=[
-  "MinGW deps"
+sched_dependencies = Scheduler(name="dependencies", branch="dependencies", treeStableTimer=2*60, builderNames=[
+  "Dependencies Mingw",
+  #"Dependencies Mac",
 ])
 
 sched_doc = Dependent(name="doc", upstream=sched_linux, builderNames=[
   "Python docs",
+])
+
+sched_spotifyblob = Dependent(name="spotifyblob", upstream=sched_linux, builderNames=[
+  "Spotify blob 32-bit",
+  "Spotify blob 64-bit",
 ])
 
 c['schedulers'] = [
@@ -142,8 +148,9 @@ c['schedulers'] = [
   sched_deb,
   sched_rpm,
   sched_ppa,
-  sched_mingw,
+  sched_dependencies,
   sched_doc,
+  sched_spotifyblob,
 ]
 
 
@@ -261,7 +268,12 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
 
-  cmake_cmd = schroot_cmd + ["cmake", "..", "-DWITH_DEBIAN=ON", "-DDEB_ARCH=" + arch, "-DDEB_DIST=" + dist]
+  cmake_cmd = schroot_cmd + ["cmake", "..",
+    "-DWITH_DEBIAN=ON",
+    "-DDEB_ARCH=" + arch,
+    "-DDEB_DIST=" + dist,
+    "-DENABLE_SPOTIFY_BLOB=OFF",
+  ]
   make_cmd  = schroot_cmd + ["make", "deb", ZAPHOD_JOBS]
 
   f = factory.BuildFactory()
@@ -283,6 +295,7 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver):
       "-DRPM_DISTRO=" + distro,
       "-DRPM_ARCH=" + arch,
       "-DMOCK_CHROOT=" + chroot,
+      "-DENABLE_SPOTIFY_BLOB=OFF",
   ]))
   f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
@@ -307,6 +320,7 @@ def MakeMingwBuilder(type, suffix, strip):
       "-DCMAKE_BUILD_TYPE=" + type,
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
+      "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
   ]))
   f.addStep(ShellCommand(name="link dependencies", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
@@ -337,7 +351,6 @@ def MakeMingwBuilder(type, suffix, strip):
 def MakeMacBuilder():
   test_env = dict(TEST_ENV)
   test_env.update({
-    'DYLD_FRAMEWORK_PATH': '/usr/local/Trolltech/Qt-4.7.0/lib',
     'GTEST_FILTER': '-Formats/FileformatsTest.GstCanDecode*:SongLoaderTest.LoadRemote*',
   })
 
@@ -346,13 +359,22 @@ def MakeMacBuilder():
   f.addStep(ShellCommand(
       name="cmake",
       workdir=WORKDIR,
-      env={'PKG_CONFIG_PATH': '/usr/local/lib/pkgconfig'},
+      env={'PKG_CONFIG_PATH': '/target/lib/pkgconfig'},
       command=[
         "cmake", "..",
         "-DCMAKE_BUILD_TYPE=Release",
-        "-DCMAKE_OSX_ARCHITECTURES=i386",
         "-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.6.sdk",
         "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.6",
+				"-DCMAKE_OSX_ARCHITECTURES=i386",
+				"-DBOOST_ROOT=/target",
+        "-DPROTOBUF_LIBRARY=/target/lib/libprotobuf-lite.dylib",
+        "-DPROTOBUF_INCLUDE_DIR=/target/include/",
+        "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
+        "-DSPOTIFY=/target/libspotify.framework",
+        "-DGLEW_INCLUDE_DIRS=/target/include",
+        "-DGLEW_LIBRARIES=/target/lib/libGLEW.dylib",
+        "-DLASTFM_INCLUDE_DIRS=/target/include/",
+        "-DLASTFM_LIBRARIES=/target/lib/liblastfm.dylib",
       ],
       haltOnFailure=True,
   ))
@@ -386,13 +408,15 @@ def MakePPABuilder(dist, chroot=None):
   return f
 
 def MakeMinGWDepsBuilder():
-  schroot_cmd = ["schroot", "-p", "-c", "mingw", "-d", "/src", "--"]
+  schroot_cmd         = ["schroot", "-p", "-c", "mingw", "-d", "/src", "--"]
+  schroot_cmd_workdir = ["schroot", "-p", "-c", "mingw", "-d", "/src/windows", "--"]
 
   f = factory.BuildFactory()
   f.addStep(ShellCommand(name="checkout", command=schroot_cmd + ["svn", "up"]))
-  f.addStep(ShellCommand(name="clean", command=schroot_cmd + ["make", "clean"]))
-  f.addStep(ShellCommand(name="compile", command=schroot_cmd + ["make"]))
+  f.addStep(ShellCommand(name="clean", command=schroot_cmd_workdir + ["make", "clean"]))
+  f.addStep(ShellCommand(name="compile", command=schroot_cmd_workdir + ["make"]))
   return f
+
 
 def BuilderDef(name, dir, factory, slave="zaphod"):
   return {
@@ -428,7 +452,8 @@ c['builders'] = [
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', strip=False)),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', strip=True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
-  BuilderDef("MinGW deps",       "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
+  BuilderDef("Dependencies Mingw", "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
+  #BuilderDef("Dependencies Mac", "clementine_mac_deps",    MakeMacDepsBuilder()),
   BuilderDef("Python docs",      "clementine_pythondocs",    MakeDocBuilder()),
 ]
 
