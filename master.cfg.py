@@ -130,11 +130,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
 
 sched_dependencies = Scheduler(name="dependencies", branch="dependencies", treeStableTimer=2*60, builderNames=[
   "Dependencies Mingw",
-  #"Dependencies Mac",
-])
-
-sched_doc = Dependent(name="doc", upstream=sched_linux, builderNames=[
-  "Python docs",
+  "Dependencies Mac",
 ])
 
 sched_spotifyblob = Dependent(name="spotifyblob", upstream=sched_linux, builderNames=[
@@ -149,7 +145,6 @@ c['schedulers'] = [
   sched_rpm,
   sched_ppa,
   sched_dependencies,
-  sched_doc,
   sched_spotifyblob,
 ]
 
@@ -242,27 +237,6 @@ def MakeSpotifyBlobBuilder(chroot=None):
     masterdest=WithProperties(SPOTIFYBASE + "/%(output-filename)s/blob")))
   return f
 
-def MakeDocBuilder():
-  cmake_args = [
-    "cmake", "..",
-    "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
-    "-DENABLE_SCRIPTING_PYTHON=ON",
-  ]
-
-  f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
-  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_args))
-  f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=[
-    "xvfb-run",
-    "-a", "-n", "20",
-    "make", "pythondocs", ZAPHOD_JOBS,
-  ]))
-  f.addStep(DirectoryUpload(
-    slavesrc="bin/doc/python/output",
-    masterdest=UPLOADDOCS,
-  ))
-  return f
-
 def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   schroot_cmd = []
   if chroot is not None:
@@ -305,7 +279,7 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver):
       masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
   return f
 
-def MakeMingwBuilder(type, suffix, strip):
+def MakeMingwBuilder(type, suffix):
   schroot_cmd = ["schroot", "-p", "-c", "mingw", "--"]
 
   test_env = dict(TEST_ENV)
@@ -321,19 +295,23 @@ def MakeMingwBuilder(type, suffix, strip):
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
       "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
+      "-DPYTHON_LIBRARIES=/target/bin/python27.dll",
   ]))
   f.addStep(ShellCommand(name="link dependencies", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
-      "ln -svf /src/clementine-deps/* ../dist/windows/",
+      "ln -svf /src/windows/clementine-deps/* ../dist/windows/",
   ]))
   f.addStep(ShellCommand(name="link output", workdir="build/dist/windows", haltOnFailure=True, command=schroot_cmd + [
-      "ln", "-svf", "../../bin/clementine.exe", ".",
+      "ln", "-svf", "../../bin/clementine.exe", "../../bin/clementine-spotifyblob.exe", "../../bin/3rdparty/pythonqt/libpythonqt.dll", ".",
   ]))
-  f.addStep(ShellCommand(name="test", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+  f.addStep(ShellCommand(name="link test", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
-      "ln -svf /src/clementine-deps/* tests/",
+      "ln -svf /src/windows/clementine-deps/* ../3rdparty/pythonqt/libpythonqt.dll tests/",
   ]))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True))
+  f.addStep(ShellCommand(name="strip pythonqt", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+      "i586-mingw32msvc-strip", "3rdparty/pythonqt/libpythonqt.dll",
+  ]))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
       "-a",
@@ -417,6 +395,16 @@ def MakeMinGWDepsBuilder():
   f.addStep(ShellCommand(name="compile", command=schroot_cmd_workdir + ["make"]))
   return f
 
+def MakeMacDepsBuilder():
+  src     = "/src"
+  workdir = "/src/macosx"
+
+  f = factory.BuildFactory()
+  f.addStep(ShellCommand(name="checkout", workdir=src,     command=["svn", "up"]))
+  f.addStep(ShellCommand(name="clean",    workdir=workdir, command=["make", "clean"]))
+  f.addStep(ShellCommand(name="compile",  workdir=workdir, command=["make"]))
+  return f
+
 
 def BuilderDef(name, dir, factory, slave="zaphod"):
   return {
@@ -449,11 +437,10 @@ c['builders'] = [
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
-  BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', strip=False)),
-  BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', strip=True)),
+  BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug')),
+  BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
-  BuilderDef("Dependencies Mingw", "clementine_mingw_deps",    MakeMinGWDepsBuilder()),
-  #BuilderDef("Dependencies Mac", "clementine_mac_deps",    MakeMacDepsBuilder()),
-  BuilderDef("Python docs",      "clementine_pythondocs",    MakeDocBuilder()),
+  BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder()),
+  BuilderDef("Dependencies Mac", "clementine_mac_deps",      MakeMacDepsBuilder(), slave="zarquon"),
 ]
 
