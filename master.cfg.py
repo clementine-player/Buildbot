@@ -15,6 +15,8 @@ from buildbot.steps.python_twisted import Trial
 
 import clementine_passwords
 
+import os
+
 DEBVERSION  = "0.6.90"
 SVNBASEURL  = "http://svn.clementine-player.org/clementine-mirror/"
 MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
@@ -64,7 +66,6 @@ c = BuildmasterConfig = {
   'slaves': [
     BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2, notify_on_missing="me@davidsansome.com"),
     BuildSlave("zarquon",   clementine_passwords.ZARQUON, notify_on_missing="me@davidsansome.com"),
-    BuildSlave("grunthos",  clementine_passwords.GRUNTHOS, max_builds=1, notify_on_missing="me@davidsansome.com"),
   ],
   'sources': [
     SVNPoller(
@@ -262,6 +263,10 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   return f
 
 def MakeRpmBuilder(distro, arch, chroot, upload_ver):
+  # Put /usr/bin first so we use the right mock
+  env = dict(os.environ)
+  env["PATH"] = "/usr/bin:" + env["PATH"]
+
   f = factory.BuildFactory()
   f.addStep(SVN(**SVN_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
@@ -271,7 +276,7 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver):
       "-DMOCK_CHROOT=" + chroot,
       "-DENABLE_SPOTIFY_BLOB=OFF",
   ]))
-  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True))
+  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, env=env, haltOnFailure=True))
   f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
   f.addStep(FileUpload(
       mode=0644,
@@ -430,10 +435,10 @@ c['builders'] = [
   BuilderDef("Deb Natty 32-bit", "clementine_deb_natty_32", MakeDebBuilder('i386',  'natty', chroot='natty-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
-  BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13'), slave="grunthos"),
-  BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13'), slave="grunthos"),
-  BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14'), slave="grunthos"),
-  BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14'), slave="grunthos"),
+  BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13')),
+  BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13')),
+  BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14')),
+  BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14')),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
