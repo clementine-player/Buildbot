@@ -2,13 +2,13 @@
 # ex: set syntax=python:
 
 from buildbot.buildslave import BuildSlave
-from buildbot.changes.svnpoller import SVNPoller
+from buildbot.changes.gitpoller import GitPoller
 from buildbot.process import factory
 from buildbot.process.properties import WithProperties
 from buildbot.scheduler import Scheduler, Dependent
 from buildbot.status import html, mail
 from buildbot.steps.master import MasterShellCommand
-from buildbot.steps.source import SVN
+from buildbot.steps.source import Git
 from buildbot.steps.shell import Compile, ShellCommand, Test, SetProperty
 from buildbot.steps.transfer import FileUpload, DirectoryUpload
 from buildbot.steps.python_twisted import Trial
@@ -18,13 +18,12 @@ import clementine_passwords
 import os
 
 DEBVERSION  = "0.6.90"
-SVNBASEURL  = "http://svn.clementine-player.org/clementine-mirror/"
-MINGW_DEPS  = SVNBASEURL + "mingw-deps/"
+GITBASEURL  = "https://code.google.com/p/clementine-player/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
 UPLOADDOCS  = "/var/www/clementine-player.org/docs/unstable"
 SPOTIFYBASE = "/var/www/clementine-player.org/spotify"
 WORKDIR     = "build/bin"
-SVN_ARGS    = {"baseURL": SVNBASEURL, "defaultBranch": "trunk/", "always_purge": True, "mode": "clobber"}
+GIT_ARGS    = {"repourl": GITBASEURL, "branch": "master", "mode": "clobber"}
 ZAPHOD_JOBS = "-j4"
 
 DISABLED_TESTS = [
@@ -67,13 +66,11 @@ c = BuildmasterConfig = {
     BuildSlave("zaphod",    clementine_passwords.ZAPHOD, max_builds=2, notify_on_missing="me@davidsansome.com"),
     BuildSlave("zarquon",   clementine_passwords.ZARQUON, notify_on_missing="me@davidsansome.com"),
   ],
-  'sources': [
-    SVNPoller(
-      svnurl=SVNBASEURL,
+  'change_source': [
+    GitPoller(
+      repourl=GITBASEURL,
       pollinterval=60*5, # seconds
-      histmax=10,
-      svnbin='/usr/bin/svn',
-      split_file=split_file,
+      branch='master',
     ),
   ],
   'status': [
@@ -191,7 +188,7 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
     ]
 
   f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_args))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=["make", ZAPHOD_JOBS]))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=[
@@ -220,7 +217,7 @@ def MakeSpotifyBlobBuilder(chroot=None):
   make_cmd  = schroot_cmd + ["make"]
 
   f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_cmd))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=make_cmd + ["clementine-spotifyblob", ZAPHOD_JOBS]))
   f.addStep(Compile(workdir=WORKDIR + "/spotifyblob/blob", haltOnFailure=True, command=make_cmd + ["install", ZAPHOD_JOBS]))
@@ -252,7 +249,7 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   make_cmd  = schroot_cmd + ["make", "deb", ZAPHOD_JOBS]
 
   f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR))
   f.addStep(Compile(command=make_cmd, haltOnFailure=True, workdir=WORKDIR))
   f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
@@ -268,7 +265,7 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver):
   env["PATH"] = "/usr/bin:" + env["PATH"]
 
   f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
       "cmake", "..",
       "-DRPM_DISTRO=" + distro,
@@ -292,7 +289,7 @@ def MakeMingwBuilder(type, suffix):
   build_env = {'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'}
 
   f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
@@ -338,7 +335,7 @@ def MakeMacBuilder():
   })
 
   f = factory.BuildFactory()
-  f.addStep(SVN(**SVN_ARGS))
+  f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(
       name="cmake",
       workdir=WORKDIR,
@@ -395,7 +392,7 @@ def MakeMinGWDepsBuilder():
   schroot_cmd_workdir = ["schroot", "-p", "-c", "mingw", "-d", "/src/windows", "--"]
 
   f = factory.BuildFactory()
-  f.addStep(ShellCommand(name="checkout", command=schroot_cmd + ["svn", "up"]))
+  f.addStep(ShellCommand(name="checkout", command=schroot_cmd + ["git", "pull"]))
   f.addStep(ShellCommand(name="clean", command=schroot_cmd_workdir + ["make", "clean"]))
   f.addStep(ShellCommand(name="compile", command=schroot_cmd_workdir + ["make"]))
   return f
@@ -405,7 +402,7 @@ def MakeMacDepsBuilder():
   workdir = "/src/macosx"
 
   f = factory.BuildFactory()
-  f.addStep(ShellCommand(name="checkout", workdir=src,     command=["svn", "up"]))
+  f.addStep(ShellCommand(name="checkout", workdir=src,     command=["git", "pull"]))
   f.addStep(ShellCommand(name="clean",    workdir=workdir, command=["make", "clean"]))
   f.addStep(ShellCommand(name="compile",  workdir=workdir, command=["make"]))
   return f
