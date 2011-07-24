@@ -6,6 +6,7 @@ from buildbot.changes.gitpoller import GitPoller
 from buildbot.process import factory
 from buildbot.process.properties import WithProperties
 from buildbot.scheduler import Scheduler, Dependent
+from buildbot.schedulers.filter import ChangeFilter
 from buildbot.status import html, mail
 from buildbot.steps.master import MasterShellCommand
 from buildbot.steps.source import Git
@@ -71,6 +72,7 @@ c = BuildmasterConfig = {
       repourl=GITBASEURL,
       pollinterval=60*5, # seconds
       branch='master',
+      workdir="gitpoller_work",
     ),
   ],
   'status': [
@@ -86,9 +88,10 @@ c = BuildmasterConfig = {
   ],
 }
 
+change_filter = ChangeFilter(project_re=r'.*', branch=u'master')
 
 # Schedulers
-sched_linux = Scheduler(name="linux", branch=None, treeStableTimer=2*60, builderNames=[
+sched_linux = Scheduler(name="linux", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
   "Linux Debug",
   "Linux Release",
   "Linux Clang",
@@ -96,7 +99,7 @@ sched_linux = Scheduler(name="linux", branch=None, treeStableTimer=2*60, builder
   "Linux Minimal",
 ])
 
-sched_winmac = Scheduler(name="winmac", branch=None, treeStableTimer=2*60, builderNames=[
+sched_winmac = Scheduler(name="winmac", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
   "MinGW Debug",
   "MinGW Release",
   "Mac Release",
@@ -297,23 +300,19 @@ def MakeMingwBuilder(type, suffix):
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
       "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
-      "-DPYTHON_LIBRARIES=/target/bin/python27.dll",
   ]))
   f.addStep(ShellCommand(name="link dependencies", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
       "ln -svf /src/windows/clementine-deps/* ../dist/windows/",
   ]))
   f.addStep(ShellCommand(name="link output", workdir="build/dist/windows", haltOnFailure=True, command=schroot_cmd + [
-      "ln", "-svf", "../../bin/clementine.exe", "../../bin/clementine-spotifyblob.exe", "../../bin/3rdparty/pythonqt/libpythonqt.dll", ".",
+      "ln", "-svf", "../../bin/clementine.exe", "../../bin/clementine-spotifyblob.exe", ".",
   ]))
   f.addStep(ShellCommand(name="link test", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
-      "ln -svf /src/windows/clementine-deps/* ../3rdparty/pythonqt/libpythonqt.dll tests/",
+      "ln -svf /src/windows/clementine-deps/* tests/",
   ]))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True))
-  f.addStep(ShellCommand(name="strip pythonqt", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
-      "i586-mingw32msvc-strip", "3rdparty/pythonqt/libpythonqt.dll",
-  ]))
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
       "-a",
