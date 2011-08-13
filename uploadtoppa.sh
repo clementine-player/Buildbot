@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 PPA=ppa:me-davidsansome/clementine-dev
-REPO=https://clementine-player.googlecode.com/svn/trunk
+REPO=https://code.google.com/p/clementine-player/
 
 BASE=`pwd`
 DIRECTORY=clementine
@@ -10,9 +10,10 @@ DIRECTORY=clementine
 rm -rfv $BASE/$DIRECTORY $BASE/*.diff.gz $BASE/*.tar.gz $BASE/*.dsc $BASE/*_source.changes
 
 # Checkout
-svn checkout $REPO $DIRECTORY
+git clone $REPO $DIRECTORY
 
 # Generate changelog and maketarball.sh
+mkdir $BASE/$DIRECTORY/bin
 cd $BASE/$DIRECTORY/bin
 cmake .. -DDEB_DIST=$DIST -DWITH_DEBIAN=ON
 rm -rfv $BASE/$DIRECTORY/bin/*
@@ -22,7 +23,7 @@ cd $BASE/$DIRECTORY/dist
 ./maketarball.sh
 mv -v $BASE/$DIRECTORY/dist/*.orig.tar.gz $BASE/
 rm -v $BASE/$DIRECTORY/dist/*.tar.gz
-find $BASE/$DIRECTORY/ -depth -path '*/.svn*' -delete
+find $BASE/$DIRECTORY/ -depth -path '*/.git*' -delete
 
 # Build the deb
 cd $BASE/$DIRECTORY
