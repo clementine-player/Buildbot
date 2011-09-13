@@ -24,7 +24,12 @@ UPLOADBASE  = "/var/www/clementine-player.org/builds"
 UPLOADDOCS  = "/var/www/clementine-player.org/docs/unstable"
 SPOTIFYBASE = "/var/www/clementine-player.org/spotify"
 WORKDIR     = "build/bin"
-GIT_ARGS    = {"repourl": GITBASEURL, "branch": "master", "mode": "clobber"}
+GIT_ARGS    = {
+  "repourl": GITBASEURL,
+  "branch": "master",
+  "mode": "clobber",
+  "retry": (5*60, 3),
+}
 ZAPHOD_JOBS = "-j4"
 
 DISABLED_TESTS = [
