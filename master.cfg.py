@@ -248,6 +248,9 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   if chroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", chroot, "--"]
 
+  env = dict(os.environ)
+  env["DEB_BUILD_OPTIONS"] = 'parallel=4'
+
   cmake_cmd = schroot_cmd + ["cmake", "..",
     "-DWITH_DEBIAN=ON",
     "-DDEB_ARCH=" + arch,
@@ -259,7 +262,7 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir=WORKDIR))
-  f.addStep(Compile(command=make_cmd, haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(Compile(command=make_cmd, haltOnFailure=True, workdir=WORKDIR, env=env))
   f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
   f.addStep(FileUpload(
       mode=0644,
