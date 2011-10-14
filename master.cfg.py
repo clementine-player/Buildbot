@@ -119,6 +119,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Natty 32-bit",
   "Deb Squeeze 64-bit",
   "Deb Squeeze 32-bit",
+  "Deb Oneiric 64-bit",
+  "Deb Oneiric 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -132,6 +134,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
   "PPA Maverick",
   "PPA Natty",
+  "PPA Oneiric",
 ])
 
 sched_dependencies = Scheduler(name="dependencies", branch="dependencies", treeStableTimer=2*60, builderNames=[
@@ -437,6 +440,8 @@ c['builders'] = [
   BuilderDef("Deb Maverick 32-bit", "clementine_deb_maverick_32", MakeDebBuilder('i386',  'maverick', chroot='maverick-32')),
   BuilderDef("Deb Natty 64-bit", "clementine_deb_natty_64", MakeDebBuilder('amd64', 'natty', chroot='natty-64')),
   BuilderDef("Deb Natty 32-bit", "clementine_deb_natty_32", MakeDebBuilder('i386',  'natty', chroot='natty-32')),
+  BuilderDef("Deb Oneiric 64-bit", "clementine_deb_oneiric_64", MakeDebBuilder('amd64', 'oneiric', chroot='oneiric-64')),
+  BuilderDef("Deb Oneiric 32-bit", "clementine_deb_oneiric_32", MakeDebBuilder('i386',  'oneiric', chroot='oneiric-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13')),
@@ -446,6 +451,7 @@ c['builders'] = [
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
+  BuilderDef("PPA Oneiric",      "clementine_ppa_oneiric",   MakePPABuilder('oneiric', chroot='oneiric-32')),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug')),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
