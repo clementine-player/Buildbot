@@ -21,7 +21,6 @@ import os
 DEBVERSION  = "0.6.90"
 GITBASEURL  = "https://code.google.com/p/clementine-player/"
 UPLOADBASE  = "/var/www/clementine-player.org/builds"
-UPLOADDOCS  = "/var/www/clementine-player.org/docs/unstable"
 SPOTIFYBASE = "/var/www/clementine-player.org/spotify"
 WORKDIR     = "build/bin"
 GIT_ARGS    = {
