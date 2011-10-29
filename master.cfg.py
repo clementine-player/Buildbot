@@ -129,6 +129,10 @@ sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
   "Rpm Fedora 14 32-bit",
 ])
 
+sched_pot = Dependent(name="pot", upstream=sched_linux, builderNames=[
+  "Transifex POT push",
+])
+
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
   "PPA Maverick",
@@ -151,6 +155,7 @@ c['schedulers'] = [
   sched_winmac,
   sched_deb,
   sched_rpm,
+  sched_pot,
   sched_ppa,
   sched_dependencies,
   sched_spotifyblob,
@@ -416,6 +421,19 @@ def MakeMacDepsBuilder():
   f.addStep(ShellCommand(name="compile",  workdir=workdir, command=["make"]))
   return f
 
+def AddTxSetup(f):
+  f.addStep(ShellCommand(name="tx_init", workdir="build", command=["tx", "init", "--host=https://www.transifex.net"]))
+  f.addStep(ShellCommand(name="tx_set",  workdir="build", command=[
+      "tx", "set", "--auto-local", "-r", "clementine.clementineplayer", "src/translations/<lang>.po",
+      "--source-lang", "en", "--source-file", "src/translations/translations.pot", "--execute"]))
+
+def MakeTransifexPotPushBuilder():
+  f = factory.BuildFactory()
+  f.addStep(Git(**GIT_ARGS))
+  AddTxSetup(f)
+  f.addStep(ShellCommand(name="tx_push", workdir="build", command=["tx", "push", "-s"]))
+  return f
+
 
 def BuilderDef(name, dir, factory, slave="zaphod"):
   return {
@@ -447,6 +465,7 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13')),
   BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14')),
   BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14')),
+  BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeTransifexPotPushBuilder()),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
