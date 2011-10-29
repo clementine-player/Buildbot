@@ -7,6 +7,7 @@ from buildbot.process import factory
 from buildbot.process.properties import WithProperties
 from buildbot.scheduler import Scheduler, Dependent
 from buildbot.schedulers.filter import ChangeFilter
+from buildbot.schedulers.timed import Nightly
 from buildbot.status import html, mail
 from buildbot.steps.master import MasterShellCommand
 from buildbot.steps.source import Git
@@ -150,6 +151,16 @@ sched_spotifyblob = Dependent(name="spotifyblob", upstream=sched_linux, builderN
   "Spotify blob 64-bit",
 ])
 
+sched_transifex_pull = Nightly(name="transifex_pull",
+  change_filter=change_filter,
+  hour=10,
+  minute=0,
+  branch="master",
+  builderNames=[
+    "Transifex PO pull",
+  ],
+)
+
 c['schedulers'] = [
   sched_linux,
   sched_winmac,
@@ -159,6 +170,7 @@ c['schedulers'] = [
   sched_ppa,
   sched_dependencies,
   sched_spotifyblob,
+  sched_transifex_pull,
 ]
 
 
@@ -434,6 +446,19 @@ def MakeTransifexPotPushBuilder():
   f.addStep(ShellCommand(name="tx_push", workdir="build", command=["tx", "push", "-s"]))
   return f
 
+def MakeTransifexPoPullBuilder():
+  f = factory.BuildFactory()
+  f.addStep(Git(**GIT_ARGS))
+  AddTxSetup(f)
+  f.addStep(ShellCommand(name="tx_pull",    workdir="build", command=["tx", "pull", "--force"]))
+  f.addStep(ShellCommand(name="git_add",    workdir="build", command="git add --verbose src/translations/*.po"))
+  f.addStep(ShellCommand(name="git_commit", workdir="build", command=[
+    "git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>",
+    "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine)"
+  ]))
+  f.addStep(ShellCommand(name="git_push",   workdir="build", command=["git", "push", GITBASEURL, "master", "--verbose"]))
+  return f
+
 
 def BuilderDef(name, dir, factory, slave="zaphod"):
   return {
@@ -466,6 +491,7 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14')),
   BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14')),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeTransifexPotPushBuilder()),
+  BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
