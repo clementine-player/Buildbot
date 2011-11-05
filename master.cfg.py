@@ -434,8 +434,8 @@ def MakeMacDepsBuilder():
   return f
 
 def AddTxSetup(f):
-  f.addStep(ShellCommand(name="tx_init", workdir="build", command=["tx", "init", "--host=https://www.transifex.net"]))
-  f.addStep(ShellCommand(name="tx_set",  workdir="build", command=[
+  f.addStep(ShellCommand(name="tx_init", workdir="build", haltOnFailure=True, command=["tx", "init", "--host=https://www.transifex.net"]))
+  f.addStep(ShellCommand(name="tx_set",  workdir="build", haltOnFailure=True, command=[
       "tx", "set", "--auto-local", "-r", "clementine.clementineplayer", "src/translations/<lang>.po",
       "--source-lang", "en", "--source-file", "src/translations/translations.pot", "--execute"]))
 
@@ -443,20 +443,20 @@ def MakeTransifexPotPushBuilder():
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
   AddTxSetup(f)
-  f.addStep(ShellCommand(name="tx_push", workdir="build", command=["tx", "push", "-s"]))
+  f.addStep(ShellCommand(name="tx_push", workdir="build", haltOnFailure=True, command=["tx", "push", "-s"]))
   return f
 
 def MakeTransifexPoPullBuilder():
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
   AddTxSetup(f)
-  f.addStep(ShellCommand(name="tx_pull",    workdir="build", command=["tx", "pull", "--force"]))
-  f.addStep(ShellCommand(name="git_add",    workdir="build", command="git add --verbose src/translations/*.po"))
-  f.addStep(ShellCommand(name="git_commit", workdir="build", command=[
+  f.addStep(ShellCommand(name="tx_pull",    workdir="build", haltOnFailure=True, command=["tx", "pull", "--force"]))
+  f.addStep(ShellCommand(name="git_add",    workdir="build", haltOnFailure=True, command="git add --verbose src/translations/*.po"))
+  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=[
     "git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>",
     "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine)"
   ]))
-  f.addStep(ShellCommand(name="git_push",   workdir="build", command=["git", "push", GITBASEURL, "master", "--verbose"]))
+  f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", GITBASEURL, "master", "--verbose"]))
   return f
 
 
