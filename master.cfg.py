@@ -251,15 +251,11 @@ def MakeSpotifyBlobBuilder(chroot=None):
   f.addStep(ShellCommand(name="strip", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + ["sh", "-c", "strip spotify/version*/blob"]))
   f.addStep(OutputFinder(pattern="bin/spotify/version*-*bit"))
   f.addStep(SetProperty(command="echo " + SPOTIFYBASE, property="spotifybase"))
-  f.addStep(MasterShellCommand(command=WithProperties("""
-    mkdir %(spotifybase)s/%(output-filename)s || true;
-    chmod 0775 %(spotifybase)s/%(output-filename)s || true;
-    ln -s %(spotifybase)s/`echo %(output-filename)s | sed 's/.*-/common-/'`/* %(spotifybase)s/%(output-filename)s/ || true
+  f.addStep(MasterShellCommand(name="verify", command=WithProperties("""
+    openssl dgst -sha1 -verify %(spotifybase)s/clementine-spotify-public.pem \
+      -signature %(spotifybase)s/%(output-filename)s/blob.sha1 \
+      %(spotifybase)s/%(output-filename)s/blob
   """)))
-  f.addStep(FileUpload(
-    mode=0644,
-    slavesrc=WithProperties("bin/spotify/%(output-filename)s/blob"),
-    masterdest=WithProperties(SPOTIFYBASE + "/%(output-filename)s/blob")))
   return f
 
 def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
