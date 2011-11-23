@@ -506,7 +506,7 @@ def MakeWebsiteTransifexPoPullBuilder():
   AddWebsiteTxSetup(f)
   f.addStep(ShellCommand(name="tx_pull", workdir="build", haltOnFailure=True, command=["tx", "pull", "--force"]))
   f.addStep(ShellCommand(name="git_add", workdir="build", haltOnFailure=True, command="git add --verbose www.clementine-player.org/locale/*.po"))
-  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.n    et/projects/p/clementine/resource/website)"]))
+  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine/resource/website)"]))
   f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", "https://code.google.com/p/clementine-player.appengine/", "master", "--verbose"]))
   return f
 
