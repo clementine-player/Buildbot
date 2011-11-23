@@ -74,10 +74,25 @@ c = BuildmasterConfig = {
   ],
   'change_source': [
     GitPoller(
+      project="clementine",
       repourl=GITBASEURL,
       pollinterval=60*5, # seconds
       branch='master',
       workdir="gitpoller_work",
+    ),
+    GitPoller(
+      project="website",
+      repourl="https://code.google.com/p/clementine-player.appengine/",
+      pollinterval=60*5, # seconds
+      branch='master',
+      workdir="gitpoller_work_website",
+    ),
+    GitPoller(
+      project="dependencies",
+      repourl="https://code.google.com/p/clementine-player.dependencies/",
+      pollinterval=60*5, # seconds
+      branch='master',
+      workdir="gitpoller_work_deps",
     ),
   ],
   'status': [
@@ -93,7 +108,9 @@ c = BuildmasterConfig = {
   ],
 }
 
-change_filter = ChangeFilter(project_re=r'.*', branch=u'master')
+change_filter = ChangeFilter(project="clementine", branch=u"master")
+website_change_filter = ChangeFilter(project="website", branch=u"master")
+deps_change_filter = ChangeFilter(project="dependencies", branch=u"master")
 
 # Schedulers
 sched_linux = Scheduler(name="linux", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
@@ -134,6 +151,10 @@ sched_pot = Dependent(name="pot", upstream=sched_linux, builderNames=[
   "Transifex POT push",
 ])
 
+sched_website = Scheduler(name="website", change_filter=website_change_filter, treeStableTimer=2*60, builderNames=[
+  "Transifex POT push",
+])
+
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
   "PPA Maverick",
@@ -141,7 +162,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Oneiric",
 ])
 
-sched_dependencies = Scheduler(name="dependencies", branch="dependencies", treeStableTimer=2*60, builderNames=[
+sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
   "Dependencies Mingw",
   "Dependencies Mac",
 ])
@@ -158,6 +179,7 @@ sched_transifex_pull = Nightly(name="transifex_pull",
   branch="master",
   builderNames=[
     "Transifex PO pull",
+    "Transifex website PO pull",
   ],
 )
 
@@ -171,6 +193,7 @@ c['schedulers'] = [
   sched_dependencies,
   sched_spotifyblob,
   sched_transifex_pull,
+  sched_website,
 ]
 
 
@@ -429,30 +452,62 @@ def MakeMacDepsBuilder():
   f.addStep(ShellCommand(name="compile",  workdir=workdir, command=["make"]))
   return f
 
-def AddTxSetup(f):
+def AddTxSetup(f, resource, source_file, pattern):
   f.addStep(ShellCommand(name="tx_init", workdir="build", haltOnFailure=True, command=["tx", "init", "--host=https://www.transifex.net"]))
   f.addStep(ShellCommand(name="tx_set",  workdir="build", haltOnFailure=True, command=[
-      "tx", "set", "--auto-local", "-r", "clementine.clementineplayer", "src/translations/<lang>.po",
-      "--source-lang", "en", "--source-file", "src/translations/translations.pot", "--execute"]))
+      "tx", "set", "--auto-local", "-r", resource, pattern,
+      "--source-lang", "en", "--source-file", source_file, "--execute"]))
+
+def AddClementineTxSetup(f):
+  AddTxSetup(f, "clementine.clementineplayer",
+      "src/translations/translations.pot",
+      "src/translations/<lang>.po")
+
+def AddWebsiteTxSetup(f):
+  AddTxSetup(f, "clementine.website",
+      "www.clementine-player.org/locale/django.pot",
+      "www.clementine-player.org/locale/<lang>.po")
 
 def MakeTransifexPotPushBuilder():
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
-  AddTxSetup(f)
+  AddClementineTxSetup(f)
+  f.addStep(ShellCommand(name="tx_push", workdir="build", haltOnFailure=True, command=["tx", "push", "-s"]))
+  return f
+
+def MakeWebsiteTransifexPotPushBuilder():
+  f = factory.BuildFactory()
+  git_args = dict(GIT_ARGS)
+  git_args["repourl"] = "https://code.google.com/p/clementine-player.appengine/"
+  f.addStep(Git(**git_args))
+  AddWebsiteTxSetup(f)
   f.addStep(ShellCommand(name="tx_push", workdir="build", haltOnFailure=True, command=["tx", "push", "-s"]))
   return f
 
 def MakeTransifexPoPullBuilder():
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
-  AddTxSetup(f)
+  AddClementineTxSetup(f)
   f.addStep(ShellCommand(name="tx_pull",    workdir="build", haltOnFailure=True, command=["tx", "pull", "--force"]))
   f.addStep(ShellCommand(name="git_add",    workdir="build", haltOnFailure=True, command="git add --verbose src/translations/*.po"))
   f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=[
     "git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>",
-    "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine)"
+    "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine/resource/clementineplayer)"
   ]))
   f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", GITBASEURL, "master", "--verbose"]))
+  return f
+
+
+def MakeWebsiteTransifexPoPullBuilder():
+  f = factory.BuildFactory()
+  git_args = dict(GIT_ARGS)
+  git_args["repourl"] = "https://code.google.com/p/clementine-player.appengine/"
+  f.addStep(Git(**git_args))
+  AddWebsiteTxSetup(f)
+  f.addStep(ShellCommand(name="tx_pull", workdir="build", haltOnFailure=True, command=["tx", "pull", "--force"]))
+  f.addStep(ShellCommand(name="git_add", workdir="build", haltOnFailure=True, command="git add --verbose www.clementine-player.org/locale/*.po"))
+  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.n    et/projects/p/clementine/resource/website)"]))
+  f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", "https://code.google.com/p/clementine-player.appengine/", "master", "--verbose"]))
   return f
 
 
@@ -488,6 +543,8 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14')),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeTransifexPotPushBuilder()),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
+  BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
+  BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
