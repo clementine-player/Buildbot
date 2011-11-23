@@ -152,7 +152,7 @@ sched_pot = Dependent(name="pot", upstream=sched_linux, builderNames=[
 ])
 
 sched_website = Scheduler(name="website", change_filter=website_change_filter, treeStableTimer=2*60, builderNames=[
-  "Transifex POT push",
+  "Transifex website POT push",
 ])
 
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
@@ -555,4 +555,3 @@ c['builders'] = [
   BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder()),
   BuilderDef("Dependencies Mac", "clementine_mac_deps",      MakeMacDepsBuilder(), slave="zarquon"),
 ]
-
