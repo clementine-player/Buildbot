@@ -218,6 +218,7 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
   if disable_everything:
     cmake_args += [
       "-DBUNDLE_PROJECTM_PRESETS=OFF",
+      "-DENABLE_AUDIOCD=OFF",
       "-DENABLE_DBUS=OFF",
       "-DENABLE_DEVICEKIT=OFF",
       "-DENABLE_GIO=OFF",
@@ -230,6 +231,8 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
       "-DENABLE_SCRIPTING_PYTHON=OFF",
       "-DENABLE_SOUNDMENU=OFF",
       "-DENABLE_SPARKLE=OFF",
+      "-DENABLE_SPOTIFY=OFF",
+      "-DENABLE_SPOTIFY_BLOB=OFF",
       "-DENABLE_VISUALISATIONS=OFF",
       "-DENABLE_WIIMOTEDEV=OFF",
       "-DUSE_SYSTEM_PROJECTM=OFF",
