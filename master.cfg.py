@@ -145,6 +145,10 @@ sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
   "Rpm Fedora 13 32-bit",
   "Rpm Fedora 14 64-bit",
   "Rpm Fedora 14 32-bit",
+  "Rpm Fedora 15 64-bit",
+  "Rpm Fedora 15 32-bit",
+  "Rpm Fedora 16 64-bit",
+  "Rpm Fedora 16 32-bit",
 ])
 
 sched_pot = Dependent(name="pot", upstream=sched_linux, builderNames=[
@@ -311,21 +315,24 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
       masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/%(output-filename)s")))
   return f
 
-def MakeRpmBuilder(distro, arch, chroot, upload_ver):
-  # Put /usr/bin first so we use the right mock
-  env = dict(os.environ)
-  env["PATH"] = "/usr/bin:" + env["PATH"]
+def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
+  schroot_cmd = []
+  mock_cmd = "/usr/bin/mock"
+  if schroot is not None:
+    schroot_cmd = ["schroot", "-p", "-c", schroot, "--"]
+    mock_cmd = "sudo;mock"
 
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
-  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=[
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "cmake", "..",
       "-DRPM_DISTRO=" + distro,
       "-DRPM_ARCH=" + arch,
       "-DMOCK_CHROOT=" + chroot,
+      "-DMOCK_COMMAND=" + mock_cmd,
       "-DENABLE_SPOTIFY_BLOB=OFF",
   ]))
-  f.addStep(Compile(command=["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, env=env, haltOnFailure=True))
+  f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
   f.addStep(FileUpload(
       mode=0644,
@@ -546,6 +553,10 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13')),
   BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14')),
   BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14')),
+  BuilderDef("Rpm Fedora 15 64-bit", "clementine_rpm_fc15_64", MakeRpmBuilder('fc15', 'x86_64', 'fedora-15-x86_64', '15', "oneiric-64")),
+  BuilderDef("Rpm Fedora 15 32-bit", "clementine_rpm_fc15_32", MakeRpmBuilder('fc15', 'i686',   'fedora-15-i386',   '15', "oneiric-64")),
+  BuilderDef("Rpm Fedora 16 64-bit", "clementine_rpm_fc16_64", MakeRpmBuilder('fc16', 'x86_64', 'fedora-16-x86_64', '16', "oneiric-64")),
+  BuilderDef("Rpm Fedora 16 32-bit", "clementine_rpm_fc16_32", MakeRpmBuilder('fc16', 'i686',   'fedora-16-i386',   '16', "oneiric-64")),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeTransifexPotPushBuilder()),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
