@@ -143,10 +143,6 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
-  "Rpm Fedora 13 64-bit",
-  "Rpm Fedora 13 32-bit",
-  "Rpm Fedora 14 64-bit",
-  "Rpm Fedora 14 32-bit",
   "Rpm Fedora 15 64-bit",
   "Rpm Fedora 15 32-bit",
   "Rpm Fedora 16 64-bit",
