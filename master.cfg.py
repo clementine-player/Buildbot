@@ -194,7 +194,7 @@ c['schedulers'] = [
   sched_ppa,
   sched_dependencies,
   sched_spotifyblob,
-  sched_transifex_pull,
+  #sched_transifex_pull,
   sched_website,
 ]
 
