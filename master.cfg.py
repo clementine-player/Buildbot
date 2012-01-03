@@ -178,6 +178,7 @@ sched_transifex_pull = Nightly(name="transifex_pull",
   change_filter=change_filter,
   hour=10,
   minute=0,
+  dayOfWeek=0,
   branch="master",
   builderNames=[
     "Transifex PO pull",
