@@ -201,7 +201,7 @@ c['schedulers'] = [
 
 
 # Builders
-def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
+def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False, transifex_push=False):
   cmake_args = [
     "cmake", "..",
     "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
@@ -247,12 +247,18 @@ def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False):
   f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_args))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=["make", ZAPHOD_JOBS]))
-  f.addStep(Test(workdir=WORKDIR, env=test_env, command=[
-      "xvfb-run",
-      "-a",
-      "-n", "10",
-      "make", "test"
-  ]))
+
+  if transifex_push:
+    AddClementineTxSetup(f)
+    f.addStep(ShellCommand(name="tx_push", workdir="build", haltOnFailure=True, command=["tx", "push", "-s"]))
+  else:
+    f.addStep(Test(workdir=WORKDIR, env=test_env, command=[
+        "xvfb-run",
+        "-a",
+        "-n", "10",
+        "make", "test"
+    ]))
+
   return f
 
 def MakeSpotifyBlobBuilder(chroot=None):
@@ -477,13 +483,6 @@ def AddWebsiteTxSetup(f):
       "www.clementine-player.org/locale/django.pot",
       "www.clementine-player.org/locale/<lang>.po")
 
-def MakeTransifexPotPushBuilder():
-  f = factory.BuildFactory()
-  f.addStep(Git(**GIT_ARGS))
-  AddClementineTxSetup(f)
-  f.addStep(ShellCommand(name="tx_push", workdir="build", haltOnFailure=True, command=["tx", "push", "-s"]))
-  return f
-
 def MakeWebsiteTransifexPotPushBuilder():
   f = factory.BuildFactory()
   git_args = dict(GIT_ARGS)
@@ -558,7 +557,7 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 15 32-bit", "clementine_rpm_fc15_32", MakeRpmBuilder('fc15', 'i686',   'fedora-15-i386',   '15', "oneiric-64")),
   BuilderDef("Rpm Fedora 16 64-bit", "clementine_rpm_fc16_64", MakeRpmBuilder('fc16', 'x86_64', 'fedora-16-x86_64', '16', "oneiric-64")),
   BuilderDef("Rpm Fedora 16 32-bit", "clementine_rpm_fc16_32", MakeRpmBuilder('fc16', 'i686',   'fedora-16-i386',   '16', "oneiric-64")),
-  BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeTransifexPotPushBuilder()),
+  BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True)),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
   BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
