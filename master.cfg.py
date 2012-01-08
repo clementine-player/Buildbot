@@ -282,7 +282,7 @@ def MakeSpotifyBlobBuilder(chroot=None):
   f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=cmake_cmd))
   f.addStep(Compile(workdir=WORKDIR, haltOnFailure=True, command=make_cmd + ["clementine-spotifyblob", ZAPHOD_JOBS]))
-  f.addStep(Compile(workdir=WORKDIR + "/spotifyblob/blob", haltOnFailure=True, command=make_cmd + ["install", ZAPHOD_JOBS]))
+  f.addStep(Compile(workdir=WORKDIR + "/ext/clementine-spotifyblob", haltOnFailure=True, command=make_cmd + ["install", ZAPHOD_JOBS]))
   f.addStep(ShellCommand(name="strip", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + ["sh", "-c", "strip spotify/version*/blob"]))
   f.addStep(OutputFinder(pattern="bin/spotify/version*-*bit"))
   f.addStep(SetProperty(command="echo " + SPOTIFYBASE, property="spotifybase"))
