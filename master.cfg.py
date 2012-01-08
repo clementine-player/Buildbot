@@ -352,6 +352,12 @@ def MakeMingwBuilder(type, suffix):
 
   build_env = {'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'}
 
+  executable_files = [
+    "clementine.exe",
+    "clementine-tagreader.exe",
+    "clementine-spotifyblob.exe",
+  ]
+
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
@@ -367,13 +373,17 @@ def MakeMingwBuilder(type, suffix):
       "ln -svf /src/windows/clementine-deps/* ../dist/windows/",
   ]))
   f.addStep(ShellCommand(name="link output", workdir="build/dist/windows", haltOnFailure=True, command=schroot_cmd + [
-      "ln", "-svf", "../../bin/clementine.exe", "../../bin/clementine-spotifyblob.exe", ".",
-  ]))
+      "ln", "-svf"] + ["../../bin/" + x for x in executable_files] + ["."]))
   f.addStep(ShellCommand(name="link test", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
       "sh", "-c",
       "ln -svf /src/windows/clementine-deps/* tests/",
   ]))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True))
+
+  if type != "Debug":
+    f.addStep(ShellCommand(name="strip", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
+      "i586-mingw32msvc-strip"] + executable_files))
+
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
       "-a",
