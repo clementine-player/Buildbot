@@ -477,16 +477,21 @@ def MakeMacDepsBuilder():
   f.addStep(ShellCommand(name="compile",  workdir=workdir, command=["make"]))
   return f
 
-def AddTxSetup(f, resource, source_file, pattern):
-  f.addStep(ShellCommand(name="tx_init", workdir="build", haltOnFailure=True, command=["tx", "init", "--host=https://www.transifex.net"]))
-  f.addStep(ShellCommand(name="tx_set",  workdir="build", haltOnFailure=True, command=[
+def AddTxSetup(f, resource, source_file, pattern, pot=True):
+  set_args = [
       "tx", "set", "--auto-local", "-r", resource, pattern,
-      "--source-lang", "en", "--source-file", source_file, "--execute"]))
+      "--source-lang", "en", "--execute"]
 
-def AddClementineTxSetup(f):
+  if pot:
+    set_args += ["--source-file", source_file]
+
+  f.addStep(ShellCommand(name="tx_init", workdir="build", haltOnFailure=True, command=["tx", "init", "--host=https://www.transifex.net"]))
+  f.addStep(ShellCommand(name="tx_set",  workdir="build", haltOnFailure=True, command=set_args))
+
+def AddClementineTxSetup(f, pot=True):
   AddTxSetup(f, "clementine.clementineplayer",
       "src/translations/translations.pot",
-      "src/translations/<lang>.po")
+      "src/translations/<lang>.po", pot)
 
 def AddWebsiteTxSetup(f):
   AddTxSetup(f, "clementine.website",
@@ -505,7 +510,7 @@ def MakeWebsiteTransifexPotPushBuilder():
 def MakeTransifexPoPullBuilder():
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
-  AddClementineTxSetup(f)
+  AddClementineTxSetup(f, pot=False)
   f.addStep(ShellCommand(name="tx_pull",    workdir="build", haltOnFailure=True,
                          command=["tx", "pull", "-a", "--force"]))
   f.addStep(ShellCommand(name="git_add",    workdir="build", haltOnFailure=True, command="git add --verbose src/translations/*.po"))
