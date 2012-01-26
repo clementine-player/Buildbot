@@ -140,6 +140,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Oneiric 32-bit",
   "Deb Wheezy 64-bit",
   "Deb Wheezy 32-bit",
+  "Deb Precise 64-bit",
+  "Deb Precise 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -162,6 +164,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Maverick",
   "PPA Natty",
   "PPA Oneiric",
+  "PPA Precise",
 ])
 
 sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
@@ -560,6 +563,8 @@ c['builders'] = [
   BuilderDef("Deb Natty 32-bit", "clementine_deb_natty_32", MakeDebBuilder('i386',  'natty', chroot='natty-32')),
   BuilderDef("Deb Oneiric 64-bit", "clementine_deb_oneiric_64", MakeDebBuilder('amd64', 'oneiric', chroot='oneiric-64')),
   BuilderDef("Deb Oneiric 32-bit", "clementine_deb_oneiric_32", MakeDebBuilder('i386',  'oneiric', chroot='oneiric-32')),
+  BuilderDef("Deb Precise 64-bit", "clementine_deb_precise_64", MakeDebBuilder('amd64', 'precise', chroot='precise-64')),
+  BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian')),
@@ -580,6 +585,7 @@ c['builders'] = [
   BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Natty",        "clementine_ppa_natty",     MakePPABuilder('natty', chroot='natty-32')),
   BuilderDef("PPA Oneiric",      "clementine_ppa_oneiric",   MakePPABuilder('oneiric', chroot='oneiric-32')),
+  BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug')),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
