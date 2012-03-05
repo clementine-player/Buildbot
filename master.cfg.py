@@ -8,7 +8,7 @@ from buildbot.process.properties import WithProperties
 from buildbot.scheduler import Scheduler, Dependent
 from buildbot.schedulers.filter import ChangeFilter
 from buildbot.schedulers.timed import Nightly
-from buildbot.status import html, mail
+from buildbot.status import html, mail, web
 from buildbot.steps.master import MasterShellCommand
 from buildbot.steps.source import Git
 from buildbot.steps.shell import Compile, ShellCommand, Test, SetProperty
@@ -62,6 +62,20 @@ class OutputFinder(ShellCommand):
     filename = self.getLog('stdio').readlines()[0].strip()
     self.setProperty("output-filename", filename)
 
+# Authentication
+authz = web.authz.Authz(
+  auth=web.auth.BasicAuth(clementine_passwords.WEB_USERS),
+  forceBuild="auth",
+  forceAllBuilds="auth",
+  pingBuilder="auth",
+  gracefulShutdown="auth",
+  stopBuild="auth",
+  stopAllBuilds="auth",
+  cancelPendingBuild="auth",
+  stopChange="auth",
+  cleanShutdown="auth",
+)
+
 # Basic config
 c = BuildmasterConfig = {
   'projectName':  "Clementine",
@@ -98,7 +112,7 @@ c = BuildmasterConfig = {
   'status': [
     html.WebStatus(
       http_port="tcp:8010:interface=127.0.0.1",
-      allowForce=True,
+      authz=authz,
     ),
     mail.MailNotifier(
       fromaddr="buildmaster@zaphod.purplehatstands.com",
