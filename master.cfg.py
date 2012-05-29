@@ -443,6 +443,7 @@ def MakeMacBuilder():
         "-DGLEW_LIBRARIES=/target/lib/libGLEW.dylib",
         "-DLASTFM_INCLUDE_DIRS=/target/include/",
         "-DLASTFM_LIBRARIES=/target/lib/liblastfm.dylib",
+        "-DFFTW3_DIR=/target",
       ],
       haltOnFailure=True,
   ))
