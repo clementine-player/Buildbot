@@ -593,6 +593,8 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 15 32-bit", "clementine_rpm_fc15_32", MakeRpmBuilder('fc15', 'i686',   'fedora-15-i386',   '15', "oneiric-64")),
   BuilderDef("Rpm Fedora 16 64-bit", "clementine_rpm_fc16_64", MakeRpmBuilder('fc16', 'x86_64', 'fedora-16-x86_64', '16', "oneiric-64")),
   BuilderDef("Rpm Fedora 16 32-bit", "clementine_rpm_fc16_32", MakeRpmBuilder('fc16', 'i686',   'fedora-16-i386',   '16', "oneiric-64")),
+  BuilderDef("Rpm Fedora 17 64-bit", "clementine_rpm_fc17_64", MakeRpmBuilder('fc17', 'x86_64', 'fedora-17-x86_64', '17', "oneiric-64")),
+  BuilderDef("Rpm Fedora 17 32-bit", "clementine_rpm_fc17_32", MakeRpmBuilder('fc17', 'i686',   'fedora-17-i386',   '17', "oneiric-64")),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True)),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
