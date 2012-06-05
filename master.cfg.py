@@ -430,6 +430,8 @@ def MakeMacBuilder():
       env={'PKG_CONFIG_PATH': '/target/lib/pkgconfig'},
       command=[
         "cmake", "..",
+        "-DCMAKE_C_COMPILER=/target/clang-3.1/bin/clang",
+        "-DCMAKE_CXX_COMPILER=/target/clang-3.1/bin/clang++",
         "-DCMAKE_BUILD_TYPE=Release",
         "-DCMAKE_OSX_SYSROOT=/Developer/SDKs/MacOSX10.6.sdk",
         "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.6",
