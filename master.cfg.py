@@ -357,7 +357,7 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
   ]
   # Enable C++11 on Fedora 17 which has GCC 4.7
   if distro == 'fc17':
-    compile_cmd.append('-DCMAKE_CXX_FLAGS=--std=c++0x')
+    compile_cmd.append('-DCMAKE_CXX_FLAGS=--std=gnu++11')
 
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True,
                          command=compile_cmd))
