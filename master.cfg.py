@@ -347,14 +347,20 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
 
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
-  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
-      "cmake", "..",
-      "-DRPM_DISTRO=" + distro,
-      "-DRPM_ARCH=" + arch,
-      "-DMOCK_CHROOT=" + chroot,
-      "-DMOCK_COMMAND=" + mock_cmd,
-      "-DENABLE_SPOTIFY_BLOB=OFF",
-  ]))
+  compile_cmd = schroot_cmd + [
+    "cmake", "..",
+    "-DRPM_DISTRO=" + distro,
+    "-DRPM_ARCH=" + arch,
+    "-DMOCK_CHROOT=" + chroot,
+    "-DMOCK_COMMAND=" + mock_cmd,
+    "-DENABLE_SPOTIFY_BLOB=OFF",
+  ]
+  # Enable C++11 on Fedora 17 which has GCC 4.7
+  if distro == 'fc17':
+    compile_cmd.append('-DCMAKE_CXX_FLAGS=--std=c++11')
+
+  f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, haltOnFailure=True,
+                         command=compile_cmd))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
   f.addStep(FileUpload(
