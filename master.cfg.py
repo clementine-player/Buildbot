@@ -446,7 +446,7 @@ def MakeMacBuilder():
         "-DLASTFM_INCLUDE_DIRS=/target/include/",
         "-DLASTFM_LIBRARIES=/target/lib/liblastfm.dylib",
         "-DFFTW3_DIR=/target",
-        "-DCMAKE_INCLUDE_DIR=/target/include",
+        "-DCMAKE_INCLUDE_PATH=/target/include",
       ],
       haltOnFailure=True,
   ))
