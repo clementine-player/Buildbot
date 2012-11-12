@@ -289,7 +289,7 @@ def MakeSpotifyBlobBuilder(chroot=None):
     "-DQT_LCONVERT_EXECUTABLE=/home/buildbot/qtsdk-2010.02/qt/bin/lconvert",
     "-DPROTOBUF_INCLUDE_DIR=/usr/local/protobuf-2.4.0a/include",
     "-DPROTOBUF_PROTOC_EXECUTABLE=/usr/local/protobuf-2.4.0a/bin/protoc",
-    "-DPROTOBUF_LITE_LIBRARY=/usr/local/protobuf-2.4.0a/lib/libprotobuf-lite.a",
+    "-DPROTOBUF_LIBRARY=/usr/local/protobuf-2.4.0a/lib/libprotobuf.a",
     "-DCMAKE_INSTALL_PREFIX=%s/installprefix" % WORKDIR,
   ]
 
@@ -437,7 +437,7 @@ def MakeMacBuilder():
         "-DCMAKE_OSX_DEPLOYMENT_TARGET=10.6",
         "-DCMAKE_OSX_ARCHITECTURES=x86_64",
         "-DBOOST_ROOT=/target",
-        "-DPROTOBUF_LIBRARY=/target/lib/libprotobuf-lite.dylib",
+        "-DPROTOBUF_LIBRARY=/target/lib/libprotobuf.dylib",
         "-DPROTOBUF_INCLUDE_DIR=/target/include/",
         "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
         "-DSPOTIFY=/target/libspotify.framework",
