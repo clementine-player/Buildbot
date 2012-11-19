@@ -363,18 +363,23 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
       masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
   return f
 
-def MakeMingwBuilder(type, suffix):
-  schroot_cmd = ["schroot", "-p", "-c", "mingw", "--"]
+def MakeMingwBuilder(type, suffix, schroot):
+  schroot_cmd = ["schroot", "-p", "-c", schroot, "--"]
 
   test_env = dict(TEST_ENV)
 
-  build_env = {'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig'}
+  build_env = {
+    'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig',
+    'PATH': '/mingw/bin:' + os.environ['PATH'],
+  }
 
   executable_files = [
     "clementine.exe",
     "clementine-tagreader.exe",
     "clementine-spotifyblob.exe",
   ]
+
+  strip_command = schroot == 'mingw-w64' and 'i686-w64-mingw32-strip' or 'i586-mingw32msvc-strip'
 
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
@@ -399,8 +404,8 @@ def MakeMingwBuilder(type, suffix):
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS], workdir=WORKDIR, haltOnFailure=True))
 
   if type != "Debug":
-    f.addStep(ShellCommand(name="strip", workdir=WORKDIR, haltOnFailure=True, command=schroot_cmd + [
-      "i586-mingw32msvc-strip"] + executable_files))
+    f.addStep(ShellCommand(name="strip", workdir=WORKDIR, haltOnFailure=True, env=build_env, command=schroot_cmd + [
+      strip_command] + executable_files))
 
   f.addStep(Test(workdir=WORKDIR, env=test_env, command=schroot_cmd + [
       "xvfb-run",
@@ -479,14 +484,16 @@ def MakePPABuilder(dist, chroot=None):
   ))
   return f
 
-def MakeMinGWDepsBuilder():
-  schroot_cmd         = ["schroot", "-p", "-c", "mingw", "-d", "/src", "--"]
-  schroot_cmd_workdir = ["schroot", "-p", "-c", "mingw", "-d", "/src/windows", "--"]
+def MakeMinGWDepsBuilder(schroot_name):
+  schroot_cmd         = ["schroot", "-p", "-c", schroot_name, "-d", "/src", "--"]
+  schroot_cmd_workdir = ["schroot", "-p", "-c", schroot_name, "-d", "/src/windows", "--"]
+
+  env = {'PATH': '/mingw/bin:' + os.environ['PATH']}
 
   f = factory.BuildFactory()
   f.addStep(ShellCommand(name="checkout", command=schroot_cmd + ["git", "pull"]))
   f.addStep(ShellCommand(name="clean", command=schroot_cmd_workdir + ["make", "clean"]))
-  f.addStep(ShellCommand(name="compile", command=schroot_cmd_workdir + ["make"]))
+  f.addStep(ShellCommand(name="compile", command=schroot_cmd_workdir + ["make"], env=env))
   return f
 
 def MakeMacDepsBuilder():
@@ -610,9 +617,11 @@ c['builders'] = [
   BuilderDef("PPA Oneiric",      "clementine_ppa_oneiric",   MakePPABuilder('oneiric', chroot='oneiric-32')),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
-  BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug')),
-  BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release')),
+  BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw')),
+  BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw')),
+  BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
-  BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder()),
+  BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder("mingw")),
+  BuilderDef("Dependencies Mingw-w64", "clementine_mingw_w64_deps",  MakeMinGWDepsBuilder("mingw-w64")),
   BuilderDef("Dependencies Mac", "clementine_mac_deps",      MakeMacDepsBuilder(), slave="zarquon"),
 ]
