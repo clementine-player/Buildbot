@@ -136,8 +136,8 @@ sched_linux = Scheduler(name="linux", change_filter=change_filter, treeStableTim
 ])
 
 sched_winmac = Scheduler(name="winmac", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
-  "MinGW Debug",
-  "MinGW Release",
+  "MinGW-w64 Debug",
+  "MinGW-w64 Release",
   "Mac Release",
 ])
 
@@ -182,7 +182,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
 ])
 
 sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
-  "Dependencies Mingw",
+  "Dependencies Mingw-w64",
   "Dependencies Mac",
 ])
 
@@ -620,6 +620,7 @@ c['builders'] = [
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw')),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw')),
   BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64')),
+  BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw-w64')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
   BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder("mingw")),
   BuilderDef("Dependencies Mingw-w64", "clementine_mingw_w64_deps",  MakeMinGWDepsBuilder("mingw-w64")),
