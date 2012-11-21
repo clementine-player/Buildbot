@@ -130,7 +130,6 @@ deps_change_filter = ChangeFilter(project="dependencies", branch=u"master")
 sched_linux = Scheduler(name="linux", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
   "Linux Debug",
   "Linux Release",
-  "Linux Clang",
   "Linux GCC 4.6.0",
   "Linux Minimal",
 ])
