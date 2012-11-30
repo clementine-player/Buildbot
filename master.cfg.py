@@ -446,6 +446,7 @@ def MakeMacBuilder():
         "-DPROTOBUF_LIBRARY=/target/lib/libprotobuf.dylib",
         "-DPROTOBUF_INCLUDE_DIR=/target/include/",
         "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
+        "-DQT_QMAKE_EXECUTABLE=/target/bin/qmake",
         "-DSPOTIFY=/target/libspotify.framework",
         "-DGLEW_INCLUDE_DIRS=/target/include",
         "-DGLEW_LIBRARIES=/target/lib/libGLEW.dylib",
