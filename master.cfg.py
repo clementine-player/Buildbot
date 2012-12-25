@@ -382,12 +382,17 @@ def MakeMingwBuilder(type, suffix, schroot):
 
   strip_command = schroot == 'mingw-w64' and 'i686-w64-mingw32-strip' or 'i586-mingw32msvc-strip'
 
+  console = "OFF"
+  if type == "Debug":
+    console = "ON"
+
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
-      "-DCMAKE_BUILD_TYPE=" + type,
+      "-DCMAKE_BUILD_TYPE=Release",
+      "-DENABLE_WIN32_CONSOLE=" + console,
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
       "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
