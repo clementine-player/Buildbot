@@ -385,13 +385,14 @@ def MakeMingwBuilder(type, suffix, schroot):
   console = "OFF"
   if type == "Debug":
     console = "ON"
+    type = ""
 
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
   f.addStep(ShellCommand(name="cmake", workdir=WORKDIR, env=build_env, haltOnFailure=True, command=schroot_cmd + [
       "cmake", "..",
       "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
-      "-DCMAKE_BUILD_TYPE=Release",
+      "-DCMAKE_BUILD_TYPE=" + type,
       "-DENABLE_WIN32_CONSOLE=" + console,
       "-DQT_HEADERS_DIR=/target/include",
       "-DQT_LIBRARY_DIR=/target/bin",
