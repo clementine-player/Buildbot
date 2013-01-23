@@ -158,10 +158,10 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
-  "Rpm Fedora 16 64-bit",
-  "Rpm Fedora 16 32-bit",
   "Rpm Fedora 17 64-bit",
   "Rpm Fedora 17 32-bit",
+  "Rpm Fedora 18 64-bit",
+  "Rpm Fedora 18 32-bit",
 ])
 
 sched_pot = Dependent(name="pot", upstream=sched_linux, builderNames=[
@@ -615,6 +615,8 @@ c['builders'] = [
   BuilderDef("Rpm Fedora 16 32-bit", "clementine_rpm_fc16_32", MakeRpmBuilder('fc16', 'i686',   'fedora-16-i386',   '16', "oneiric-64")),
   BuilderDef("Rpm Fedora 17 64-bit", "clementine_rpm_fc17_64", MakeRpmBuilder('fc17', 'x86_64', 'fedora-17-x86_64', '17', "oneiric-64")),
   BuilderDef("Rpm Fedora 17 32-bit", "clementine_rpm_fc17_32", MakeRpmBuilder('fc17', 'i686',   'fedora-17-i386',   '17', "oneiric-64")),
+  BuilderDef("Rpm Fedora 18 64-bit", "clementine_rpm_fc18_64", MakeRpmBuilder('fc18', 'x86_64', 'fedora-18-x86_64', '18', "oneiric-64")),
+  BuilderDef("Rpm Fedora 18 32-bit", "clementine_rpm_fc18_32", MakeRpmBuilder('fc18', 'i686',   'fedora-18-i386',   '18', "oneiric-64")),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True)),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
