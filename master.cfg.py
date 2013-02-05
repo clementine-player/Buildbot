@@ -601,6 +601,8 @@ c['builders'] = [
   BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32')),
   BuilderDef("Deb Quantal 64-bit", "clementine_deb_quantal_64", MakeDebBuilder('amd64', 'quantal', chroot='quantal-64')),
   BuilderDef("Deb Quantal 32-bit", "clementine_deb_quantal_32", MakeDebBuilder('i386', 'quantal', chroot='quantal-32')),
+  BuilderDef("Deb Raring 64-bit", "clementine_deb_raring_64", MakeDebBuilder('amd64', 'raring', chroot='raring-64')),
+  BuilderDef("Deb Raring 32-bit", "clementine_deb_raring_32", MakeDebBuilder('i386',  'raring', chroot='raring-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian')),
