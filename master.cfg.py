@@ -629,6 +629,7 @@ c['builders'] = [
   BuilderDef("PPA Oneiric",      "clementine_ppa_oneiric",   MakePPABuilder('oneiric', chroot='oneiric-32')),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
+  BuilderDef("PPA Raring",       "clementine_ppa_raring",    MakePPABuilder('raring',  chroot='raring-32')),
   BuilderDef("MinGW Debug",      "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw')),
   BuilderDef("MinGW Release",    "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw')),
   BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64')),
