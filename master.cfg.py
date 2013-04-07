@@ -155,6 +155,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Precise 32-bit",
   "Deb Quantal 64-bit",
   "Deb Quantal 32-bit",
+  "Deb Raring 64-bit",
+  "Deb Raring 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -178,6 +180,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Oneiric",
   "PPA Precise",
   "PPA Quantal",
+  "PPA Raring",
 ])
 
 sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
