@@ -176,8 +176,6 @@ sched_website = Scheduler(name="website", change_filter=website_change_filter, t
 
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Lucid",
-  "PPA Natty",
-  "PPA Oneiric",
   "PPA Precise",
   "PPA Quantal",
   "PPA Raring",
@@ -624,7 +622,6 @@ c['builders'] = [
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
   BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
   BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
-  BuilderDef("PPA Maverick",     "clementine_ppa_maverick",  MakePPABuilder('maverick', chroot='maverick-64')),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
   BuilderDef("PPA Raring",       "clementine_ppa_raring",    MakePPABuilder('raring',  chroot='raring-32')),
