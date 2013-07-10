@@ -454,6 +454,7 @@ def MakeMacBuilder():
         "-DLASTFM_LIBRARIES=/target/lib/liblastfm.dylib",
         "-DFFTW3_DIR=/target",
         "-DCMAKE_INCLUDE_PATH=/target/include",
+        "-DAPPLE_DEVELOPER_ID='Developer ID Application: John Maguire (CZ8XD8GTGZ)'",
       ],
       haltOnFailure=True,
   ))
@@ -463,6 +464,7 @@ def MakeMacBuilder():
 #      workdir=WORKDIR,
 #      env=TEST_ENV))
   f.addStep(ShellCommand(name="install", command=["make", "install"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(ShellCommand(name="sign", command=["make", "sign"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(ShellCommand(name="dmg", command=["make", "dmg"], haltOnFailure=True, workdir=WORKDIR))
   f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
   f.addStep(FileUpload(
