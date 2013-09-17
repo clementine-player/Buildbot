@@ -141,6 +141,8 @@ sched_winmac = Scheduler(name="winmac", change_filter=change_filter, treeStableT
 ])
 
 sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
+  "Deb Jessie 64-bit",
+  "Deb Jessie 32-bit",
   "Deb Lucid 64-bit",
   "Deb Lucid 32-bit",
   "Deb Natty 64-bit",
@@ -603,6 +605,8 @@ c['builders'] = [
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian')),
   BuilderDef("Deb Wheezy 32-bit",  "clementine_deb_wheezy_32", MakeDebBuilder('i386',  'wheezy', chroot='wheezy-32', dist_type='debian')),
+  BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian')),
+  BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13')),
   BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13')),
   BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14')),
