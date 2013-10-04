@@ -13,7 +13,10 @@ rm -rfv $BASE/$DIRECTORY $BASE/*.diff.gz $BASE/*.tar.gz $BASE/*.dsc $BASE/*_sour
 git clone $REPO $DIRECTORY
 
 # Generate changelog and maketarball.sh
-mkdir $BASE/$DIRECTORY/bin
+if [ ! -d "$BASE/$DIRECTORY/bin" ]; then
+  mkdir $BASE/$DIRECTORY/bin
+fi
+
 cd $BASE/$DIRECTORY/bin
 cmake .. -DDEB_DIST=$DIST -DWITH_DEBIAN=ON
 rm -rfv $BASE/$DIRECTORY/bin/*
