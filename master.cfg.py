@@ -426,6 +426,13 @@ def MakeMingwBuilder(type, suffix, schroot):
       mode=0644,
       slavesrc=WithProperties("dist/windows/%(output-filename)s"),
       masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
+
+  f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine-portable.nsi"], workdir="build/dist/windows", haltOnFailure=True))
+  f.addStep(OutputFinder(pattern="dist/windows/Clementine-PortableSetup*.exe"))
+  f.addStep(FileUpload(
+      mode=0644,
+      slavesrc=WithProperties("dist/windows/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
   return f
 
 def MakeMacBuilder():
