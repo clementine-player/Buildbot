@@ -364,7 +364,7 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
       masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
   return f
 
-def MakeMingwBuilder(type, suffix, schroot):
+def MakeMingwBuilder(type, suffix, schroot, portable):
   schroot_cmd = ["schroot", "-p", "-c", schroot, "--"]
 
   test_env = dict(TEST_ENV)
@@ -420,19 +420,21 @@ def MakeMingwBuilder(type, suffix, schroot):
       "-n", "30",
       "make", "test"
   ]))
-  f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows", haltOnFailure=True))
-  f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
-  f.addStep(FileUpload(
-      mode=0644,
-      slavesrc=WithProperties("dist/windows/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
+  if portable:
+    f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine-portable.nsi"], workdir="build/dist/windows", haltOnFailure=True))
+    f.addStep(OutputFinder(pattern="dist/windows/Clementine-PortableSetup*.exe"))
+    f.addStep(FileUpload(
+        mode=0644,
+        slavesrc=WithProperties("dist/windows/%(output-filename)s"),
+        masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
+  else:
+    f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows", haltOnFailure=True))
+    f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
+    f.addStep(FileUpload(
+        mode=0644,
+        slavesrc=WithProperties("dist/windows/%(output-filename)s"),
+        masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
 
-  f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine-portable.nsi"], workdir="build/dist/windows", haltOnFailure=True))
-  f.addStep(OutputFinder(pattern="dist/windows/Clementine-PortableSetup*.exe"))
-  f.addStep(FileUpload(
-      mode=0644,
-      slavesrc=WithProperties("dist/windows/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
   return f
 
 def MakeMacBuilder():
@@ -636,10 +638,11 @@ c['builders'] = [
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
   BuilderDef("PPA Raring",       "clementine_ppa_raring",    MakePPABuilder('raring',  chroot='raring-32')),
-  BuilderDef("MinGW Debug (do not use)",   "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw')),
-  BuilderDef("MinGW Release (do not use)", "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw')),
-  BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64')),
-  BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw-w64')),
+  BuilderDef("MinGW Debug (do not use)",   "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw', False)),
+  BuilderDef("MinGW Release (do not use)", "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw', False)),
+  BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64', False)),
+  BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw-w64', False)),
+  BuilderDef("MinGW-w64 Portable",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64', True)),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
   BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder("mingw")),
   BuilderDef("Dependencies Mingw-w64", "clementine_mingw_w64_deps",  MakeMinGWDepsBuilder("mingw-w64")),
