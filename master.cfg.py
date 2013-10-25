@@ -159,6 +159,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Quantal 32-bit",
   "Deb Raring 64-bit",
   "Deb Raring 32-bit",
+  "Deb Saucy 64-bit",
+  "Deb Saucy 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -181,6 +183,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Precise",
   "PPA Quantal",
   "PPA Raring",
+  "PPA Saucy",
 ])
 
 sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
@@ -610,6 +613,8 @@ c['builders'] = [
   BuilderDef("Deb Quantal 32-bit", "clementine_deb_quantal_32", MakeDebBuilder('i386', 'quantal', chroot='quantal-32')),
   BuilderDef("Deb Raring 64-bit", "clementine_deb_raring_64", MakeDebBuilder('amd64', 'raring', chroot='raring-64')),
   BuilderDef("Deb Raring 32-bit", "clementine_deb_raring_32", MakeDebBuilder('i386',  'raring', chroot='raring-32')),
+  BuilderDef("Deb Saucy 64-bit", "clementine_deb_saucy_64", MakeDebBuilder('amd64', 'saucy', chroot='saucy-64')),
+  BuilderDef("Deb Saucy 32-bit", "clementine_deb_saucy_32", MakeDebBuilder('i386',  'saucy', chroot='saucy-32')),
   BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
   BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
   BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian')),
@@ -638,6 +643,7 @@ c['builders'] = [
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
   BuilderDef("PPA Raring",       "clementine_ppa_raring",    MakePPABuilder('raring',  chroot='raring-32')),
+  BuilderDef("PPA Saucy",        "clementine_ppa_saucy",     MakePPABuilder('saucy',   chroot='saucy-32')),
   BuilderDef("MinGW Debug (do not use)",   "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw', False)),
   BuilderDef("MinGW Release (do not use)", "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw', False)),
   BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw-w64', False)),
