@@ -83,7 +83,6 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': clementine_passwords.PORT,
   'slaves': [
-    BuildSlave("zaphod",     clementine_passwords.ZAPHOD, max_builds=2, notify_on_missing="me@davidsansome.com"),
     BuildSlave("beeblebrox", clementine_passwords.BEEBLEBROX, max_builds=2, notify_on_missing="john.maguire@gmail.com"),
     BuildSlave("zarquon",    clementine_passwords.ZARQUON, notify_on_missing="me@davidsansome.com"),
   ],
@@ -143,8 +142,6 @@ sched_winmac = Scheduler(name="winmac", change_filter=change_filter, treeStableT
 sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Jessie 64-bit",
   "Deb Jessie 32-bit",
-  "Deb Squeeze 64-bit",
-  "Deb Squeeze 32-bit",
   "Deb Wheezy 64-bit",
   "Deb Wheezy 32-bit",
   "Deb Precise 64-bit",
@@ -219,21 +216,12 @@ c['schedulers'] = [
 
 
 # Builders
-def MakeLinuxBuilder(type, clang=False, gcc460=False, disable_everything=False, transifex_push=False):
+def MakeLinuxBuilder(type, disable_everything=False, transifex_push=False):
   cmake_args = [
     "cmake", "..",
     "-DCMAKE_BUILD_TYPE=" + type,
   ]
   test_env = dict(TEST_ENV)
-
-  if clang:
-    cmake_args.append("-DCMAKE_C_COMPILER=clang")
-    cmake_args.append("-DCMAKE_CXX_COMPILER=clang++")
-
-  if gcc460:
-    cmake_args.append("-DCMAKE_C_COMPILER=/usr/local/gcc-4.6.0/bin/gcc")
-    cmake_args.append("-DCMAKE_CXX_COMPILER=/usr/local/gcc-4.6.0/bin/g++")
-    test_env['LD_LIBRARY_PATH'] = '/usr/local/gcc-4.6.0/lib64'
 
   if disable_everything:
     cmake_args += [
@@ -335,11 +323,10 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
 
 def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
   schroot_cmd = []
-  mock_cmd = "/usr/bin/mock"
+  mock_cmd = "sudo;mock"
 
   if schroot is not None:
     schroot_cmd = ["schroot", "-p", "-c", schroot, "--"]
-    mock_cmd = "sudo;mock"
 
   f = factory.BuildFactory()
   f.addStep(Git(**GIT_ARGS))
@@ -575,7 +562,7 @@ def MakeWebsiteTransifexPoPullBuilder():
   return f
 
 
-def BuilderDef(name, dir, factory, slave="zaphod"):
+def BuilderDef(name, dir, factory, slave="beeblebrox"):
   return {
     'name': name,
     'builddir': dir,
@@ -584,69 +571,43 @@ def BuilderDef(name, dir, factory, slave="zaphod"):
   }
 
 c['builders'] = [
-  BuilderDef("Linux Debug",      "clementine_linux_debug",   MakeLinuxBuilder('Debug'), slave='beeblebrox'),
-  BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release'), slave='beeblebrox'),
-  BuilderDef("Linux Clang",      "clementine_linux_clang",   MakeLinuxBuilder('Release', clang=True)),
-  BuilderDef("Linux GCC 4.6.0",  "clementine_linux_gcc460",  MakeLinuxBuilder('Release', gcc460=True)),
-  BuilderDef("Linux Minimal",    "clementine_linux_minimal", MakeLinuxBuilder('Release', disable_everything=True), slave='beeblebrox'),
-  BuilderDef("Spotify blob 32-bit", "clementine_spotify_32", MakeSpotifyBlobBuilder(chroot='precise-32'), slave='beeblebrox'),
-  BuilderDef("Spotify blob 64-bit", "clementine_spotify_64", MakeSpotifyBlobBuilder(), slave='beeblebrox'),
-  BuilderDef("Deb Lucid 64-bit", "clementine_deb_lucid_64",  MakeDebBuilder('amd64', 'lucid')),
-  BuilderDef("Deb Lucid 32-bit", "clementine_deb_lucid_32",  MakeDebBuilder('i386',  'lucid', chroot='lucid-32')),
-  BuilderDef("Deb Maverick 64-bit", "clementine_deb_maverick_64", MakeDebBuilder('amd64', 'maverick', chroot='maverick-64')),
-  BuilderDef("Deb Maverick 32-bit", "clementine_deb_maverick_32", MakeDebBuilder('i386',  'maverick', chroot='maverick-32')),
-  BuilderDef("Deb Natty 64-bit", "clementine_deb_natty_64", MakeDebBuilder('amd64', 'natty', chroot='natty-64')),
-  BuilderDef("Deb Natty 32-bit", "clementine_deb_natty_32", MakeDebBuilder('i386',  'natty', chroot='natty-32')),
-  BuilderDef("Deb Oneiric 64-bit", "clementine_deb_oneiric_64", MakeDebBuilder('amd64', 'oneiric', chroot='oneiric-64')),
-  BuilderDef("Deb Oneiric 32-bit", "clementine_deb_oneiric_32", MakeDebBuilder('i386',  'oneiric', chroot='oneiric-32')),
-  BuilderDef("Deb Precise 64-bit", "clementine_deb_precise_64", MakeDebBuilder('amd64', 'precise'), slave='beeblebrox'),
-  BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32'), slave='beeblebrox'),
-  BuilderDef("Deb Quantal 64-bit", "clementine_deb_quantal_64", MakeDebBuilder('amd64', 'quantal', chroot='quantal-64'), slave='beeblebrox'),
-  BuilderDef("Deb Quantal 32-bit", "clementine_deb_quantal_32", MakeDebBuilder('i386', 'quantal', chroot='quantal-32'), slave='beeblebrox'),
-  BuilderDef("Deb Raring 64-bit", "clementine_deb_raring_64", MakeDebBuilder('amd64', 'raring', chroot='raring-64'), slave='beeblebrox'),
-  BuilderDef("Deb Raring 32-bit", "clementine_deb_raring_32", MakeDebBuilder('i386',  'raring', chroot='raring-32'), slave='beeblebrox'),
-  BuilderDef("Deb Saucy 64-bit", "clementine_deb_saucy_64", MakeDebBuilder('amd64', 'saucy', chroot='saucy-64'), slave='beeblebrox'),
-  BuilderDef("Deb Saucy 32-bit", "clementine_deb_saucy_32", MakeDebBuilder('i386',  'saucy', chroot='saucy-32'), slave='beeblebrox'),
-  BuilderDef("Deb Trusty 64-bit", "clementine_deb_trusty_64", MakeDebBuilder('amd64',  'trusty', chroot='trusty-64'), slave='beeblebrox'),
-  BuilderDef("Deb Trusty 32-bit", "clementine_deb_trusty_32", MakeDebBuilder('i386',  'trusty', chroot='trusty-32'), slave='beeblebrox'),
-  BuilderDef("Deb Squeeze 64-bit", "clementine_deb_squeeze_64", MakeDebBuilder('amd64', 'squeeze', chroot='squeeze-64', dist_type='debian')),
-  BuilderDef("Deb Squeeze 32-bit", "clementine_deb_squeeze_32", MakeDebBuilder('i386',  'squeeze', chroot='squeeze-32', dist_type='debian')),
-  BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian'), slave='beeblebrox'),
-  BuilderDef("Deb Wheezy 32-bit",  "clementine_deb_wheezy_32", MakeDebBuilder('i386',  'wheezy', chroot='wheezy-32', dist_type='debian'), slave='beeblebrox'),
-  BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian'), slave='beeblebrox'),
-  BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian'), slave='beeblebrox'),
-  BuilderDef("Rpm Fedora 13 64-bit", "clementine_rpm_fc13_64", MakeRpmBuilder('fc13', 'x86_64', 'fedora-13-x86_64', '13')),
-  BuilderDef("Rpm Fedora 13 32-bit", "clementine_rpm_fc13_32", MakeRpmBuilder('fc13', 'i686',   'fedora-13-i386',   '13')),
-  BuilderDef("Rpm Fedora 14 64-bit", "clementine_rpm_fc14_64", MakeRpmBuilder('fc14', 'x86_64', 'fedora-14-x86_64', '14')),
-  BuilderDef("Rpm Fedora 14 32-bit", "clementine_rpm_fc14_32", MakeRpmBuilder('fc14', 'i686',   'fedora-14-i386',   '14')),
-  BuilderDef("Rpm Fedora 15 64-bit", "clementine_rpm_fc15_64", MakeRpmBuilder('fc15', 'x86_64', 'fedora-15-x86_64', '15', "oneiric-64")),
-  BuilderDef("Rpm Fedora 15 32-bit", "clementine_rpm_fc15_32", MakeRpmBuilder('fc15', 'i686',   'fedora-15-i386',   '15', "oneiric-64")),
-  BuilderDef("Rpm Fedora 16 64-bit", "clementine_rpm_fc16_64", MakeRpmBuilder('fc16', 'x86_64', 'fedora-16-x86_64', '16', "oneiric-64")),
-  BuilderDef("Rpm Fedora 16 32-bit", "clementine_rpm_fc16_32", MakeRpmBuilder('fc16', 'i686',   'fedora-16-i386',   '16', "oneiric-64")),
-  BuilderDef("Rpm Fedora 17 64-bit", "clementine_rpm_fc17_64", MakeRpmBuilder('fc17', 'x86_64', 'fedora-17-x86_64', '17', "oneiric-64")),
-  BuilderDef("Rpm Fedora 17 32-bit", "clementine_rpm_fc17_32", MakeRpmBuilder('fc17', 'i686',   'fedora-17-i386',   '17', "oneiric-64")),
-  BuilderDef("Rpm Fedora 18 64-bit", "clementine_rpm_fc18_64", MakeRpmBuilder('fc18', 'x86_64', 'fedora-18-x86_64', '18', "oneiric-64")),
-  BuilderDef("Rpm Fedora 18 32-bit", "clementine_rpm_fc18_32", MakeRpmBuilder('fc18', 'i686',   'fedora-18-i386',   '18', "oneiric-64")),
-  BuilderDef("Rpm Fedora 19 64-bit", "clementine_rpm_fc19_64", MakeRpmBuilder('fc19', 'x86_64', 'fedora-19-x86_64', '19', "oneiric-64")),
-  BuilderDef("Rpm Fedora 19 32-bit", "clementine_rpm_fc19_32", MakeRpmBuilder('fc19', 'i686',   'fedora-19-i386',   '19'), slave='beeblebrox'),
-  BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True), slave='beeblebrox'),
-  BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder(), slave='beeblebrox'),
-  BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder(), slave='beeblebrox'),
-  BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder(), slave='beeblebrox'),
-  BuilderDef("PPA Lucid",        "clementine_ppa",           MakePPABuilder('lucid')),
+  BuilderDef("Linux Debug",      "clementine_linux_debug",   MakeLinuxBuilder('Debug')),
+  BuilderDef("Linux Release",    "clementine_linux_release", MakeLinuxBuilder('Release')),
+  BuilderDef("Linux Minimal",    "clementine_linux_minimal", MakeLinuxBuilder('Release', disable_everything=True)),
+  BuilderDef("Spotify blob 32-bit", "clementine_spotify_32", MakeSpotifyBlobBuilder(chroot='precise-32')),
+  BuilderDef("Spotify blob 64-bit", "clementine_spotify_64", MakeSpotifyBlobBuilder()),
+  BuilderDef("Deb Precise 64-bit", "clementine_deb_precise_64", MakeDebBuilder('amd64', 'precise')),
+  BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32')),
+  BuilderDef("Deb Quantal 64-bit", "clementine_deb_quantal_64", MakeDebBuilder('amd64', 'quantal', chroot='quantal-64')),
+  BuilderDef("Deb Quantal 32-bit", "clementine_deb_quantal_32", MakeDebBuilder('i386', 'quantal', chroot='quantal-32')),
+  BuilderDef("Deb Raring 64-bit", "clementine_deb_raring_64", MakeDebBuilder('amd64', 'raring', chroot='raring-64')),
+  BuilderDef("Deb Raring 32-bit", "clementine_deb_raring_32", MakeDebBuilder('i386',  'raring', chroot='raring-32')),
+  BuilderDef("Deb Saucy 64-bit", "clementine_deb_saucy_64", MakeDebBuilder('amd64', 'saucy', chroot='saucy-64')),
+  BuilderDef("Deb Saucy 32-bit", "clementine_deb_saucy_32", MakeDebBuilder('i386',  'saucy', chroot='saucy-32')),
+  BuilderDef("Deb Trusty 64-bit", "clementine_deb_trusty_64", MakeDebBuilder('amd64',  'trusty', chroot='trusty-64')),
+  BuilderDef("Deb Trusty 32-bit", "clementine_deb_trusty_32", MakeDebBuilder('i386',  'trusty', chroot='trusty-32')),
+  BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian')),
+  BuilderDef("Deb Wheezy 32-bit",  "clementine_deb_wheezy_32", MakeDebBuilder('i386',  'wheezy', chroot='wheezy-32', dist_type='debian')),
+  BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian')),
+  BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
+  BuilderDef("Rpm Fedora 18 64-bit", "clementine_rpm_fc18_64", MakeRpmBuilder('fc18', 'x86_64', 'fedora-18-x86_64', '18')),
+  BuilderDef("Rpm Fedora 18 32-bit", "clementine_rpm_fc18_32", MakeRpmBuilder('fc18', 'i686',   'fedora-18-i386',   '18')),
+  BuilderDef("Rpm Fedora 19 64-bit", "clementine_rpm_fc19_64", MakeRpmBuilder('fc19', 'x86_64', 'fedora-19-x86_64', '19')),
+  BuilderDef("Rpm Fedora 19 32-bit", "clementine_rpm_fc19_32", MakeRpmBuilder('fc19', 'i686',   'fedora-19-i386',   '19')),
+  BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True)),
+  BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
+  BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
+  BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
   BuilderDef("PPA Raring",       "clementine_ppa_raring",    MakePPABuilder('raring',  chroot='raring-32')),
   BuilderDef("PPA Saucy",        "clementine_ppa_saucy",     MakePPABuilder('saucy',   chroot='saucy-32')),
-  BuilderDef("PPA Trusty",       "clementine_ppa_trusty",    MakePPABuilder('trusty',   chroot='trusty-32'), slave='beeblebrox'),
-  BuilderDef("MinGW Debug (do not use)",   "clementine_mingw_debug",   MakeMingwBuilder('Debug', 'debug', 'mingw', False)),
-  BuilderDef("MinGW Release (do not use)", "clementine_mingw_release", MakeMingwBuilder('Release', 'release', 'mingw', False)),
+  BuilderDef("PPA Trusty",       "clementine_ppa_trusty",    MakePPABuilder('trusty',  chroot='trusty-32')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
-  BuilderDef("Dependencies Mingw", "clementine_mingw_deps",  MakeMinGWDepsBuilder("mingw")),
   BuilderDef("Dependencies Mac", "clementine_mac_deps",      MakeMacDepsBuilder(), slave="zarquon"),
 
-  BuilderDef("Dependencies Mingw-w64", "clementine_mingw_w64_deps",  MakeMinGWDepsBuilder("mingw"), slave='beeblebrox'),
-  BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw', False), slave='beeblebrox'),
-  BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw', False), slave='beeblebrox'),
-  BuilderDef("MinGW-w64 Portable",    "clementine_mingw_w64_portable", MakeMingwBuilder('Release', 'release', 'mingw', True), slave='beeblebrox'),
+  BuilderDef("Dependencies Mingw-w64", "clementine_mingw_w64_deps",  MakeMinGWDepsBuilder("mingw")),
+  BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw', False)),
+  BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw', False)),
+  BuilderDef("MinGW-w64 Portable",    "clementine_mingw_w64_portable", MakeMingwBuilder('Release', 'release', 'mingw', True)),
 ]
