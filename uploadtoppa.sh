@@ -1,7 +1,7 @@
 #!/bin/sh -e
 
 PPA=ppa:me-davidsansome/clementine-dev
-REPO=https://code.google.com/p/clementine-player/
+REPO=https://github.com/clementine-player/Clementine.git
 
 BASE=`pwd`
 DIRECTORY=clementine
