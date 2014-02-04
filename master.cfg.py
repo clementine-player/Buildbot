@@ -174,7 +174,6 @@ sched_website = Scheduler(name="website", change_filter=website_change_filter, t
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Precise",
   "PPA Quantal",
-  "PPA Raring",
   "PPA Saucy",
   "PPA Trusty",
 ])
