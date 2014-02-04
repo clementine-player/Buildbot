@@ -600,7 +600,6 @@ c['builders'] = [
   BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
-  BuilderDef("PPA Raring",       "clementine_ppa_raring",    MakePPABuilder('raring',  chroot='raring-32')),
   BuilderDef("PPA Saucy",        "clementine_ppa_saucy",     MakePPABuilder('saucy',   chroot='saucy-32')),
   BuilderDef("PPA Trusty",       "clementine_ppa_trusty",    MakePPABuilder('trusty',  chroot='trusty-32')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
