@@ -510,7 +510,7 @@ def AddTxSetup(f, resource, source_file, pattern, pot=True):
   if pot:
     set_args += ["--source-file", source_file]
 
-  f.addStep(ShellCommand(name="tx_init", workdir="build", haltOnFailure=True, command=["tx", "init", "--host=https://www.transifex.net"]))
+  f.addStep(ShellCommand(name="tx_init", workdir="build", haltOnFailure=True, command=["tx", "init", "--host=https://www.transifex.com"]))
   f.addStep(ShellCommand(name="tx_set",  workdir="build", haltOnFailure=True, command=set_args))
 
 def AddClementineTxSetup(f, pot=True):
@@ -541,7 +541,7 @@ def MakeTransifexPoPullBuilder():
   f.addStep(ShellCommand(name="git_add",    workdir="build", haltOnFailure=True, command="git add --verbose src/translations/*.po"))
   f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=[
     "git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>",
-    "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine/resource/clementineplayer)"
+    "--message=Automatic merge of translations from Transifex (https://www.transifex.com/projects/p/clementine/resource/clementineplayer)"
   ]))
   f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", "git@github.com:clementine-player/Clementine.git", "master", "--verbose"]))
   return f
@@ -556,7 +556,7 @@ def MakeWebsiteTransifexPoPullBuilder():
   f.addStep(ShellCommand(name="tx_pull", workdir="build", haltOnFailure=True,
                          command=["tx", "pull", "-a", "--force"]))
   f.addStep(ShellCommand(name="git_add", workdir="build", haltOnFailure=True, command="git add --verbose www.clementine-player.org/locale/*.po"))
-  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.net/projects/p/clementine/resource/website)"]))
+  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.com/projects/p/clementine/resource/website)"]))
   f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", "git@github.com:clementine-player/Website.git", "master", "--verbose"]))
   return f
 
