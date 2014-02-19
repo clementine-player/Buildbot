@@ -523,6 +523,11 @@ def AddWebsiteTxSetup(f):
       "www.clementine-player.org/locale/django.pot",
       "www.clementine-player.org/locale/<lang>.po")
 
+def AddAndroidRemoteTxSetup(f, pot=True):
+  AddTxSetup(f, "clementine-remote.clementine-remote",
+      "res/values/strings.xml",
+      "res/values-<lang>/strings.xml")
+
 def MakeWebsiteTransifexPotPushBuilder():
   f = factory.BuildFactory()
   git_args = dict(GIT_ARGS)
@@ -558,6 +563,19 @@ def MakeWebsiteTransifexPoPullBuilder():
   f.addStep(ShellCommand(name="git_add", workdir="build", haltOnFailure=True, command="git add --verbose www.clementine-player.org/locale/*.po"))
   f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.com/projects/p/clementine/resource/website)"]))
   f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", "git@github.com:clementine-player/Website.git", "master", "--verbose"]))
+  return f
+
+def MakeAndroidRemoteTransifexPoPullBuilder():
+  f = factory.BuildFactory()
+  git_args = dict(GIT_ARGS)
+  git_args["repourl"] = "https://github.com/clementine-player/Android-Remote.git"
+  f.addStep(Git(**git_args))
+  AddAndroidRemoteTxSetup(f)
+  f.addStep(ShellCommand(name="tx_pull", workdir="build", haltOnFailure=True,
+                         command=["tx", "pull", "-a", "--force"]))
+  f.addStep(ShellCommand(name="git_add", workdir="build", haltOnFailure=True, command="git add --verbose res/values-*"))
+  f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.com/projects/p/clementine-remote/resource/clementine-remote)"]))
+  f.addStep(ShellCommand(name="git_push",   workdir="build", haltOnFailure=True, command=["git", "push", "git@github.com:clementine-player/Android-Remote.git", "master", "--verbose"]))
   return f
 
 
@@ -597,6 +615,7 @@ c['builders'] = [
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
   BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
+  BuilderDef("Transifex Android Remote PO pull", "android_remote_po_pull", MakeAndroidRemoteTransifexPoPullBuilder()),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
   BuilderDef("PPA Saucy",        "clementine_ppa_saucy",     MakePPABuilder('saucy',   chroot='saucy-32')),
