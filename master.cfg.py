@@ -197,6 +197,7 @@ sched_transifex_pull = Nightly(name="transifex_pull",
   builderNames=[
     "Transifex PO pull",
     "Transifex website PO pull",
+    "Transifex Android Remote PO pull",
   ],
 )
 
