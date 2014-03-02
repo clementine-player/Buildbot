@@ -108,6 +108,13 @@ c = BuildmasterConfig = {
       branch='master',
       workdir="gitpoller_work_deps",
     ),
+    GitPoller(
+      project="android-remote",
+      repourl="https://github.com/clementine-player/Android-Remote.git",
+      pollinterval=60*5, # seconds
+      branch='master',
+      workdir="gitpoller_work_android_remote",
+    ),
   ],
   'status': [
     html.WebStatus(
@@ -125,6 +132,7 @@ c = BuildmasterConfig = {
 change_filter = ChangeFilter(project="clementine", branch=u"master")
 website_change_filter = ChangeFilter(project="website", branch=u"master")
 deps_change_filter = ChangeFilter(project="dependencies", branch=u"master")
+android_remote_change_filter = ChangeFilter(project="android-remote", branch=u"master")
 
 # Schedulers
 sched_linux = Scheduler(name="linux", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
@@ -201,6 +209,10 @@ sched_transifex_pull = Nightly(name="transifex_pull",
   ],
 )
 
+sched_android_remote = Scheduler(name="android_remote", change_filter=android_remote_change_filter, treeStableTimer=2*60, builderNames=[
+  "Android-Remote",
+])
+
 c['schedulers'] = [
   sched_linux,
   sched_winmac,
@@ -212,6 +224,7 @@ c['schedulers'] = [
   sched_spotifyblob,
   sched_transifex_pull,
   sched_website,
+  sched_android_remote,
 ]
 
 
@@ -466,6 +479,27 @@ def MakeMacBuilder():
       masterdest=WithProperties(UPLOADBASE + "/mac/%(output-filename)s")))
   return f
 
+def MakeAndroidRemoteBuilder():
+  f = factory.BuildFactory()
+  git_args = dict(GIT_ARGS)
+  git_args["repourl"] = "https://github.com/clementine-player/Android-Remote.git"
+  f.addStep(Git(**git_args))
+
+  replace = "s://sign::g"
+  f.addStep(ShellCommand(name="sed", command=["sed", replace, "build.gradle", ">", "build.gradle"], haltOnFailure=True, workdir=WORKDIR))
+
+# Change path to properties file here
+  replace = "s:PROPERTIES_FILE:/path/to/file:g" 
+  f.addStep(ShellCommand(name="sed", command=["sed", replace, "build.gradle", ">", "build.gradle"], haltOnFailure=True, workdir=WORKDIR))
+
+  f.addStep(ShellCommand(name="compile", command=["./gradlew", "assebmleRelease"], haltOnFailure=True, workdir=WORKDIR))
+  f.addStep(OutputFinder(pattern="build/apk/ClementineRemote-release-*.apk"))
+  f.addStep(FileUpload(
+      mode=0644,
+      slavesrc=WithProperties("build/apk/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/android/%(output-filename)s")))
+  return f
+
 def MakePPABuilder(dist, chroot=None):
   schroot_cmd = []
   if chroot is not None:
@@ -628,4 +662,6 @@ c['builders'] = [
   BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw', False)),
   BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw', False)),
   BuilderDef("MinGW-w64 Portable",    "clementine_mingw_w64_portable", MakeMingwBuilder('Release', 'release', 'mingw', True)),
+
+  BuilderDef("Android-Remote", "android-remote", MakeAndroidRemoteBuilder())
 ]
