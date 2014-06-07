@@ -154,10 +154,6 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Wheezy 32-bit",
   "Deb Precise 64-bit",
   "Deb Precise 32-bit",
-  "Deb Quantal 64-bit",
-  "Deb Quantal 32-bit",
-  "Deb Raring 64-bit",
-  "Deb Raring 32-bit",
   "Deb Saucy 64-bit",
   "Deb Saucy 32-bit",
   "Deb Trusty 64-bit",
@@ -181,7 +177,6 @@ sched_website = Scheduler(name="website", change_filter=website_change_filter, t
 
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Precise",
-  "PPA Quantal",
   "PPA Saucy",
   "PPA Trusty",
 ])
@@ -634,10 +629,6 @@ c['builders'] = [
   BuilderDef("Spotify blob 64-bit", "clementine_spotify_64", MakeSpotifyBlobBuilder()),
   BuilderDef("Deb Precise 64-bit", "clementine_deb_precise_64", MakeDebBuilder('amd64', 'precise')),
   BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32')),
-  BuilderDef("Deb Quantal 64-bit", "clementine_deb_quantal_64", MakeDebBuilder('amd64', 'quantal', chroot='quantal-64')),
-  BuilderDef("Deb Quantal 32-bit", "clementine_deb_quantal_32", MakeDebBuilder('i386', 'quantal', chroot='quantal-32')),
-  BuilderDef("Deb Raring 64-bit", "clementine_deb_raring_64", MakeDebBuilder('amd64', 'raring', chroot='raring-64')),
-  BuilderDef("Deb Raring 32-bit", "clementine_deb_raring_32", MakeDebBuilder('i386',  'raring', chroot='raring-32')),
   BuilderDef("Deb Saucy 64-bit", "clementine_deb_saucy_64", MakeDebBuilder('amd64', 'saucy', chroot='saucy-64')),
   BuilderDef("Deb Saucy 32-bit", "clementine_deb_saucy_32", MakeDebBuilder('i386',  'saucy', chroot='saucy-32')),
   BuilderDef("Deb Trusty 64-bit", "clementine_deb_trusty_64", MakeDebBuilder('amd64',  'trusty', chroot='trusty-64')),
@@ -656,7 +647,6 @@ c['builders'] = [
   BuilderDef("Transifex website PO pull", "website_po_pull", MakeWebsiteTransifexPoPullBuilder()),
   BuilderDef("Transifex Android Remote PO pull", "android_remote_po_pull", MakeAndroidRemoteTransifexPoPullBuilder()),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
-  BuilderDef("PPA Quantal",      "clementine_ppa_quantal",   MakePPABuilder('quantal', chroot='quantal-32')),
   BuilderDef("PPA Saucy",        "clementine_ppa_saucy",     MakePPABuilder('saucy',   chroot='saucy-32')),
   BuilderDef("PPA Trusty",       "clementine_ppa_trusty",    MakePPABuilder('trusty',  chroot='trusty-32')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
