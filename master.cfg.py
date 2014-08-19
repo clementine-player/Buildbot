@@ -246,6 +246,7 @@ def MakeLinuxBuilder(type, disable_everything=False, transifex_push=False):
       "-DENABLE_LIBMTP=OFF",
       "-DENABLE_MOODBAR=OFF",
       "-DENABLE_REMOTE=OFF",
+      "-DENABLE_SEAFILE=OFF",
       "-DENABLE_SKYDRIVE=OFF",
       "-DENABLE_SOUNDMENU=OFF",
       "-DENABLE_SPARKLE=OFF",
