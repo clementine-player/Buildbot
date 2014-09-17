@@ -487,13 +487,13 @@ def MakeAndroidRemoteBuilder():
 
 # Change path to properties file here
   replace = "s:PROPERTIES_FILE:/var/lib/buildbot/properties.txt:g"
-  f.addStep(ShellCommand(name="sed", command=["sed", '-i', '-e', replace, "build.gradle"], haltOnFailure=True, workdir='build'))
+  f.addStep(ShellCommand(name="sed", command=["sed", '-i', '-e', replace, "app/build.gradle"], haltOnFailure=True, workdir='build'))
 
   f.addStep(ShellCommand(name="compile", command=["./gradlew", "assembleRelease"], haltOnFailure=True, workdir='build'))
-  f.addStep(OutputFinder(pattern="build/outputs/apk/ClementineRemote-release-*.apk"))
+  f.addStep(OutputFinder(pattern="app/build/outputs/apk/ClementineRemote-release-*.apk"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("build/outputs/apk/%(output-filename)s"),
+      slavesrc=WithProperties("app/build/outputs/apk/%(output-filename)s"),
       masterdest=WithProperties(UPLOADBASE + "/android/%(output-filename)s")))
   return f
 
