@@ -483,7 +483,7 @@ def MakeAndroidRemoteBuilder():
   f.addStep(Git(**git_args))
 
   replace = "s://sign::g"
-  f.addStep(ShellCommand(name="sed", command=["sed", '-i', '-e', replace, "build.gradle"], haltOnFailure=True, workdir='build'))
+  f.addStep(ShellCommand(name="sed", command=["sed", '-i', '-e', replace, "app/build.gradle"], haltOnFailure=True, workdir='build'))
 
 # Change path to properties file here
   replace = "s:PROPERTIES_FILE:/var/lib/buildbot/properties.txt:g"
