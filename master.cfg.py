@@ -150,8 +150,6 @@ sched_winmac = Scheduler(name="winmac", change_filter=change_filter, treeStableT
 sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Jessie 64-bit",
   "Deb Jessie 32-bit",
-  "Deb Wheezy 64-bit",
-  "Deb Wheezy 32-bit",
   "Deb Precise 64-bit",
   "Deb Precise 32-bit",
   "Deb Trusty 64-bit",
@@ -629,8 +627,6 @@ c['builders'] = [
   BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32')),
   BuilderDef("Deb Trusty 64-bit", "clementine_deb_trusty_64", MakeDebBuilder('amd64',  'trusty', chroot='trusty-64')),
   BuilderDef("Deb Trusty 32-bit", "clementine_deb_trusty_32", MakeDebBuilder('i386',  'trusty', chroot='trusty-32')),
-  BuilderDef("Deb Wheezy 64-bit",  "clementine_deb_wheezy_64", MakeDebBuilder('amd64', 'wheezy', chroot='wheezy-64', dist_type='debian')),
-  BuilderDef("Deb Wheezy 32-bit",  "clementine_deb_wheezy_32", MakeDebBuilder('i386',  'wheezy', chroot='wheezy-32', dist_type='debian')),
   BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian')),
   BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 19 64-bit", "clementine_rpm_fc19_64", MakeRpmBuilder('fc19', 'x86_64', 'fedora-19-x86_64', '19')),
