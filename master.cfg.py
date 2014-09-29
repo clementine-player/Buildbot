@@ -358,6 +358,9 @@ def MakeMingwBuilder(type, suffix, schroot, portable):
   schroot_cmd = ["schroot", "-p", "-c", schroot, "--"]
 
   test_env = dict(TEST_ENV)
+  test_env.update({
+    'GTEST_FILTER': '-' + ':'.join(DISABLED_TESTS + ['SongTest.*']),
+  })
 
   build_env = {
     'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig',
