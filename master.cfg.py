@@ -558,8 +558,8 @@ def AddWebsiteTxSetup(f):
 
 def AddAndroidRemoteTxSetup(f, pot=True):
   AddTxSetup(f, "clementine-remote.clementine-remote",
-      "res/values/strings.xml",
-      "res/values-<lang>/strings.xml")
+      "app/res/values/strings.xml",
+      "app/res/values-<lang>/strings.xml")
 
 def MakeWebsiteTransifexPotPushBuilder():
   f = factory.BuildFactory()
