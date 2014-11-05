@@ -20,16 +20,16 @@ run wget -q -O /libtool.deb 'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb
     rm /libtool.deb
 
 # Install the mingw toolchain and add it to the path
-run wget -q -O /mingw.tar.bz2 'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb3h6bjQ/mingw-w32-bin_i686-linux_20130523.tar.bz2' && \
+run wget --progress=dot:mega -O /mingw.tar.bz2 \
+      'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb3h6bjQ/mingw-w32-bin_i686-linux_20130523.tar.bz2' && \
     mkdir /mingw && \
     tar -xvf /mingw.tar.bz2 -C /mingw && \
     rm /mingw.tar.bz2 && \
     ln -v -s /mingw/bin/* /bin/
 
-# Create directories
-run mkdir /usr/i586-mingw32msvc /usr/i586-mingw32msvc/stow /usr/i586-mingw32msvc/bin
-run ln -s /usr/i586-mingw32msvc /target
-run ln -s /mingw/i686-w64-mingw32/lib/libgcc_s_sjlj-1.dll /target/bin/
+add first-time-setup.sh /first-time-setup.sh
+run ln -s /persistent-data/mingw/target /target
+run ln -s /persistent-data/mingw/target /usr/i586-mingw32msvc
 run ln -s /persistent-data/mingw/windows-dependencies/source /src
 
 # Give the buildslave a name
