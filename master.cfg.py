@@ -154,6 +154,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Precise 32-bit",
   "Deb Trusty 64-bit",
   "Deb Trusty 32-bit",
+  "Deb Utopic 64-bit",
+  "Deb Utopic 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -174,6 +176,7 @@ sched_website = Scheduler(name="website", change_filter=website_change_filter, t
 sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Precise",
   "PPA Trusty",
+  "PPA Utopic",
 ])
 
 sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
@@ -630,6 +633,8 @@ c['builders'] = [
   BuilderDef("Deb Precise 32-bit", "clementine_deb_precise_32", MakeDebBuilder('i386',  'precise', chroot='precise-32')),
   BuilderDef("Deb Trusty 64-bit", "clementine_deb_trusty_64", MakeDebBuilder('amd64',  'trusty', chroot='trusty-64')),
   BuilderDef("Deb Trusty 32-bit", "clementine_deb_trusty_32", MakeDebBuilder('i386',  'trusty', chroot='trusty-32')),
+  BuilderDef("Deb Utopic 64-bit", "clementine_deb_utopic_64", MakeDebBuilder('amd64',  'utopic', chroot='utopic-64')),
+  BuilderDef("Deb Utopic 32-bit", "clementine_deb_utopic_32", MakeDebBuilder('i386',  'utopic', chroot='utopic-32')),
   BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian')),
   BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 19 64-bit", "clementine_rpm_fc19_64", MakeRpmBuilder('fc19', 'x86_64', 'fedora-19-x86_64', '19')),
@@ -643,6 +648,7 @@ c['builders'] = [
   BuilderDef("Transifex Android Remote PO pull", "android_remote_po_pull", MakeAndroidRemoteTransifexPoPullBuilder()),
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Trusty",       "clementine_ppa_trusty",    MakePPABuilder('trusty',  chroot='trusty-32')),
+  BuilderDef("PPA Utopic",       "clementine_ppa_utopic",    MakePPABuilder('utopic',  chroot='utopic-32')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
   BuilderDef("Dependencies Mac", "clementine_mac_deps",      MakeMacDepsBuilder(), slave="zarquon"),
 
