@@ -486,11 +486,8 @@ def MakeAndroidRemoteBuilder():
   git_args["repourl"] = "https://github.com/clementine-player/Android-Remote.git"
   f.addStep(Git(**git_args))
 
-  replace = "s://sign::g"
-  f.addStep(ShellCommand(name="sed", command=["sed", '-i', '-e', replace, "app/build.gradle"], haltOnFailure=True, workdir='build'))
-
 # Change path to properties file here
-  replace = "s:PROPERTIES_FILE:/var/lib/buildbot/properties.txt:g"
+  replace = "s:key.properties:/var/lib/buildbot/properties.txt:g"
   f.addStep(ShellCommand(name="sed", command=["sed", '-i', '-e', replace, "app/build.gradle"], haltOnFailure=True, workdir='build'))
 
   f.addStep(ShellCommand(name="compile", command=["./gradlew", "assembleRelease"], haltOnFailure=True, workdir='build'))
