@@ -159,10 +159,10 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
-  "Rpm Fedora 19 64-bit",
-  "Rpm Fedora 19 32-bit",
   "Rpm Fedora 20 64-bit",
   "Rpm Fedora 20 32-bit",
+  "Rpm Fedora 21 64-bit",
+  "Rpm Fedora 21 32-bit",
 ])
 
 sched_pot = Dependent(name="pot", upstream=sched_linux, builderNames=[
@@ -634,10 +634,10 @@ c['builders'] = [
   BuilderDef("Deb Utopic 32-bit", "clementine_deb_utopic_32", MakeDebBuilder('i386',  'utopic', chroot='utopic-32')),
   BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian')),
   BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
-  BuilderDef("Rpm Fedora 19 64-bit", "clementine_rpm_fc19_64", MakeRpmBuilder('fc19', 'x86_64', 'fedora-19-x86_64', '19')),
-  BuilderDef("Rpm Fedora 19 32-bit", "clementine_rpm_fc19_32", MakeRpmBuilder('fc19', 'i686',   'fedora-19-i386',   '19')),
   BuilderDef("Rpm Fedora 20 64-bit", "clementine_rpm_fc20_64", MakeRpmBuilder('fc20', 'x86_64', 'fedora-20-x86_64', '20')),
   BuilderDef("Rpm Fedora 20 32-bit", "clementine_rpm_fc20_32", MakeRpmBuilder('fc20', 'i686',   'fedora-20-i386',   '20')),
+  BuilderDef("Rpm Fedora 21 64-bit", "clementine_rpm_fc21_64", MakeRpmBuilder('fc21', 'x86_64', 'fedora-21-x86_64', '21')),
+  BuilderDef("Rpm Fedora 21 32-bit", "clementine_rpm_fc21_32", MakeRpmBuilder('fc21', 'i686',   'fedora-21-i386',   '21')),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True)),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
