@@ -11,5 +11,5 @@ run yum install --assumeyes \
 
 run rpmdev-setuptree
 
-run echo "fedora-21" > /slave-name
+run echo "fedora-21-64" > /slave-name
 cmd ["/usr/bin/python", "/config/slave/start.py"]

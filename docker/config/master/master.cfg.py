@@ -39,6 +39,7 @@ class OutputFinder(shell.ShellCommand):
       shell.ShellCommand.__init__(self,
         name="get output filename",
         command=["sh", "-c", "basename `ls -d " + pattern + "|head -n 1`"],
+        workdir="source",
         **kwargs
       )
 
@@ -47,7 +48,7 @@ class OutputFinder(shell.ShellCommand):
     self.setProperty("output-filename", filename)
 
 
-def MakeDebBuilder(dist, dist_type):
+def MakeDebBuilder(dist, dist_type, arch):
   env = {
     "DEB_BUILD_OPTIONS": 'parallel=4',
   }
@@ -55,7 +56,7 @@ def MakeDebBuilder(dist, dist_type):
   cmake_cmd = [
     "cmake", "..",
     "-DWITH_DEBIAN=ON",
-    "-DDEB_ARCH=amd64",
+    "-DDEB_ARCH=" + arch,
     "-DDEB_DIST=" + dist,
     "-DENABLE_SPOTIFY_BLOB=OFF",
   ]
@@ -101,12 +102,15 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': 9989,
   'slaves': [
-    buildslave.BuildSlave("precise",   PASSWORD),
-    buildslave.BuildSlave("trusty",    PASSWORD),
-    buildslave.BuildSlave("utopic",    PASSWORD),
-    buildslave.BuildSlave("fedora-20", PASSWORD),
-    buildslave.BuildSlave("fedora-21", PASSWORD),
-    buildslave.BuildSlave("mingw",     PASSWORD),
+    buildslave.BuildSlave("precise-32",   PASSWORD),
+    buildslave.BuildSlave("precise-64",   PASSWORD),
+    buildslave.BuildSlave("trusty-32",    PASSWORD),
+    buildslave.BuildSlave("trusty-64",    PASSWORD),
+    buildslave.BuildSlave("utopic-32",    PASSWORD),
+    buildslave.BuildSlave("utopic-64",    PASSWORD),
+    buildslave.BuildSlave("fedora-20-64", PASSWORD),
+    buildslave.BuildSlave("fedora-21-64", PASSWORD),
+    buildslave.BuildSlave("mingw",        PASSWORD),
   ],
   'change_source': [
     gitpoller.GitPoller(
@@ -145,9 +149,12 @@ normal_scheduler = basic.SingleBranchScheduler(
   change_filter=change_filter,
   treeStableTimer=2*60,
   builderNames=[
-    "Deb Trusty",
-    "Deb Precise",
-    "Deb Utopic",
+    "Deb Trusty 64-bit",
+    "Deb Precise 64-bit",
+    "Deb Utopic 64-bit",
+    "Deb Trusty 32-bit",
+    "Deb Precise 32-bit",
+    "Deb Utopic 32-bit",
   ],
 )
 force_scheduler = forcesched.ForceScheduler(
@@ -159,9 +166,12 @@ force_scheduler = forcesched.ForceScheduler(
   project=forcesched.FixedParameter(name="project", default=""),
   properties=[],
   builderNames=[
-    "Deb Trusty",
-    "Deb Precise",
-    "Deb Utopic",
+    "Deb Trusty 64-bit",
+    "Deb Precise 64-bit",
+    "Deb Utopic 64-bit",
+    "Deb Trusty 32-bit",
+    "Deb Precise 32-bit",
+    "Deb Utopic 32-bit",
     "RPM Fedora 20",
     "RPM Fedora 21",
     "Windows Dependencies",
@@ -175,33 +185,51 @@ c['schedulers'] = [
 
 c['builders'] = [
   {
-    'name':      'Deb Precise',
-    'builddir':  'deb-precise',
-    'slavename': 'precise',
-    'factory':   MakeDebBuilder('precise', 'ubuntu'),
+    'name':      'Deb Precise 64-bit',
+    'builddir':  'deb-precise-64',
+    'slavename': 'precise-64',
+    'factory':   MakeDebBuilder('precise', 'ubuntu', 'amd64'),
   },
   {
-    'name':      'Deb Trusty',
-    'builddir':  'deb-trusty',
-    'slavename': 'trusty',
-    'factory':   MakeDebBuilder('trusty', 'ubuntu'),
+    'name':      'Deb Trusty 64-bit',
+    'builddir':  'deb-trusty-64',
+    'slavename': 'trusty-64',
+    'factory':   MakeDebBuilder('trusty', 'ubuntu', 'amd64'),
   },
   {
-    'name':      'Deb Utopic',
-    'builddir':  'deb-utopic',
-    'slavename': 'utopic',
-    'factory':   MakeDebBuilder('utopic', 'ubuntu'),
+    'name':      'Deb Utopic 64-bit',
+    'builddir':  'deb-utopic-64',
+    'slavename': 'utopic-64',
+    'factory':   MakeDebBuilder('utopic', 'ubuntu', 'amd64'),
+  },
+  {
+    'name':      'Deb Precise 32-bit',
+    'builddir':  'deb-precise-32',
+    'slavename': 'precise-32',
+    'factory':   MakeDebBuilder('precise', 'ubuntu', 'i386'),
+  },
+  {
+    'name':      'Deb Trusty 32-bit',
+    'builddir':  'deb-trusty-32',
+    'slavename': 'trusty-32',
+    'factory':   MakeDebBuilder('trusty', 'ubuntu', 'i386'),
+  },
+  {
+    'name':      'Deb Utopic 32-bit',
+    'builddir':  'deb-utopic-32',
+    'slavename': 'utopic-32',
+    'factory':   MakeDebBuilder('utopic', 'ubuntu', 'i386'),
   },
   {
     'name':      'RPM Fedora 20',
     'builddir':  'rpm-fedora-20',
-    'slavename': 'fedora-20',
+    'slavename': 'fedora-20-64',
     'factory':   MakeFedoraBuilder(),
   },
   {
     'name':      'RPM Fedora 21',
     'builddir':  'rpm-fedora-21',
-    'slavename': 'fedora-21',
+    'slavename': 'fedora-21-64',
     'factory':   MakeFedoraBuilder(),
   },
   {

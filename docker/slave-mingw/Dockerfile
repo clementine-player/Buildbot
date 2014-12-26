@@ -1,4 +1,4 @@
-from trusty-i386
+from clementine/ubuntu:trusty-i386
 
 # apt-fast
 run apt-get update

@@ -2,6 +2,8 @@ COMMON_ARGS=-v $(shell pwd)/config:/config --volumes-from volumes
 MASTER_ARGS=${COMMON_ARGS} -p 8010:8010 
 SLAVE_ARGS=${COMMON_ARGS} --link master:master
 
+SLAVES=mingw precise-32 precise-64 trusty-32 trusty-64 utopic-32 utopic-64 fedora-20-64 fedora-21-64
+
 all:
 	@echo "Controlling Docker images and containers:"
 	@echo "  make build           Creates the images: only do this once"
@@ -15,45 +17,31 @@ all:
 	@echo "  make delete-volumes  Deletes the shared volume container, recreate with 'make start'"
 
 build:
-	docker build -t clementine-buildbot-master master
-	docker build -t clementine-buildbot-volumes volumes
-	docker build -t clementine-buildbot-slave-precise slave-precise
-	docker build -t clementine-buildbot-slave-trusty slave-trusty
-	docker build -t clementine-buildbot-slave-utopic slave-utopic
-	docker build -t clementine-buildbot-slave-mingw slave-mingw
-	docker build -t clementine-buildbot-slave-fedora-20 slave-fedora-20
-	docker build -t clementine-buildbot-slave-fedora-21 slave-fedora-21
+	docker build -t clementine/master master
+	docker build -t clementine/volumes volumes
 
-trusty-i386-root:
-	debootstrap --variant=buildd --arch i386 trusty tmp-trusty-i386-root http://archive.ubuntu.com/ubuntu/
-	mv tmp-trusty-i386-root trusty-i386-root
-
-mingw-base: trusty-i386-root
-	tar -C trusty-i386-root -c . | docker import - trusty-i386-base
+	for slave in ${SLAVES}; do \
+		docker build -t clementine/slave:$${slave} slave-$${slave} || exit 1; \
+	done
 
 start: start-volumes
-	docker run -d ${MASTER_ARGS} --name master clementine-buildbot-master
-	docker run -d ${SLAVE_ARGS} --name slave-precise clementine-buildbot-slave-precise
-	docker run -d ${SLAVE_ARGS} --name slave-trusty clementine-buildbot-slave-trusty
-	docker run -d ${SLAVE_ARGS} --name slave-utopic clementine-buildbot-slave-utopic
-	docker run -d ${SLAVE_ARGS} --name slave-fedora-20 clementine-buildbot-slave-fedora-20
-	docker run -d ${SLAVE_ARGS} --name slave-fedora-21 clementine-buildbot-slave-fedora-21
-	docker run -d ${SLAVE_ARGS} --name slave-mingw clementine-buildbot-slave-mingw
+	docker run -d ${MASTER_ARGS} --name master clementine/master
+
+	for slave in ${SLAVES}; do \
+		docker run -d ${SLAVE_ARGS} --name slave-$${slave} clementine/slave:$${slave}; \
+	done
 
 start-volumes:
 	@docker inspect -f "Volume container already created" volumes 2>/dev/null \
-		|| docker run -d --name volumes clementine-buildbot-volumes
+		|| docker run -d --name volumes clementine/volumes
 
-stop: 
-	-for container in master \
-	                  slave-precise \
-	                  slave-trusty \
-	                  slave-utopic \
-	                  slave-fedora-20 \
-	                  slave-fedora-21 \
-	                  slave-mingw; do \
-		docker stop $${container}; \
-		docker rm $${container}; \
+stop:
+	-docker stop master
+	-docker rm master
+
+	-for slave in ${SLAVES}; do \
+		docker stop slave-$${slave}; \
+		docker rm slave-$${slave}; \
 	done
 
 delete-volumes:
