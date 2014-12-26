@@ -21,6 +21,8 @@ build:
 	docker build -t clementine-buildbot-slave-trusty slave-trusty
 	docker build -t clementine-buildbot-slave-utopic slave-utopic
 	docker build -t clementine-buildbot-slave-mingw slave-mingw
+	docker build -t clementine-buildbot-slave-fedora-20 slave-fedora-20
+	docker build -t clementine-buildbot-slave-fedora-21 slave-fedora-21
 
 trusty-i386-root:
 	debootstrap --variant=buildd --arch i386 trusty tmp-trusty-i386-root http://archive.ubuntu.com/ubuntu/
@@ -34,6 +36,8 @@ start: start-volumes
 	docker run -d ${SLAVE_ARGS} --name slave-precise clementine-buildbot-slave-precise
 	docker run -d ${SLAVE_ARGS} --name slave-trusty clementine-buildbot-slave-trusty
 	docker run -d ${SLAVE_ARGS} --name slave-utopic clementine-buildbot-slave-utopic
+	docker run -d ${SLAVE_ARGS} --name slave-fedora-20 clementine-buildbot-slave-fedora-20
+	docker run -d ${SLAVE_ARGS} --name slave-fedora-21 clementine-buildbot-slave-fedora-21
 	docker run -d ${SLAVE_ARGS} --name slave-mingw clementine-buildbot-slave-mingw
 
 start-volumes:
@@ -41,7 +45,13 @@ start-volumes:
 		|| docker run -d --name volumes clementine-buildbot-volumes
 
 stop: 
-	-for container in master slave-precise slave-trusty slave-utopic slave-mingw; do \
+	-for container in master \
+	                  slave-precise \
+	                  slave-trusty \
+	                  slave-utopic \
+	                  slave-fedora-20 \
+	                  slave-fedora-21 \
+	                  slave-mingw; do \
 		docker stop $${container}; \
 		docker rm $${container}; \
 	done

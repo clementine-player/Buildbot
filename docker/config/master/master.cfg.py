@@ -77,6 +77,23 @@ def MakeWindowsDepsBuilder():
   return f
 
 
+def MakeFedoraBuilder():
+  f = factory.BuildFactory()
+  f.addStep(source.Git(**GitArgs("Clementine")))
+  f.addStep(shell.ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
+      command="find ~/rpmbuild/ -type f -delete"))
+  f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
+      command=["cmake", ".."]))
+  f.addStep(shell.ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
+      command=["../dist/maketarball.sh"]))
+  f.addStep(shell.ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
+      command="mv clementine-*.tar.gz ~/rpmbuild/SOURCES"))
+  f.addStep(shell.Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
+      command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
+  f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
+  return f
+
+
 # Basic config
 c = BuildmasterConfig = {
   'projectName':  "Clementine",
@@ -84,10 +101,12 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': 9989,
   'slaves': [
-    buildslave.BuildSlave("precise", PASSWORD),
-    buildslave.BuildSlave("trusty",  PASSWORD),
-    buildslave.BuildSlave("utopic",  PASSWORD),
-    buildslave.BuildSlave("mingw",   PASSWORD),
+    buildslave.BuildSlave("precise",   PASSWORD),
+    buildslave.BuildSlave("trusty",    PASSWORD),
+    buildslave.BuildSlave("utopic",    PASSWORD),
+    buildslave.BuildSlave("fedora-20", PASSWORD),
+    buildslave.BuildSlave("fedora-21", PASSWORD),
+    buildslave.BuildSlave("mingw",     PASSWORD),
   ],
   'change_source': [
     gitpoller.GitPoller(
@@ -143,6 +162,8 @@ force_scheduler = forcesched.ForceScheduler(
     "Deb Trusty",
     "Deb Precise",
     "Deb Utopic",
+    "RPM Fedora 20",
+    "RPM Fedora 21",
     "Windows Dependencies",
   ],
 )
@@ -170,6 +191,18 @@ c['builders'] = [
     'builddir':  'deb-utopic',
     'slavename': 'utopic',
     'factory':   MakeDebBuilder('utopic', 'ubuntu'),
+  },
+  {
+    'name':      'RPM Fedora 20',
+    'builddir':  'rpm-fedora-20',
+    'slavename': 'fedora-20',
+    'factory':   MakeFedoraBuilder(),
+  },
+  {
+    'name':      'RPM Fedora 21',
+    'builddir':  'rpm-fedora-21',
+    'slavename': 'fedora-21',
+    'factory':   MakeFedoraBuilder(),
   },
   {
     'name':      'Windows Dependencies',
