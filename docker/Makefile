@@ -2,7 +2,7 @@ COMMON_ARGS=-v $(shell pwd)/config:/config --volumes-from volumes
 MASTER_ARGS=${COMMON_ARGS} -p 8010:8010 
 SLAVE_ARGS=${COMMON_ARGS} --link master:master
 
-SLAVES=mingw precise-32 precise-64 trusty-32 trusty-64 utopic-32 utopic-64 fedora-20-64 fedora-21-64
+SLAVES=mingw precise-32 precise-64 trusty-32 trusty-64 utopic-32 utopic-64 fedora-20-32 fedora-20-64 fedora-21-32 fedora-21-64
 
 all:
 	@echo "Controlling Docker images and containers:"
