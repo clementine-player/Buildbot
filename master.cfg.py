@@ -361,16 +361,16 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
 
 def MakeFedoraBuilder(upload_ver):
   f = factory.BuildFactory()
-  f.addStep(source.Git(**GIT_ARGS))
-  f.addStep(shell.ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
+  f.addStep(Git(workdir="source", **GIT_ARGS))
+  f.addStep(ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
       command="find ~/rpmbuild/ -type f -delete"))
-  f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
+  f.addStep(ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
       command=["cmake", ".."]))
-  f.addStep(shell.ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
+  f.addStep(ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
       command=["../dist/maketarball.sh"]))
-  f.addStep(shell.ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
+  f.addStep(ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
       command="mv clementine-*.tar.gz ~/rpmbuild/SOURCES"))
-  f.addStep(shell.Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
+  f.addStep(Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
       command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   f.addStep(FileUpload(
