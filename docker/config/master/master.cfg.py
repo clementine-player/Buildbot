@@ -1,6 +1,7 @@
 # -*- python -*-
 # ex: set syntax=python:
 
+import imp
 import os
 
 from buildbot import buildslave
@@ -15,7 +16,7 @@ from buildbot.status.web import authz
 from buildbot.steps import shell
 from buildbot.steps import source
 
-PASSWORD    = "hunter2"
+passwords = imp.load_source('passwords', '/config/passwords.py')
 
 
 def GitBaseUrl(repository):
@@ -46,6 +47,12 @@ class OutputFinder(shell.ShellCommand):
   def commandComplete(self, cmd):
     filename = self.getLog('stdio').readlines()[0].strip()
     self.setProperty("output-filename", filename)
+
+
+class BuildSlaveWithPassword(buildslave.BuildSlave):
+  def __init__(self, name, **kwargs):
+    buildslave.BuildSlave.__init__(
+        self, name, passwords.PASSWORDS[name], **kwargs)
 
 
 def MakeDebBuilder(dist, dist_type, arch):
@@ -102,17 +109,17 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': 9989,
   'slaves': [
-    buildslave.BuildSlave("precise-32",   PASSWORD),
-    buildslave.BuildSlave("precise-64",   PASSWORD),
-    buildslave.BuildSlave("trusty-32",    PASSWORD),
-    buildslave.BuildSlave("trusty-64",    PASSWORD),
-    buildslave.BuildSlave("utopic-32",    PASSWORD),
-    buildslave.BuildSlave("utopic-64",    PASSWORD),
-    buildslave.BuildSlave("fedora-20-32", PASSWORD),
-    buildslave.BuildSlave("fedora-20-64", PASSWORD),
-    buildslave.BuildSlave("fedora-21-32", PASSWORD),
-    buildslave.BuildSlave("fedora-21-64", PASSWORD),
-    buildslave.BuildSlave("mingw",        PASSWORD),
+    BuildSlaveWithPassword("precise-32"),
+    BuildSlaveWithPassword("precise-64"),
+    BuildSlaveWithPassword("trusty-32"),
+    BuildSlaveWithPassword("trusty-64"),
+    BuildSlaveWithPassword("utopic-32"),
+    BuildSlaveWithPassword("utopic-64"),
+    BuildSlaveWithPassword("fedora-20-32"),
+    BuildSlaveWithPassword("fedora-20-64"),
+    BuildSlaveWithPassword("fedora-21-32"),
+    BuildSlaveWithPassword("fedora-21-64"),
+    BuildSlaveWithPassword("mingw"),
   ],
   'change_source': [
     gitpoller.GitPoller(
