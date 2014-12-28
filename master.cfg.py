@@ -85,6 +85,8 @@ c = BuildmasterConfig = {
   'slaves': [
     BuildSlave("beeblebrox", clementine_passwords.BEEBLEBROX, max_builds=2, notify_on_missing="john.maguire@gmail.com"),
     BuildSlave("zarquon",    clementine_passwords.ZARQUON, notify_on_missing="me@davidsansome.com"),
+    BuildSlave("fedora-21-32", clementine_passwords.PASSWORDS["fedora-21-32"]),
+    BuildSlave("fedora-21-64", clementine_passwords.PASSWORDS["fedora-21-64"]),
   ],
   'change_source': [
     GitPoller(
@@ -351,6 +353,26 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
   ]))
   f.addStep(Compile(command=schroot_cmd + ["make", ZAPHOD_JOBS, "rpm"], workdir=WORKDIR, haltOnFailure=True))
   f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
+  f.addStep(FileUpload(
+      mode=0644,
+      slavesrc=WithProperties("bin/%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
+  return f
+
+def MakeFedoraBuilder(upload_ver):
+  f = factory.BuildFactory()
+  f.addStep(source.Git(**GIT_ARGS))
+  f.addStep(shell.ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
+      command="find ~/rpmbuild/ -type f -delete"))
+  f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
+      command=["cmake", ".."]))
+  f.addStep(shell.ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
+      command=["../dist/maketarball.sh"]))
+  f.addStep(shell.ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
+      command="mv clementine-*.tar.gz ~/rpmbuild/SOURCES"))
+  f.addStep(shell.Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
+      command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
+  f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   f.addStep(FileUpload(
       mode=0644,
       slavesrc=WithProperties("bin/%(output-filename)s"),
@@ -636,8 +658,8 @@ c['builders'] = [
   BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 20 64-bit", "clementine_rpm_fc20_64", MakeRpmBuilder('fc20', 'x86_64', 'fedora-20-x86_64', '20')),
   BuilderDef("Rpm Fedora 20 32-bit", "clementine_rpm_fc20_32", MakeRpmBuilder('fc20', 'i686',   'fedora-20-i386',   '20')),
-  BuilderDef("Rpm Fedora 21 64-bit", "clementine_rpm_fc21_64", MakeRpmBuilder('fc21', 'x86_64', 'fedora-21-x86_64', '21')),
-  BuilderDef("Rpm Fedora 21 32-bit", "clementine_rpm_fc21_32", MakeRpmBuilder('fc21', 'i686',   'fedora-21-i386',   '21')),
+  BuilderDef("Rpm Fedora 21 64-bit", "clementine_rpm_fc21_64", MakeFedoraBuilder('21'), slave="fedora-21-64"),
+  BuilderDef("Rpm Fedora 21 32-bit", "clementine_rpm_fc21_32", MakeFedoraBuilder('21'), slave="fedora-21-32"),
   BuilderDef("Transifex POT push", "clementine_pot_upload",  MakeLinuxBuilder('Release', disable_everything=True, transifex_push=True)),
   BuilderDef("Transifex PO pull", "clementine_po_pull",      MakeTransifexPoPullBuilder()),
   BuilderDef("Transifex website POT push", "website_pot_upload", MakeWebsiteTransifexPotPushBuilder()),
