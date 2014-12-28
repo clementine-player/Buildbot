@@ -24,7 +24,7 @@ build:
 		docker build -t clementine/slave:$${slave} slave-$${slave} || exit 1; \
 	done
 
-start: start-volumes
+start: start-volumes register-wine
 	docker run -d ${MASTER_ARGS} --name master clementine/master
 
 	for slave in ${SLAVES}; do \
