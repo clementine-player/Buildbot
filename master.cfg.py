@@ -54,13 +54,15 @@ class OutputFinder(ShellCommand):
     else:
       ShellCommand.__init__(self,
         name="get output filename",
-        command=["sh", "-c", "basename `ls -d " + pattern + "|head -n 1`"],
+        command=["sh", "-c", "ls -d " + pattern + "|head -n 1"],
         **kwargs
       )
 
   def commandComplete(self, cmd):
     filename = self.getLog('stdio').readlines()[0].strip()
+    basename = os.path.split(filename)[1]
     self.setProperty("output-filename", filename)
+    self.setProperty("output-basename", basename)
 
 # Authentication
 authz = web.authz.Authz(
@@ -302,8 +304,8 @@ def MakeSpotifyBlobBuilder(chroot=None):
   f.addStep(SetProperty(command="echo " + SPOTIFYBASE, property="spotifybase"))
   f.addStep(MasterShellCommand(name="verify", command=WithProperties("""
     openssl dgst -sha1 -verify %(spotifybase)s/clementine-spotify-public.pem \
-      -signature %(spotifybase)s/%(output-filename)s/blob.sha1 \
-      %(spotifybase)s/%(output-filename)s/blob
+      -signature %(spotifybase)s/%(output-basename)s/blob.sha1 \
+      %(spotifybase)s/%(output-basename)s/blob
   """)))
   return f
 
@@ -330,8 +332,8 @@ def MakeDebBuilder(arch, dist, chroot=None, dist_type="ubuntu"):
   f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("bin/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/%(output-filename)s")))
+      slavesrc=WithProperties("%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/" + dist_type + "-" + dist + "/%(output-basename)s")))
   return f
 
 def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
@@ -355,8 +357,8 @@ def MakeRpmBuilder(distro, arch, chroot, upload_ver, schroot=None):
   f.addStep(OutputFinder(pattern="bin/clementine-*.rpm"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("bin/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
+      slavesrc=WithProperties("%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-basename)s")))
   return f
 
 def MakeFedoraBuilder(upload_ver):
@@ -375,8 +377,8 @@ def MakeFedoraBuilder(upload_ver):
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("bin/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-filename)s")))
+      slavesrc=WithProperties("%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/fedora-" + upload_ver + "/%(output-basename)s")))
   return f
 
 def MakeMingwBuilder(type, suffix, schroot, portable):
@@ -443,15 +445,15 @@ def MakeMingwBuilder(type, suffix, schroot, portable):
     f.addStep(OutputFinder(pattern="dist/windows/Clementine-PortableSetup*.exe"))
     f.addStep(FileUpload(
         mode=0644,
-        slavesrc=WithProperties("dist/windows/%(output-filename)s"),
-        masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
+        slavesrc=WithProperties("%(output-filename)s"),
+        masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-basename)s")))
   else:
     f.addStep(ShellCommand(name="makensis", command=schroot_cmd + ["makensis", "clementine.nsi"], workdir="build/dist/windows", haltOnFailure=True))
     f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
     f.addStep(FileUpload(
         mode=0644,
-        slavesrc=WithProperties("dist/windows/%(output-filename)s"),
-        masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-filename)s")))
+        slavesrc=WithProperties("%(output-filename)s"),
+        masterdest=WithProperties(UPLOADBASE + "/win32/" + suffix + "/%(output-basename)s")))
 
   return f
 
@@ -498,8 +500,8 @@ def MakeMacBuilder():
   f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("bin/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/mac/%(output-filename)s")))
+      slavesrc=WithProperties("%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/mac/%(output-basename)s")))
   return f
 
 def MakeAndroidRemoteBuilder():
@@ -516,8 +518,8 @@ def MakeAndroidRemoteBuilder():
   f.addStep(OutputFinder(pattern="app/build/outputs/apk/ClementineRemote-release-*.apk"))
   f.addStep(FileUpload(
       mode=0644,
-      slavesrc=WithProperties("app/build/outputs/apk/%(output-filename)s"),
-      masterdest=WithProperties(UPLOADBASE + "/android/%(output-filename)s")))
+      slavesrc=WithProperties("%(output-filename)s"),
+      masterdest=WithProperties(UPLOADBASE + "/android/%(output-basename)s")))
   return f
 
 def MakePPABuilder(dist, chroot=None):
