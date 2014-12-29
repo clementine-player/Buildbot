@@ -85,6 +85,59 @@ def MakeWindowsDepsBuilder():
   return f
 
 
+def MakeWindowsBuilder(is_debug):
+  env = {
+    'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig',
+    'PATH': ':'.join([
+        '/mingw/bin',
+        '/usr/local/bin',
+        '/usr/bin',
+        '/bin',
+    ]),
+  }
+
+  cmake_cmd = [
+    "cmake", "..",
+    "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
+    "-DCMAKE_BUILD_TYPE=Release",
+    "-DENABLE_WIN32_CONSOLE=" + ("ON" if is_debug else "OFF"),
+    "-DQT_HEADERS_DIR=/target/include",
+    "-DQT_LIBRARY_DIR=/target/bin",
+    "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
+  ]
+
+  executable_files = [
+    "clementine.exe",
+    "clementine-tagreader.exe",
+    "clementine-spotifyblob.exe",
+  ]
+
+  strip_command = 'i686-w64-mingw32-strip'
+
+  f = factory.BuildFactory()
+  f.addStep(source.Git(**GitArgs("Clementine")))
+  f.addStep(shell.ShellCommand(
+      name="cmake", workdir="source/bin", env=env, haltOnFailure=True,
+      command=cmake_cmd))
+  f.addStep(shell.ShellCommand(
+      name="link dependencies", workdir="source/dist/windows",
+      haltOnFailure=True, command="ln -svf /src/windows/clementine-deps/* ."))
+  f.addStep(shell.ShellCommand(
+      name="link output", workdir="source/dist/windows", haltOnFailure=True,
+      command=["ln", "-svf"] + ["../../bin/" + x for x in executable_files] + ["."]))
+  f.addStep(shell.Compile(
+      command=["make", "-j8"], workdir="source/bin", haltOnFailure=True))
+  f.addStep(shell.ShellCommand(
+      name="strip", workdir="source/bin", haltOnFailure=True, env=env,
+      command=[strip_command] + executable_files))
+  f.addStep(shell.ShellCommand(
+      name="makensis", command=["makensis", "clementine.nsi"],
+      workdir="source/dist/windows", haltOnFailure=True))
+  f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
+
+  return f
+
+
 def MakeFedoraBuilder():
   f = factory.BuildFactory()
   f.addStep(source.Git(**GitArgs("Clementine")))
@@ -186,6 +239,8 @@ force_scheduler = forcesched.ForceScheduler(
     "RPM Fedora 21 32-bit",
     "RPM Fedora 21 64-bit",
     "Windows Dependencies",
+    "Windows Release",
+    "Windows Debug",
   ],
 )
 
@@ -260,5 +315,17 @@ c['builders'] = [
     'builddir':  'windows-dependencies',
     'slavename': 'mingw',
     'factory':   MakeWindowsDepsBuilder(),
+  },
+  {
+    'name':      'Windows Release',
+    'builddir':  'windows-release',
+    'slavename': 'mingw',
+    'factory':   MakeWindowsBuilder(False),
+  },
+  {
+    'name':      'Windows Debug',
+    'builddir':  'windows-debug',
+    'slavename': 'mingw',
+    'factory':   MakeWindowsBuilder(True),
   },
 ]

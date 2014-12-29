@@ -12,7 +12,7 @@ run pip install buildbot_slave
 # Build tools
 run apt-fast install -y yasm cmake qt4-dev-tools stow unzip autoconf libtool \
     bison flex pkg-config gettext libglib2.0-dev intltool wine git-core \
-    sudo texinfo wget
+    sudo texinfo wget nsis
 
 # Install the old version of libtool
 run wget -q -O /libtool.deb 'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb3h6bjQ/libtool_2.2.6b-2ubuntu1_i386.deb' && \
