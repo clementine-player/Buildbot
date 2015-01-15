@@ -367,7 +367,7 @@ def MakeFedoraBuilder(upload_ver):
   f.addStep(ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
       command="find ~/rpmbuild/ -type f -delete"))
   f.addStep(ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
-      command=["cmake", ".."]))
+      command=["cmake", "..", "-DRPM_DISTRO=fc%s" % upload_ver]))
   f.addStep(ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
       command=["../dist/maketarball.sh"]))
   f.addStep(ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
