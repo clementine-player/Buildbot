@@ -485,6 +485,7 @@ def MakeMacBuilder():
         "-DLASTFM_LIBRARIES=/target/lib/liblastfm.dylib",
         "-DFFTW3_DIR=/target",
         "-DCMAKE_INCLUDE_PATH=/target/include",
+        "-DCMAKE_LIBRARY_PATH=/target/lib",
         "-DAPPLE_DEVELOPER_ID='Developer ID Application: John Maguire (CZ8XD8GTGZ)'",
       ],
       haltOnFailure=True,
