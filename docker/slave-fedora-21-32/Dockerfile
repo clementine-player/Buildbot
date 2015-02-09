@@ -7,7 +7,8 @@ run setarch i386 yum install --assumeyes \
     libgpod-devel qjson-devel libplist-devel \
     usbmuxd-devel libmtp-devel protobuf-devel protobuf-compiler qca2-devel \
     libcdio-devel qca-ossl fftw-devel sparsehash-devel sqlite-devel \
-    pulseaudio-libs-devel libqtwebkit-dev sha2-devel desktop-file-utils
+    pulseaudio-libs-devel libqtwebkit-dev sha2-devel desktop-file-utils \
+    libechonest-devel libchromaprint-devel
 
 run rpmdev-setuptree
 
