@@ -631,6 +631,7 @@ def MakeAndroidRemoteTransifexPoPullBuilder():
   AddAndroidRemoteTxSetup(f)
   f.addStep(ShellCommand(name="tx_pull", workdir="build", haltOnFailure=True,
                          command=["tx", "pull", "-a", "--force"]))
+  f.addStep(ShellCommand(name="remove_res", workdir="build", haltOnFailure=True, command="rm -rf app/src/main/res/values-??-r*"))
   f.addStep(ShellCommand(name="rename_res", workdir="build", haltOnFailure=True, command="rename 's/_/-r/g' app/src/main/res/values-*"))
   f.addStep(ShellCommand(name="git_add", workdir="build", haltOnFailure=True, command="git add --verbose app/src/main/res/values-*"))
   f.addStep(ShellCommand(name="git_commit", workdir="build", haltOnFailure=True, command=["git", "commit", "--author=Clementine Buildbot <buildbot@clementine-player.org>", "--message=Automatic merge of translations from Transifex (https://www.transifex.com/projects/p/clementine-remote/resource/clementine-remote)"]))
