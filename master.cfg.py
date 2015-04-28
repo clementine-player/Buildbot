@@ -160,6 +160,8 @@ sched_deb = Dependent(name="deb", upstream=sched_linux, builderNames=[
   "Deb Trusty 32-bit",
   "Deb Utopic 64-bit",
   "Deb Utopic 32-bit",
+  "Deb Vivid 64-bit",
+  "Deb Vivid 32-bit",
 ])
 
 sched_rpm = Dependent(name="rpm", upstream=sched_linux, builderNames=[
@@ -181,6 +183,7 @@ sched_ppa = Dependent(name="ppa", upstream=sched_deb, builderNames=[
   "PPA Precise",
   "PPA Trusty",
   "PPA Utopic",
+  "PPA Vivid",
 ])
 
 sched_dependencies = Scheduler(name="dependencies", change_filter=deps_change_filter, treeStableTimer=2*60, builderNames=[
@@ -659,6 +662,8 @@ c['builders'] = [
   BuilderDef("Deb Trusty 32-bit", "clementine_deb_trusty_32", MakeDebBuilder('i386',  'trusty', chroot='trusty-32')),
   BuilderDef("Deb Utopic 64-bit", "clementine_deb_utopic_64", MakeDebBuilder('amd64',  'utopic', chroot='utopic-64')),
   BuilderDef("Deb Utopic 32-bit", "clementine_deb_utopic_32", MakeDebBuilder('i386',  'utopic', chroot='utopic-32')),
+  BuilderDef("Deb Vivid 64-bit", "clementine_deb_vivid_64", MakeDebBuilder('amd64',  'vivid', chroot='vivid-64')),
+  BuilderDef("Deb Vivid 32-bit", "clementine_deb_vivid_32", MakeDebBuilder('i386',  'vivid', chroot='vivid-32')),
   BuilderDef("Deb Jessie 64-bit",  "clementine_deb_jessie_64", MakeDebBuilder('amd64', 'jessie', chroot='jessie-64', dist_type='debian')),
   BuilderDef("Deb Jessie 32-bit",  "clementine_deb_jessie_32", MakeDebBuilder('i386',  'jessie', chroot='jessie-32', dist_type='debian')),
   BuilderDef("Rpm Fedora 20 64-bit", "clementine_rpm_fc20_64", MakeRpmBuilder('fc20', 'x86_64', 'fedora-20-x86_64', '20')),
@@ -673,6 +678,7 @@ c['builders'] = [
   BuilderDef("PPA Precise",      "clementine_ppa_precise",   MakePPABuilder('precise', chroot='precise-32')),
   BuilderDef("PPA Trusty",       "clementine_ppa_trusty",    MakePPABuilder('trusty',  chroot='trusty-32')),
   BuilderDef("PPA Utopic",       "clementine_ppa_utopic",    MakePPABuilder('utopic',  chroot='utopic-32')),
+  BuilderDef("PPA Vivid",       "clementine_ppa_vivid",    MakePPABuilder('vivid',  chroot='vivid-32')),
   BuilderDef("Mac Release",      "clementine_mac_release",   MakeMacBuilder(), slave="zarquon"),
   BuilderDef("Dependencies Mac", "clementine_mac_deps",      MakeMacDepsBuilder(), slave="zarquon"),
 
