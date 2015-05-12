@@ -148,6 +148,7 @@ sched_linux = Scheduler(name="linux", change_filter=change_filter, treeStableTim
 sched_winmac = Scheduler(name="winmac", change_filter=change_filter, treeStableTimer=2*60, builderNames=[
   "MinGW-w64 Debug",
   "MinGW-w64 Release",
+  "MinGW-w64 Portable",
   "Mac Release",
 ])
 
