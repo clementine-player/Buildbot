@@ -686,7 +686,7 @@ c['builders'] = [
   BuilderDef("Dependencies Mingw-w64", "clementine_mingw_w64_deps",  MakeMinGWDepsBuilder("mingw")),
   BuilderDef("MinGW-w64 Release",    "clementine_mingw_w64_release", MakeMingwBuilder('Release', 'release', 'mingw', False)),
   BuilderDef("MinGW-w64 Debug",    "clementine_mingw_w64_debug", MakeMingwBuilder('Debug', 'debug', 'mingw', False)),
-  BuilderDef("MinGW-w64 Portable",    "clementine_mingw_w64_portable", MakeMingwBuilder('Release', 'release', 'mingw', True)),
+  BuilderDef("MinGW-w64 Portable",    "clementine_mingw_w64_portable", MakeMingwBuilder('Release', 'portable', 'mingw', True)),
 
   BuilderDef("Android-Remote", "android-remote", MakeAndroidRemoteBuilder())
 ]
