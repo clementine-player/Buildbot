@@ -172,6 +172,8 @@ c = BuildmasterConfig = {
     BuildSlaveWithPassword("fedora-20-64"),
     BuildSlaveWithPassword("fedora-21-32"),
     BuildSlaveWithPassword("fedora-21-64"),
+    BuildSlaveWithPassword("fedora-22-32"),
+    BuildSlaveWithPassword("fedora-22-64"),
     BuildSlaveWithPassword("mingw"),
   ],
   'change_source': [
@@ -238,6 +240,8 @@ force_scheduler = forcesched.ForceScheduler(
     "RPM Fedora 20 64-bit",
     "RPM Fedora 21 32-bit",
     "RPM Fedora 21 64-bit",
+    "RPM Fedora 22 32-bit",
+    "RPM Fedora 22 64-bit",
     "Windows Dependencies",
     "Windows Release",
     "Windows Debug",
@@ -308,6 +312,18 @@ c['builders'] = [
     'name':      'RPM Fedora 21 64-bit',
     'builddir':  'rpm-fedora-21-64',
     'slavename': 'fedora-21-64',
+    'factory':   MakeFedoraBuilder(),
+  },
+  {
+    'name':      'RPM Fedora 22 32-bit',
+    'builddir':  'rpm-fedora-22-32',
+    'slavename': 'fedora-22-32',
+    'factory':   MakeFedoraBuilder(),
+  },
+  {
+    'name':      'RPM Fedora 22 64-bit',
+    'builddir':  'rpm-fedora-22-64',
+    'slavename': 'fedora-22-64',
     'factory':   MakeFedoraBuilder(),
   },
   {
