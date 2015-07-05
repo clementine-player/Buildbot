@@ -1,7 +1,6 @@
 from ubuntu
 
-run apt-get update
-run apt-get install -y python-pip python-dev git
+run apt-get update && apt-get install -y python-pip python-dev git
 run pip install sqlalchemy==0.7.10 buildbot
 
 expose 9989

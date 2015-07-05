@@ -1,8 +1,7 @@
 from clementine/ubuntu:trusty-i386
 
 # apt-fast
-run apt-get update
-run apt-get install -y aria2
+run apt-get update && apt-get install -y aria2
 add apt-fast /bin/apt-fast
 
 # Buildbot slave
@@ -27,7 +26,7 @@ run wget --progress=dot:mega -O /mingw.tar.bz2 \
     rm /mingw.tar.bz2 && \
     ln -v -s /mingw/bin/* /bin/
 
-add first-time-setup.sh /first-time-setup.sh
+add slave-mingw/first-time-setup.sh /first-time-setup.sh
 run ln -s /persistent-data/mingw/target /target
 run ln -s /persistent-data/mingw/target /usr/i586-mingw32msvc
 run ln -s /persistent-data/mingw/windows-dependencies/source /src

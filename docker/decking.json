@@ -1,0 +1,114 @@
+{
+  "images": {
+    "clementine/volumes": "./volumes",
+    "clementine/master": "./master",
+
+    "clementine/slave-precise-32":   "./slave-precise-32",
+    "clementine/slave-precise-64":   "./slave-precise-64",
+    "clementine/slave-trusty-32":    "./slave-trusty-32",
+    "clementine/slave-trusty-64":    "./slave-trusty-64",
+    "clementine/slave-utopic-32":    "./slave-utopic-32",
+    "clementine/slave-utopic-64":    "./slave-utopic-64",
+    "clementine/slave-fedora-20-32": "./slave-fedora-20-32",
+    "clementine/slave-fedora-20-64": "./slave-fedora-20-64",
+    "clementine/slave-fedora-21-32": "./slave-fedora-21-32",
+    "clementine/slave-fedora-21-64": "./slave-fedora-21-64",
+    "clementine/slave-fedora-22-32": "./slave-fedora-22-32",
+    "clementine/slave-fedora-22-64": "./slave-fedora-22-64",
+    "clementine/slave-mingw":        "./slave-mingw"
+  },
+  "containers": {
+    "volumes": {
+      "image": "clementine/volumes",
+      "data": true
+    },
+    "master": {
+      "image":      "clementine/master",
+      "port":       ["8010:8010"],
+      "mount":      ["./config:/config"],
+      "mount-from": ["volumes"]
+    },
+    "slave-precise-32": {
+      "image":        "clementine/slave-precise-32",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-precise-64": {
+      "image":        "clementine/slave-precise-64",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-trusty-32": {
+      "image":        "clementine/slave-trusty-32",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-trusty-64": {
+      "image":        "clementine/slave-trusty-64",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-utopic-32": {
+      "image":        "clementine/slave-utopic-32",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-utopic-64": {
+      "image":        "clementine/slave-utopic-64",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-fedora-20-32": {
+      "image":        "clementine/slave-fedora-20-32",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-fedora-20-64": {
+      "image":        "clementine/slave-fedora-20-64",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-fedora-21-32": {
+      "image":        "clementine/slave-fedora-21-32",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-fedora-21-64": {
+      "image":        "clementine/slave-fedora-21-64",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-mingw": {
+      "image":        "clementine/slave-mingw",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    }
+  },
+  "clusters": {
+    "main": [
+      "master",
+      "slave-precise-32",
+      "slave-precise-64",
+      "slave-trusty-32",
+      "slave-trusty-64",
+      "slave-utopic-32",
+      "slave-utopic-64",
+      "slave-fedora-20-32",
+      "slave-fedora-20-64",
+      "slave-fedora-21-32",
+      "slave-fedora-21-64",
+      "slave-mingw"
+    ]
+  }
+}
