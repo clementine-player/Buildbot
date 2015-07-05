@@ -1,4 +1,4 @@
-FROM utopic-i386-base
+FROM %DISTRO%-i386-base
 
 # a few minor docker-specific tweaks
 # see https://github.com/dotcloud/docker/blob/master/contrib/mkimage/debootstrap

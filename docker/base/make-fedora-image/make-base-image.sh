@@ -9,6 +9,6 @@ mkdir $root
 
 rpm --root $root --initdb
 yumdownloader --releasever $version --destdir=/tmp fedora-release fedora-repos
-rpm --root $root -ivh /tmp/fedora-*.rpm
-yum -y --nogpgcheck --installroot $root install bash yum
+rpm --nodeps --root $root -ivh /tmp/fedora-*.rpm
+yum -y --nogpgcheck --installroot $root install yum
 yum -y --nogpgcheck --installroot $root groupinstall "minimal install"
