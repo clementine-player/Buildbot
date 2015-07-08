@@ -3,6 +3,8 @@
     "clementine/volumes": "./volumes",
     "clementine/master": "./master",
 
+    "clementine/slave-jessie-32":    "./slave-jessie-32",
+    "clementine/slave-jessie-64":    "./slave-jessie-64",
     "clementine/slave-precise-32":   "./slave-precise-32",
     "clementine/slave-precise-64":   "./slave-precise-64",
     "clementine/slave-trusty-32":    "./slave-trusty-32",
@@ -27,6 +29,18 @@
       "port":       ["8010:8010"],
       "mount":      ["./config:/config"],
       "mount-from": ["volumes"]
+    },
+    "slave-jessie-32": {
+      "image":        "clementine/slave-jessie-32",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
+    },
+    "slave-jessie-64": {
+      "image":        "clementine/slave-jessie-64",
+      "dependencies": ["master:master"],
+      "mount":        ["./config:/config"],
+      "mount-from":   ["volumes"]
     },
     "slave-precise-32": {
       "image":        "clementine/slave-precise-32",
@@ -110,6 +124,8 @@
   "clusters": {
     "main": [
       "master",
+      "slave-jessie-32",
+      "slave-jessie-64",
       "slave-precise-32",
       "slave-precise-64",
       "slave-trusty-32",

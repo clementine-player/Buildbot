@@ -23,6 +23,10 @@ if not os.path.exists(basedir):
     with open(os.path.join(basedir, 'first-time-setup.log'), 'w') as fh:
       fh.write(stdout)
 
+pidfile = os.path.join(basedir, 'twistd.pid')
+if os.path.exists(pidfile):
+  os.unlink(pidfile)
+
 os.execlp(
     'buildslave',
     'buildslave', 'start', '--nodaemon', basedir)

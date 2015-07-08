@@ -14,7 +14,7 @@ from buildbot.status import html
 from buildbot.status import mail
 from buildbot.status.web import authz
 from buildbot.steps import shell
-from buildbot.steps import source
+from buildbot.steps.source import git
 
 passwords = imp.load_source('passwords', '/config/passwords.py')
 
@@ -27,8 +27,9 @@ def GitArgs(repository):
   return {
     "repourl": GitBaseUrl(repository),
     "branch": "master",
-    "mode": "copy",
+    "mode": "incremental",
     "retry": (5*60, 3),
+    "workdir": "source",
   }
 
 
@@ -55,7 +56,7 @@ class BuildSlaveWithPassword(buildslave.BuildSlave):
         self, name, passwords.PASSWORDS[name], **kwargs)
 
 
-def MakeDebBuilder(dist, dist_type, arch):
+def MakeDebBuilder(dist, arch):
   env = {
     "DEB_BUILD_OPTIONS": 'parallel=4',
   }
@@ -70,7 +71,7 @@ def MakeDebBuilder(dist, dist_type, arch):
   make_cmd = ["make", "deb"]
 
   f = factory.BuildFactory()
-  f.addStep(source.Git(**GitArgs("Clementine")))
+  f.addStep(git.Git(**GitArgs("Clementine")))
   f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
   f.addStep(shell.Compile(command=make_cmd, haltOnFailure=True, workdir="source/bin", env=env))
   f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
@@ -79,7 +80,7 @@ def MakeDebBuilder(dist, dist_type, arch):
 
 def MakeWindowsDepsBuilder():
   f = factory.BuildFactory()
-  f.addStep(source.Git(**GitArgs("Dependencies")))
+  f.addStep(git.Git(**GitArgs("Dependencies")))
   f.addStep(shell.ShellCommand(name="clean", workdir="source/windows", command=["make", "clean"]))
   f.addStep(shell.ShellCommand(name="compile", workdir="source/windows", command=["make"]))
   return f
@@ -115,7 +116,7 @@ def MakeWindowsBuilder(is_debug):
   strip_command = 'i686-w64-mingw32-strip'
 
   f = factory.BuildFactory()
-  f.addStep(source.Git(**GitArgs("Clementine")))
+  f.addStep(git.Git(**GitArgs("Clementine")))
   f.addStep(shell.ShellCommand(
       name="cmake", workdir="source/bin", env=env, haltOnFailure=True,
       command=cmake_cmd))
@@ -140,7 +141,7 @@ def MakeWindowsBuilder(is_debug):
 
 def MakeFedoraBuilder():
   f = factory.BuildFactory()
-  f.addStep(source.Git(**GitArgs("Clementine")))
+  f.addStep(git.Git(**GitArgs("Clementine")))
   f.addStep(shell.ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
       command="find ~/rpmbuild/ -type f -delete"))
   f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
@@ -162,6 +163,8 @@ c = BuildmasterConfig = {
   'buildbotURL':  "http://buildbot.clementine-player.org/",
   'slavePortnum': 9989,
   'slaves': [
+    BuildSlaveWithPassword("jessie-32"),
+    BuildSlaveWithPassword("jessie-64"),
     BuildSlaveWithPassword("precise-32"),
     BuildSlaveWithPassword("precise-64"),
     BuildSlaveWithPassword("trusty-32"),
@@ -213,12 +216,14 @@ normal_scheduler = basic.SingleBranchScheduler(
   change_filter=change_filter,
   treeStableTimer=2*60,
   builderNames=[
-    "Deb Trusty 64-bit",
-    "Deb Precise 64-bit",
-    "Deb Utopic 64-bit",
-    "Deb Trusty 32-bit",
+    "Deb Jessie 32-bit",
+    "Deb Jessie 64-bit",
     "Deb Precise 32-bit",
+    "Deb Precise 64-bit",
+    "Deb Trusty 32-bit",
+    "Deb Trusty 64-bit",
     "Deb Utopic 32-bit",
+    "Deb Utopic 64-bit",
   ],
 )
 force_scheduler = forcesched.ForceScheduler(
@@ -230,12 +235,14 @@ force_scheduler = forcesched.ForceScheduler(
   project=forcesched.FixedParameter(name="project", default=""),
   properties=[],
   builderNames=[
-    "Deb Trusty 64-bit",
-    "Deb Precise 64-bit",
-    "Deb Utopic 64-bit",
-    "Deb Trusty 32-bit",
+    "Deb Jessie 32-bit",
+    "Deb Jessie 64-bit",
     "Deb Precise 32-bit",
+    "Deb Precise 64-bit",
+    "Deb Trusty 32-bit",
+    "Deb Trusty 64-bit",
     "Deb Utopic 32-bit",
+    "Deb Utopic 64-bit",
     "RPM Fedora 20 32-bit",
     "RPM Fedora 20 64-bit",
     "RPM Fedora 21 32-bit",
@@ -255,40 +262,52 @@ c['schedulers'] = [
 
 c['builders'] = [
   {
-    'name':      'Deb Precise 64-bit',
-    'builddir':  'deb-precise-64',
-    'slavename': 'precise-64',
-    'factory':   MakeDebBuilder('precise', 'ubuntu', 'amd64'),
+    'name':      'Deb Jessie 32-bit',
+    'builddir':  'deb-jessie-32',
+    'slavename': 'jessie-32',
+    'factory':   MakeDebBuilder('jessie', 'i386'),
   },
   {
-    'name':      'Deb Trusty 64-bit',
-    'builddir':  'deb-trusty-64',
-    'slavename': 'trusty-64',
-    'factory':   MakeDebBuilder('trusty', 'ubuntu', 'amd64'),
-  },
-  {
-    'name':      'Deb Utopic 64-bit',
-    'builddir':  'deb-utopic-64',
-    'slavename': 'utopic-64',
-    'factory':   MakeDebBuilder('utopic', 'ubuntu', 'amd64'),
+    'name':      'Deb Jessie 64-bit',
+    'builddir':  'deb-jessie-64',
+    'slavename': 'jessie-64',
+    'factory':   MakeDebBuilder('jessie', 'amd64'),
   },
   {
     'name':      'Deb Precise 32-bit',
     'builddir':  'deb-precise-32',
     'slavename': 'precise-32',
-    'factory':   MakeDebBuilder('precise', 'ubuntu', 'i386'),
+    'factory':   MakeDebBuilder('precise', 'i386'),
+  },
+  {
+    'name':      'Deb Precise 64-bit',
+    'builddir':  'deb-precise-64',
+    'slavename': 'precise-64',
+    'factory':   MakeDebBuilder('precise', 'amd64'),
+  },
+  {
+    'name':      'Deb Trusty 64-bit',
+    'builddir':  'deb-trusty-64',
+    'slavename': 'trusty-64',
+    'factory':   MakeDebBuilder('trusty', 'amd64'),
   },
   {
     'name':      'Deb Trusty 32-bit',
     'builddir':  'deb-trusty-32',
     'slavename': 'trusty-32',
-    'factory':   MakeDebBuilder('trusty', 'ubuntu', 'i386'),
+    'factory':   MakeDebBuilder('trusty', 'i386'),
   },
   {
     'name':      'Deb Utopic 32-bit',
     'builddir':  'deb-utopic-32',
     'slavename': 'utopic-32',
-    'factory':   MakeDebBuilder('utopic', 'ubuntu', 'i386'),
+    'factory':   MakeDebBuilder('utopic', 'i386'),
+  },
+  {
+    'name':      'Deb Utopic 64-bit',
+    'builddir':  'deb-utopic-64',
+    'slavename': 'utopic-64',
+    'factory':   MakeDebBuilder('utopic', 'amd64'),
   },
   {
     'name':      'RPM Fedora 20 32-bit',

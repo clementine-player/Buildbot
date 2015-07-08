@@ -50,8 +50,9 @@ that you want to add.
 
   ```
   cd base
-  ./build-ubuntu-i386.sh vivid
   ./build-fedora-i386.sh 22
+  ./build-ubuntu-i386.sh debian jessie
+  ./build-ubuntu-i386.sh ubuntu vivid
   ```
 
 2. Create the `slave-vivid-32`, `slave-vivid-64`, `slave-fedora-22-32` and
@@ -74,3 +75,25 @@ that you want to add.
   ```
 
 7. See the builders on http://localhost:8010/builders.
+
+
+Recreate an image and container
+===============================
+
+You might need to do this occasionaly to update a distro's packages.
+
+```
+decking build --no-cache clementine/slave-vivid-32
+docker stop slave-vivid-32
+docker rm slave-vivid-32
+decking create
+decking start
+```
+
+
+Reload the config file on the master
+====================================
+
+```
+docker exec master /usr/bin/python /config/master/start.py --reconfig
+```
