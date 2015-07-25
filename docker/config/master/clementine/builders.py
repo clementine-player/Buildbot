@@ -67,12 +67,14 @@ def MakePPABuilder(distro, ppa):
     "-DDEB_DIST=" + distro,
   ]
   buildpackage_cmd = ["dpkg-buildpackage", "-S", "-kF6ABD82E"]
-  dput_cmd = "dput --simulate %s *_source.changes" % ppa
+  keys_cmd = ["gpg", "--import", "/config/ppa-keys"]
+  dput_cmd = "dput %s *_source.changes" % ppa
 
   f = factory.BuildFactory()
   f.addStep(git.Git(**git_args))
   f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
   f.addStep(shell.ShellCommand(name="maketarball", command=["dist/maketarball.sh"], haltOnFailure=True, workdir="source"))
+  f.addStep(shell.ShellCommand(name="keys", command=keys_cmd, workdir="."))
   f.addStep(shell.ShellCommand(name="buildpackage", command=buildpackage_cmd, haltOnFailure=True, workdir="source"))
   f.addStep(shell.ShellCommand(name="dput", command=dput_cmd, haltOnFailure=True, workdir="."))
   return f

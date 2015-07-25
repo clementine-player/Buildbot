@@ -34,5 +34,6 @@ run ln -s /persistent-data/mingw/windows-dependencies/source /src
 # Give the buildslave a name
 run echo "mingw" > /slave-name
 
-run useradd -r -s /bin/false buildbot
+# Create the buildbot user.
+run useradd -r -m -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]

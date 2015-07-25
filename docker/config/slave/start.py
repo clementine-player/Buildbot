@@ -7,7 +7,7 @@ SLAVENAME = open('/slave-name').read().strip()
 BASEDIR = os.path.join('/persistent-data', SLAVENAME)
 
 pwd_entry = pwd.getpwnam('buildbot')
-creating_basedir = True
+creating_basedir = False
 
 # Create the BASEDIR if it doesn't exist.
 if not os.path.exists(BASEDIR):
@@ -30,6 +30,7 @@ if not os.path.exists(BASEDIR):
 # Change to the buildbot user.
 os.setgid(pwd_entry.pw_gid)
 os.setuid(pwd_entry.pw_uid)
+os.environ['HOME'] = pwd_entry.pw_dir
 
 if creating_basedir:
   os.symlink('/config/slave/buildbot.tac', os.path.join(BASEDIR, 'buildbot.tac'))

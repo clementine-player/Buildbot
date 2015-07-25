@@ -14,5 +14,6 @@ run rpmdev-setuptree
 
 run echo "fedora-21-64" > /slave-name
 
-run useradd -r -s /bin/false buildbot
+# Create the buildbot user.
+run useradd -r -m -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]

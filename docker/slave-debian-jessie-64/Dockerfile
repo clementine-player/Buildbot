@@ -20,5 +20,6 @@ run apt-get update && apt-get install -y libechonest-dev
 # Give the buildslave a name
 run echo "debian-jessie-64" > /slave-name
 
-run useradd -r -s /bin/false buildbot
+# Create the buildbot user.
+run useradd -r -m -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]
