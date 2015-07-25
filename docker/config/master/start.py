@@ -1,5 +1,6 @@
 import argparse
 import os
+import pwd
 import subprocess
 import sys
 
@@ -8,24 +9,35 @@ parser.add_argument('--debug', action='store_true')
 parser.add_argument('--reconfig', action='store_true')
 args = parser.parse_args()
 
-basedir = os.path.join('/persistent-data/master')
+BASEDIR = '/persistent-data/master'
 
-# Create the basedir if it doesn't exist.
-if not os.path.exists(basedir):
-  os.mkdir(basedir)
-  subprocess.check_call(['buildbot', 'create-master', basedir])
-  os.symlink('/config/master/master.cfg.py', os.path.join(basedir, 'master.cfg'))
+pwd_entry = pwd.getpwnam('buildbot')
+creating_basedir = False
+
+# Create the BASEDIR if it doesn't exist.
+if not os.path.exists(BASEDIR):
+  os.mkdir(BASEDIR)
+  os.chown(BASEDIR, pwd_entry.pw_uid, pwd_entry.pw_gid)
+  creating_basedir = True
+
+# Change to the buildbot user.
+os.setgid(pwd_entry.pw_gid)
+os.setuid(pwd_entry.pw_uid)
+
+if creating_basedir:
+  subprocess.check_call(['buildbot', 'create-master', BASEDIR])
+  os.symlink('/config/master/master.cfg.py', os.path.join(BASEDIR, 'master.cfg'))
 
 if not args.reconfig:
-  pidfile = os.path.join(basedir, 'twistd.pid')
+  pidfile = os.path.join(BASEDIR, 'twistd.pid')
   if os.path.exists(pidfile):
     os.unlink(pidfile)
 
 if args.debug:
-  argv = ['buildbot', 'start', basedir]
+  argv = ['buildbot', 'start', BASEDIR]
 elif args.reconfig:
-  argv = ['buildbot', 'reconfig', basedir]
+  argv = ['buildbot', 'reconfig', BASEDIR]
 else:
-  argv = ['buildbot', 'start', '--nodaemon', basedir]
+  argv = ['buildbot', 'start', '--nodaemon', BASEDIR]
 
 os.execv('/usr/local/bin/buildbot', argv)

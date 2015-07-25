@@ -13,4 +13,6 @@ run setarch i386 yum install --assumeyes \
 run rpmdev-setuptree
 
 run echo "fedora-21-32" > /slave-name
+
+run useradd -r -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]

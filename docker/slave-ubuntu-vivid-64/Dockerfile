@@ -19,4 +19,6 @@ run apt-get update && apt-get install -y libechonest-dev
 
 # Give the buildslave a name
 run echo "ubuntu-vivid-64" > /slave-name
+
+run useradd -r -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]

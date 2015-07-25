@@ -22,4 +22,6 @@ run apt-get update && apt-get install -y dput
 
 # Give the buildslave a name
 run echo "ubuntu-vivid-32" > /slave-name
+
+run useradd -r -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]

@@ -13,4 +13,6 @@ run yum install --assumeyes \
 run rpmdev-setuptree
 
 run echo "fedora-22-64" > /slave-name
+
+run useradd -r -s /bin/false buildbot
 cmd ["/usr/bin/python", "/config/slave/start.py"]
