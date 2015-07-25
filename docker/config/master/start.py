@@ -15,7 +15,6 @@ if not os.path.exists(basedir):
   os.mkdir(basedir)
   subprocess.check_call(['buildbot', 'create-master', basedir])
   os.symlink('/config/master/master.cfg.py', os.path.join(basedir, 'master.cfg'))
-  os.symlink('/config/master/clementine_passwords.py', os.path.join(basedir, 'clementine_passwords.py'))
 
 if not args.reconfig:
   pidfile = os.path.join(basedir, 'twistd.pid')

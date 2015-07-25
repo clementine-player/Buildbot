@@ -1,4 +1,4 @@
-import imp
+import json
 import os
 
 from buildslave.bot import BuildSlave
@@ -8,11 +8,11 @@ application = service.Application('buildslave')
 
 slavename = open('/slave-name').read().strip()
 basedir = os.path.join('/persistent-data', slavename)
-passwords = imp.load_source('passwords', '/config/passwords.py')
+PASSWORDS = json.load(open('/config/passwords.json'))
 
 buildmaster_host = os.environ['MASTER_PORT_9989_TCP_ADDR']
 port = int(os.environ['MASTER_PORT_9989_TCP_PORT'])
-passwd = passwords.PASSWORDS[slavename]
+passwd = PASSWORDS[slavename]
 keepalive = 600
 usepty = 0
 umask = None

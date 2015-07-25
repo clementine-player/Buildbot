@@ -1,0 +1,10 @@
+{
+  "linux": {
+    "debian": ["jessie"],
+    "ubuntu": ["precise", "trusty", "utopic"],
+    "fedora": ["21", "22"]
+  },
+  "special_slaves": [
+    "mingw"
+  ]
+}

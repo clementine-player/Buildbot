@@ -59,14 +59,9 @@ that you want to add.
    `slave-fedora-22-64` directories by copying from the last distro version and
    editing the two distro names in the `Dockerfile`
 
-3. Add the images and containers to `decking.json`
+3. Add the distro to `config/config.json` and run `./update_config.py`
 
-4. Add the slaves and builders to `config/master/master.cfg.py`
-
-5. Add passwords for the slaves to `config/passwords.py` and
-   `config/passwords.py.example`
-
-6. Build the images and containers and start the slaves:
+4. Build the images and containers and start the slaves:
 
   ```
   decking build all
@@ -74,7 +69,7 @@ that you want to add.
   decking start
   ```
 
-7. See the builders on http://localhost:8010/builders.
+5. See the builders on http://localhost:8010/builders.
 
 
 Recreate an image and container
@@ -97,3 +92,12 @@ Reload the config file on the master
 ```
 docker exec master /usr/bin/python /config/master/start.py --reconfig
 ```
+
+
+View the master's log
+=====================
+
+```
+docker run --volumes-from volumes ubuntu tail /persistent-data/master/twistd.log
+```
+

@@ -2,365 +2,146 @@
 # ex: set syntax=python:
 
 import imp
+import json
 import os
+import pprint
+import re
 
 from buildbot import buildslave
 from buildbot.changes import gitpoller
-from buildbot.process import factory
 from buildbot.schedulers import basic
 from buildbot.schedulers import filter
 from buildbot.schedulers import forcesched
 from buildbot.status import html
 from buildbot.status import mail
 from buildbot.status.web import authz
-from buildbot.steps import shell
-from buildbot.steps.source import git
 
-passwords = imp.load_source('passwords', '/config/passwords.py')
+from clementine import builders
 
-
-def GitBaseUrl(repository):
-  return "https://github.com/clementine-player/%s.git" % repository
-
-
-def GitArgs(repository):
-  return {
-    "repourl": GitBaseUrl(repository),
-    "branch": "master",
-    "mode": "incremental",
-    "retry": (5*60, 3),
-    "workdir": "source",
-  }
-
-
-class OutputFinder(shell.ShellCommand):
-  def __init__(self, pattern=None, **kwargs):
-    if pattern is None:
-      shell.ShellCommand.__init__(self, **kwargs)
-    else:
-      shell.ShellCommand.__init__(self,
-        name="get output filename",
-        command=["sh", "-c", "basename `ls -d " + pattern + "|head -n 1`"],
-        workdir="source",
-        **kwargs
-      )
-
-  def commandComplete(self, cmd):
-    filename = self.getLog('stdio').readlines()[0].strip()
-    self.setProperty("output-filename", filename)
-
-
-class BuildSlaveWithPassword(buildslave.BuildSlave):
-  def __init__(self, name, **kwargs):
-    buildslave.BuildSlave.__init__(
-        self, name, passwords.PASSWORDS[name], **kwargs)
-
-
-def MakeDebBuilder(dist, arch):
-  env = {
-    "DEB_BUILD_OPTIONS": 'parallel=4',
-  }
-
-  cmake_cmd = [
-    "cmake", "..",
-    "-DWITH_DEBIAN=ON",
-    "-DDEB_ARCH=" + arch,
-    "-DDEB_DIST=" + dist,
-    "-DENABLE_SPOTIFY_BLOB=OFF",
-  ]
-  make_cmd = ["make", "deb"]
-
-  f = factory.BuildFactory()
-  f.addStep(git.Git(**GitArgs("Clementine")))
-  f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
-  f.addStep(shell.Compile(command=make_cmd, haltOnFailure=True, workdir="source/bin", env=env))
-  f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
-  return f
-
-
-def MakeWindowsDepsBuilder():
-  f = factory.BuildFactory()
-  f.addStep(git.Git(**GitArgs("Dependencies")))
-  f.addStep(shell.ShellCommand(name="clean", workdir="source/windows", command=["make", "clean"]))
-  f.addStep(shell.ShellCommand(name="compile", workdir="source/windows", command=["make"]))
-  return f
-
-
-def MakeWindowsBuilder(is_debug):
-  env = {
-    'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig',
-    'PATH': ':'.join([
-        '/mingw/bin',
-        '/usr/local/bin',
-        '/usr/bin',
-        '/bin',
-    ]),
-  }
-
-  cmake_cmd = [
-    "cmake", "..",
-    "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
-    "-DCMAKE_BUILD_TYPE=Release",
-    "-DENABLE_WIN32_CONSOLE=" + ("ON" if is_debug else "OFF"),
-    "-DQT_HEADERS_DIR=/target/include",
-    "-DQT_LIBRARY_DIR=/target/bin",
-    "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
-  ]
-
-  executable_files = [
-    "clementine.exe",
-    "clementine-tagreader.exe",
-    "clementine-spotifyblob.exe",
-  ]
-
-  strip_command = 'i686-w64-mingw32-strip'
-
-  f = factory.BuildFactory()
-  f.addStep(git.Git(**GitArgs("Clementine")))
-  f.addStep(shell.ShellCommand(
-      name="cmake", workdir="source/bin", env=env, haltOnFailure=True,
-      command=cmake_cmd))
-  f.addStep(shell.ShellCommand(
-      name="link dependencies", workdir="source/dist/windows",
-      haltOnFailure=True, command="ln -svf /src/windows/clementine-deps/* ."))
-  f.addStep(shell.ShellCommand(
-      name="link output", workdir="source/dist/windows", haltOnFailure=True,
-      command=["ln", "-svf"] + ["../../bin/" + x for x in executable_files] + ["."]))
-  f.addStep(shell.Compile(
-      command=["make", "-j8"], workdir="source/bin", haltOnFailure=True))
-  f.addStep(shell.ShellCommand(
-      name="strip", workdir="source/bin", haltOnFailure=True, env=env,
-      command=[strip_command] + executable_files))
-  f.addStep(shell.ShellCommand(
-      name="makensis", command=["makensis", "clementine.nsi"],
-      workdir="source/dist/windows", haltOnFailure=True))
-  f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
-
-  return f
-
-
-def MakeFedoraBuilder():
-  f = factory.BuildFactory()
-  f.addStep(git.Git(**GitArgs("Clementine")))
-  f.addStep(shell.ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
-      command="find ~/rpmbuild/ -type f -delete"))
-  f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
-      command=["cmake", ".."]))
-  f.addStep(shell.ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
-      command=["../dist/maketarball.sh"]))
-  f.addStep(shell.ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
-      command="mv clementine-*.tar.gz ~/rpmbuild/SOURCES"))
-  f.addStep(shell.Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
-      command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
-  f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
-  return f
-
-
-# Basic config
-c = BuildmasterConfig = {
-  'projectName':  "Clementine",
-  'projectURL':   "http://www.clementine-player.org/",
-  'buildbotURL':  "http://buildbot.clementine-player.org/",
-  'slavePortnum': 9989,
-  'slaves': [
-    BuildSlaveWithPassword("jessie-32"),
-    BuildSlaveWithPassword("jessie-64"),
-    BuildSlaveWithPassword("precise-32"),
-    BuildSlaveWithPassword("precise-64"),
-    BuildSlaveWithPassword("trusty-32"),
-    BuildSlaveWithPassword("trusty-64"),
-    BuildSlaveWithPassword("utopic-32"),
-    BuildSlaveWithPassword("utopic-64"),
-    BuildSlaveWithPassword("fedora-20-32"),
-    BuildSlaveWithPassword("fedora-20-64"),
-    BuildSlaveWithPassword("fedora-21-32"),
-    BuildSlaveWithPassword("fedora-21-64"),
-    BuildSlaveWithPassword("fedora-22-32"),
-    BuildSlaveWithPassword("fedora-22-64"),
-    BuildSlaveWithPassword("mingw"),
-  ],
-  'change_source': [
-    gitpoller.GitPoller(
-      project="clementine",
-      repourl=GitBaseUrl("Clementine"),
-      pollinterval=60*5, # seconds
-      branch='master',
-      workdir="gitpoller_work",
-    ),
-  ],
-  'status': [
-    html.WebStatus(
-      http_port="tcp:8010",
-      authz=authz.Authz(
-        forceBuild=True,
-        forceAllBuilds=True,
-        stopBuild=True,
-        stopAllBuilds=True,
-        cancelPendingBuild=True,
-        cancelAllPendingBuilds=True,
-        stopChange=True,
-      ),
-    ),
-    mail.MailNotifier(
-      fromaddr="buildmaster@zaphod.purplehatstands.com",
-      lookup="gmail.com",
-      mode="failing",
-    ),
-  ],
+LINUX_FACTORIES = {
+  'debian': builders.MakeDebBuilder,
+  'ubuntu': builders.MakeDebBuilder,
+  'fedora': builders.MakeFedoraBuilder,
 }
+CONFIG = json.load(open('/config/config.json'))
+PASSWORDS = json.load(open('/config/passwords.json'))
 
-change_filter = filter.ChangeFilter(project="clementine", branch=u"master")
 
-normal_scheduler = basic.SingleBranchScheduler(
-  name="deb",
-  change_filter=change_filter,
-  treeStableTimer=2*60,
-  builderNames=[
-    "Deb Jessie 32-bit",
-    "Deb Jessie 64-bit",
-    "Deb Precise 32-bit",
-    "Deb Precise 64-bit",
-    "Deb Trusty 32-bit",
-    "Deb Trusty 64-bit",
-    "Deb Utopic 32-bit",
-    "Deb Utopic 64-bit",
-  ],
-)
-force_scheduler = forcesched.ForceScheduler(
-  name="force",
-  reason=forcesched.FixedParameter(name="reason", default="force build"),
-  branch=forcesched.StringParameter(name="branch", default="master"),
-  revision=forcesched.FixedParameter(name="revision", default=""),
-  repository=forcesched.FixedParameter(name="repository", default=""),
-  project=forcesched.FixedParameter(name="project", default=""),
-  properties=[],
-  builderNames=[
-    "Deb Jessie 32-bit",
-    "Deb Jessie 64-bit",
-    "Deb Precise 32-bit",
-    "Deb Precise 64-bit",
-    "Deb Trusty 32-bit",
-    "Deb Trusty 64-bit",
-    "Deb Utopic 32-bit",
-    "Deb Utopic 64-bit",
-    "RPM Fedora 20 32-bit",
-    "RPM Fedora 20 64-bit",
-    "RPM Fedora 21 32-bit",
-    "RPM Fedora 21 64-bit",
-    "RPM Fedora 22 32-bit",
-    "RPM Fedora 22 64-bit",
-    "Windows Dependencies",
-    "Windows Release",
-    "Windows Debug",
-  ],
-)
+class ClementineBuildbot(object):
+  def __init__(self):
+    self.slaves = []
+    self.builders = []
+    self.auto_builder_names = []
 
-c['schedulers'] = [
-  normal_scheduler,
-  force_scheduler,
-]
+    # Add linux slaves and builders.
+    for linux_distro, versions in CONFIG['linux'].iteritems():
+      factory = LINUX_FACTORIES[linux_distro]
+      for version in versions:
+        self._AddBuilderAndSlave(linux_distro, version, False, factory)
+        self._AddBuilderAndSlave(linux_distro, version, True, factory)
 
-c['builders'] = [
-  {
-    'name':      'Deb Jessie 32-bit',
-    'builddir':  'deb-jessie-32',
-    'slavename': 'jessie-32',
-    'factory':   MakeDebBuilder('jessie', 'i386'),
-  },
-  {
-    'name':      'Deb Jessie 64-bit',
-    'builddir':  'deb-jessie-64',
-    'slavename': 'jessie-64',
-    'factory':   MakeDebBuilder('jessie', 'amd64'),
-  },
-  {
-    'name':      'Deb Precise 32-bit',
-    'builddir':  'deb-precise-32',
-    'slavename': 'precise-32',
-    'factory':   MakeDebBuilder('precise', 'i386'),
-  },
-  {
-    'name':      'Deb Precise 64-bit',
-    'builddir':  'deb-precise-64',
-    'slavename': 'precise-64',
-    'factory':   MakeDebBuilder('precise', 'amd64'),
-  },
-  {
-    'name':      'Deb Trusty 64-bit',
-    'builddir':  'deb-trusty-64',
-    'slavename': 'trusty-64',
-    'factory':   MakeDebBuilder('trusty', 'amd64'),
-  },
-  {
-    'name':      'Deb Trusty 32-bit',
-    'builddir':  'deb-trusty-32',
-    'slavename': 'trusty-32',
-    'factory':   MakeDebBuilder('trusty', 'i386'),
-  },
-  {
-    'name':      'Deb Utopic 32-bit',
-    'builddir':  'deb-utopic-32',
-    'slavename': 'utopic-32',
-    'factory':   MakeDebBuilder('utopic', 'i386'),
-  },
-  {
-    'name':      'Deb Utopic 64-bit',
-    'builddir':  'deb-utopic-64',
-    'slavename': 'utopic-64',
-    'factory':   MakeDebBuilder('utopic', 'amd64'),
-  },
-  {
-    'name':      'RPM Fedora 20 32-bit',
-    'builddir':  'rpm-fedora-20-32',
-    'slavename': 'fedora-20-32',
-    'factory':   MakeFedoraBuilder(),
-  },
-  {
-    'name':      'RPM Fedora 20 64-bit',
-    'builddir':  'rpm-fedora-20-64',
-    'slavename': 'fedora-20-64',
-    'factory':   MakeFedoraBuilder(),
-  },
-  {
-    'name':      'RPM Fedora 21 32-bit',
-    'builddir':  'rpm-fedora-21-32',
-    'slavename': 'fedora-21-32',
-    'factory':   MakeFedoraBuilder(),
-  },
-  {
-    'name':      'RPM Fedora 21 64-bit',
-    'builddir':  'rpm-fedora-21-64',
-    'slavename': 'fedora-21-64',
-    'factory':   MakeFedoraBuilder(),
-  },
-  {
-    'name':      'RPM Fedora 22 32-bit',
-    'builddir':  'rpm-fedora-22-32',
-    'slavename': 'fedora-22-32',
-    'factory':   MakeFedoraBuilder(),
-  },
-  {
-    'name':      'RPM Fedora 22 64-bit',
-    'builddir':  'rpm-fedora-22-64',
-    'slavename': 'fedora-22-64',
-    'factory':   MakeFedoraBuilder(),
-  },
-  {
-    'name':      'Windows Dependencies',
-    'builddir':  'windows-dependencies',
-    'slavename': 'mingw',
-    'factory':   MakeWindowsDepsBuilder(),
-  },
-  {
-    'name':      'Windows Release',
-    'builddir':  'windows-release',
-    'slavename': 'mingw',
-    'factory':   MakeWindowsBuilder(False),
-  },
-  {
-    'name':      'Windows Debug',
-    'builddir':  'windows-debug',
-    'slavename': 'mingw',
-    'factory':   MakeWindowsBuilder(True),
-  },
-]
+    # Add special slaves.
+    for name in CONFIG['special_slaves']:
+      self._AddSlave('mingw')
+
+    self._AddBuilder(name='Windows Dependencies',
+                     slave='mingw',
+                     build_factory=builders.MakeWindowsDepsBuilder(),
+                     auto=False)
+    self._AddBuilder(name='Windows Release',
+                     slave='mingw',
+                     build_factory=builders.MakeWindowsBuilder(False))
+    self._AddBuilder(name='Windows Debug',
+                     slave='mingw',
+                     build_factory=builders.MakeWindowsBuilder(True))
+
+  def _AddBuilderAndSlave(self, distro, version, is_64_bit, factory):
+    bits = '64' if is_64_bit else '32'
+    slave = '%s-%s-%s' % (distro, version, bits)
+    self._AddBuilder(
+        name='%s %s %s-bit' % (distro.title(), version.title(), bits),
+        slave=slave,
+        build_factory=factory(version, is_64_bit),
+    )
+    self._AddSlave(slave)
+
+  def _AddBuilder(self, name, slave, build_factory, auto=True):
+    builddir = re.sub(r'[^a-z0-9_-]', '-', name.lower())
+    self.builders.append({
+        'name':      str(name),
+        'builddir':  str(builddir),
+        'slavename': str(slave),
+        'factory':   build_factory,
+    })
+    if auto:
+      self.auto_builder_names.append(name)
+
+  def _AddSlave(self, name):
+    self.slaves.append(buildslave.BuildSlave(str(name), PASSWORDS[name]))
+
+  def Config(self):
+    return {
+      'projectName':  "Clementine",
+      'projectURL':   "http://www.clementine-player.org/",
+      'buildbotURL':  "http://buildbot.clementine-player.org/",
+      'slavePortnum': 9989,
+      'slaves': self.slaves,
+      'builders': self.builders,
+      'change_source': [
+        gitpoller.GitPoller(
+          project="clementine",
+          repourl=builders.GitBaseUrl("Clementine"),
+          pollinterval=60*5, # seconds
+          branch='master',
+          workdir="gitpoller_work",
+        ),
+      ],
+      'status': [
+        html.WebStatus(
+          http_port="tcp:8010",
+          authz=authz.Authz(
+            forceBuild=True,
+            forceAllBuilds=True,
+            stopBuild=True,
+            stopAllBuilds=True,
+            cancelPendingBuild=True,
+            cancelAllPendingBuilds=True,
+            stopChange=True,
+          ),
+        ),
+        mail.MailNotifier(
+          fromaddr="buildmaster@zaphod.purplehatstands.com",
+          lookup="gmail.com",
+          mode="failing",
+        ),
+      ],
+      'schedulers': [
+        basic.SingleBranchScheduler(
+          name="automatic",
+          change_filter=filter.ChangeFilter(project="clementine", branch="master"),
+          treeStableTimer=2*60,
+          builderNames=self.auto_builder_names,
+        ),
+        basic.SingleBranchScheduler(
+          name="dependencies",
+          change_filter=filter.ChangeFilter(project="dependencies", branch="master"),
+          treeStableTimer=2*60,
+          builderNames=[
+            'Windows Dependencies',
+          ],
+        ),
+        forcesched.ForceScheduler(
+          name="force",
+          reason=forcesched.FixedParameter(name="reason", default="force build"),
+          branch=forcesched.StringParameter(name="branch", default="master"),
+          revision=forcesched.FixedParameter(name="revision", default=""),
+          repository=forcesched.FixedParameter(name="repository", default=""),
+          project=forcesched.FixedParameter(name="project", default=""),
+          properties=[],
+          builderNames=[x['name'] for x in self.builders],
+        )
+      ],
+    }
+
+BuildmasterConfig = ClementineBuildbot().Config()
+pprint.pprint(BuildmasterConfig)

@@ -1,4 +1,4 @@
-from debian:jessie
+from clementine/ubuntu:trusty-i386
 
 # Buildbot slave
 run apt-get update && apt-get install -y python-pip python-dev git
@@ -18,5 +18,5 @@ run apt-get update && apt-get install -y libcrypto++-dev libchromaprint-dev
 run apt-get update && apt-get install -y libechonest-dev
 
 # Give the buildslave a name
-run echo "jessie-64" > /slave-name
+run echo "ubuntu-trusty-32" > /slave-name
 cmd ["/usr/bin/python", "/config/slave/start.py"]
