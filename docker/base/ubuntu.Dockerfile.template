@@ -25,7 +25,7 @@ RUN rm -rf /var/lib/apt/lists/*
 # this forces "apt-get update" in dependent images, which is also good
 
 # enable the universe
-RUN if [ `grep -q Ubuntu /etc/lsb-release` ]; then sed -i 's/^\(deb .*\)$/\1 universe multiverse restricted/g' /etc/apt/sources.list; fi
+RUN if grep -q Ubuntu /etc/lsb-release; then sed -i 's/^\(deb .*\)$/\1 universe multiverse restricted/g' /etc/apt/sources.list; fi
 
 # upgrade packages for now, since the tarballs aren't updated frequently enough
 RUN apt-get update && apt-get dist-upgrade -y && rm -rf /var/lib/apt/lists/*

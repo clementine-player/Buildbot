@@ -55,9 +55,8 @@ that you want to add.
   ./build-ubuntu-i386.sh ubuntu vivid
   ```
 
-2. Create the `slave-vivid-32`, `slave-vivid-64`, `slave-fedora-22-32` and
-   `slave-fedora-22-64` directories by copying from the last distro version and
-   editing the two distro names in the `Dockerfile`
+2. Create the `slave-${distro}-${version}-{32,64}` directories by copying from
+   the last distro versions and editing the two distro names in the `Dockerfile`
 
 3. Add the distro to `config/config.json` and run `./update_config.py`
 
@@ -83,14 +82,6 @@ docker stop slave-vivid-32
 docker rm slave-vivid-32
 decking create
 decking start
-```
-
-
-Reload the config file on the master
-====================================
-
-```
-docker exec master /usr/bin/python /config/master/start.py --reconfig
 ```
 
 

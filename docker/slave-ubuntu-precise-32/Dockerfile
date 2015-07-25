@@ -22,6 +22,9 @@ run apt-get update && apt-get install -y \
 run apt-get update && apt-get install -y libcrypto++-dev libchromaprint-dev
 run apt-get update && apt-get install -y libechonest-dev
 
+# For PPA uploads.
+run apt-get update && apt-get install -y dput
+
 # Give the buildslave a name
 run echo "ubuntu-precise-32" > /slave-name
 cmd ["/usr/bin/python", "/config/slave/start.py"]

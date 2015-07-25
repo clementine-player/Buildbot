@@ -57,6 +57,27 @@ def MakeDebBuilder(distro, is_64_bit):
   return f
 
 
+def MakePPABuilder(distro, ppa):
+  git_args = GitArgs("Clementine")
+  git_args['mode'] = 'full'
+
+  cmake_cmd = [
+    "cmake", "..",
+    "-DWITH_DEBIAN=ON",
+    "-DDEB_DIST=" + distro,
+  ]
+  buildpackage_cmd = ["dpkg-buildpackage", "-S", "-kF6ABD82E"]
+  dput_cmd = "dput --simulate %s *_source.changes" % ppa
+
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**git_args))
+  f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
+  f.addStep(shell.ShellCommand(name="maketarball", command=["dist/maketarball.sh"], haltOnFailure=True, workdir="source"))
+  f.addStep(shell.ShellCommand(name="buildpackage", command=buildpackage_cmd, haltOnFailure=True, workdir="source"))
+  f.addStep(shell.ShellCommand(name="dput", command=dput_cmd, haltOnFailure=True, workdir="."))
+  return f
+
+
 def MakeWindowsDepsBuilder():
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Dependencies")))

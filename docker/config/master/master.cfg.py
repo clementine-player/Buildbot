@@ -23,6 +23,8 @@ LINUX_FACTORIES = {
   'ubuntu': builders.MakeDebBuilder,
   'fedora': builders.MakeFedoraBuilder,
 }
+DEV_PPA = 'ppa:me-davidsansome/clementine-dev'
+OFFICIAL_PPA = 'ppa:me-davidsansome/clementine'
 CONFIG = json.load(open('/config/config.json'))
 PASSWORDS = json.load(open('/config/passwords.json'))
 
@@ -39,6 +41,15 @@ class ClementineBuildbot(object):
       for version in versions:
         self._AddBuilderAndSlave(linux_distro, version, False, factory)
         self._AddBuilderAndSlave(linux_distro, version, True, factory)
+
+    # Add Ubuntu PPAs.
+    for version in CONFIG['linux']['ubuntu']:
+      self._AddBuilder(name='Ubuntu dev PPA %s' % version.title(),
+                       slave='ubuntu-%s-32' % version,
+                       build_factory=builders.MakePPABuilder(version, DEV_PPA))
+      self._AddBuilder(name='Ubuntu official PPA %s' % version.title(),
+                       slave='ubuntu-%s-32' % version,
+                       build_factory=builders.MakePPABuilder(version, OFFICIAL_PPA))
 
     # Add special slaves.
     for name in CONFIG['special_slaves']:

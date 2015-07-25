@@ -4,9 +4,11 @@
     "clementine/volumes": "./volumes", 
     "clementine/slave-ubuntu-utopic-64": "./slave-ubuntu-utopic-64", 
     "clementine/master": "./master", 
+    "clementine/slave-ubuntu-vivid-64": "./slave-ubuntu-vivid-64", 
     "clementine/slave-fedora-22-64": "./slave-fedora-22-64", 
     "clementine/slave-ubuntu-precise-64": "./slave-ubuntu-precise-64", 
     "clementine/slave-ubuntu-trusty-32": "./slave-ubuntu-trusty-32", 
+    "clementine/slave-ubuntu-vivid-32": "./slave-ubuntu-vivid-32", 
     "clementine/slave-debian-jessie-64": "./slave-debian-jessie-64", 
     "clementine/slave-ubuntu-utopic-32": "./slave-ubuntu-utopic-32", 
     "clementine/slave-mingw": "./slave-mingw", 
@@ -32,6 +34,8 @@
       "slave-ubuntu-trusty-32", 
       "slave-ubuntu-utopic-64", 
       "slave-ubuntu-utopic-32", 
+      "slave-ubuntu-vivid-64", 
+      "slave-ubuntu-vivid-32", 
       "slave-mingw"
     ]
   }, 
@@ -96,6 +100,18 @@
         "./config:/config"
       ]
     }, 
+    "slave-ubuntu-vivid-64": {
+      "image": "clementine/slave-ubuntu-vivid-64", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
     "slave-debian-jessie-32": {
       "image": "clementine/slave-debian-jessie-32", 
       "dependencies": [
@@ -122,6 +138,18 @@
     }, 
     "slave-ubuntu-trusty-32": {
       "image": "clementine/slave-ubuntu-trusty-32", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-ubuntu-vivid-32": {
+      "image": "clementine/slave-ubuntu-vivid-32", 
       "dependencies": [
         "master:master"
       ], 
