@@ -1,6 +1,11 @@
+from buildbot.steps import master
 from buildbot.steps import shell
 from buildbot.process import factory
+from buildbot.process import properties
 from buildbot.steps.source import git
+
+SPOTIFYBASE = "/var/www/clementine-player.org/spotify"
+
 
 def GitBaseUrl(repository):
   return "https://github.com/clementine-player/%s.git" % repository
@@ -157,3 +162,28 @@ def MakeFedoraBuilder(unused_distro, unused_is_64_bit):
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   return f
   
+
+def MakeSpotifyBlobBuilder():
+  cmake_cmd = [
+    "cmake", "..",
+    "-DCMAKE_INSTALL_PREFIX=source/bin/installprefix",
+  ]
+
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Clementine")))
+  f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
+      command=cmake_cmd))
+  f.addStep(shell.Compile(workdir="source/bin", haltOnFailure=True,
+      command=["make", "clementine-spotifyblob", "-j4"]))
+  f.addStep(shell.ShellCommand(name="install", workdir="source/bin/ext/clementine-spotifyblob",
+      haltOnFailure=True, command=["make", "install"]))
+  f.addStep(shell.ShellCommand(name="strip", workdir="source/bin", haltOnFailure=True,
+      command="strip spotify/version*/blob"))
+  f.addStep(OutputFinder(pattern="bin/spotify/version*-*bit"))
+  f.addStep(shell.SetProperty(command=["echo", SPOTIFYBASE], property="spotifybase"))
+  f.addStep(master.MasterShellCommand(name="verify", command=properties.WithProperties("""
+    openssl dgst -sha1 -verify %(spotifybase)s/clementine-spotify-public.pem \
+      -signature %(spotifybase)s/%(output-filename)s/blob.sha1 \
+      %(spotifybase)s/%(output-filename)s/blob
+  """)))
+  return f

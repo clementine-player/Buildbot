@@ -53,7 +53,7 @@ class ClementineBuildbot(object):
 
     # Add special slaves.
     for name in CONFIG['special_slaves']:
-      self._AddSlave('mingw')
+      self._AddSlave(name)
 
     self._AddBuilder(name='Windows Dependencies',
                      slave='mingw',
@@ -65,6 +65,13 @@ class ClementineBuildbot(object):
     self._AddBuilder(name='Windows Debug',
                      slave='mingw',
                      build_factory=builders.MakeWindowsBuilder(True))
+
+    self._AddBuilder(name='Spofify blob 32-bit',
+                     slave='spotify-blob-32',
+                     build_factory=builders.MakeSpotifyBlobBuilder())
+    self._AddBuilder(name='Spofify blob 64-bit',
+                     slave='spotify-blob-64',
+                     build_factory=builders.MakeSpotifyBlobBuilder())
 
   def _AddBuilderAndSlave(self, distro, version, is_64_bit, factory):
     bits = '64' if is_64_bit else '32'
