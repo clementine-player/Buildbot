@@ -1,3 +1,5 @@
 *.pyc
+config/github_id_rsa
 config/passwords.json
 config/ppa-keys
+config/transifexrc

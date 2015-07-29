@@ -24,7 +24,9 @@ run wget --progress=dot:mega -O /mingw.tar.bz2 \
     mkdir /mingw && \
     tar -xvf /mingw.tar.bz2 -C /mingw && \
     rm /mingw.tar.bz2 && \
-    ln -v -s /mingw/bin/* /bin/
+    ln -v -s /mingw/bin/* /bin/ && \
+    find /mingw -executable -exec chmod go+rx {} ';' && \
+    find /mingw -readable -exec chmod go+r {} ';'
 
 add slave-mingw/first-time-setup.sh /first-time-setup.sh
 run ln -s /persistent-data/mingw/target /target

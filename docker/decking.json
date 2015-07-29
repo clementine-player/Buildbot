@@ -1,6 +1,7 @@
 {
   "images": {
     "clementine/slave-ubuntu-precise-32": "./slave-ubuntu-precise-32", 
+    "clementine/slave-transifex": "./slave-transifex", 
     "clementine/volumes": "./volumes", 
     "clementine/slave-ubuntu-utopic-64": "./slave-ubuntu-utopic-64", 
     "clementine/master": "./master", 
@@ -40,7 +41,8 @@
       "slave-ubuntu-vivid-32", 
       "slave-spotify-blob-32", 
       "slave-spotify-blob-64", 
-      "slave-mingw"
+      "slave-mingw", 
+      "slave-transifex"
     ]
   }, 
   "containers": {
@@ -94,6 +96,18 @@
     }, 
     "slave-mingw": {
       "image": "clementine/slave-mingw", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-transifex": {
+      "image": "clementine/slave-transifex", 
       "dependencies": [
         "master:master"
       ], 

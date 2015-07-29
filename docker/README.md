@@ -40,6 +40,20 @@ Containers are built, started and stopped with decking.
 3. The master is then accessible on http://localhost:8010/.
 
 
+Credentials
+-----------
+
+You need certain keys and credentials to be able to use certain builders.  These
+builders will try to pull files from config/ when they run:
+
+  - config/github_id_rsa: .ssh/id_rsa file used for authenticating to github.
+    Used for pushing transifex commits to github.
+  - config/ppa-keys: Used by the PPA builders for uploading packages to PPAs.
+    Get these keys with gpg --export-secret-keys.
+  - config/transifexrc: The config file for the transifex client, including the
+    password for the clementinebuildbot user.
+
+
 Adding new slaves
 =================
 

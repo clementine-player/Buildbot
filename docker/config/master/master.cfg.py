@@ -55,6 +55,7 @@ class ClementineBuildbot(object):
     for name in CONFIG['special_slaves']:
       self._AddSlave(name)
 
+    # Windows.
     self._AddBuilder(name='Windows Dependencies',
                      slave='mingw',
                      build_factory=builders.MakeWindowsDepsBuilder(),
@@ -66,12 +67,28 @@ class ClementineBuildbot(object):
                      slave='mingw',
                      build_factory=builders.MakeWindowsBuilder(True))
 
+    # Spotify.
     self._AddBuilder(name='Spofify blob 32-bit',
                      slave='spotify-blob-32',
                      build_factory=builders.MakeSpotifyBlobBuilder())
     self._AddBuilder(name='Spofify blob 64-bit',
                      slave='spotify-blob-64',
                      build_factory=builders.MakeSpotifyBlobBuilder())
+
+    # Transifex.
+    self._AddBuilder(name='Transifex POT push',
+                     slave='transifex',
+                     build_factory=builders.MakeTransifexPotPushBuilder())
+    self._AddBuilder(name='Transifex PO pull',
+                     slave='transifex',
+                     build_factory=builders.MakeTransifexPoPullBuilder())
+    self._AddBuilder(name='Transifex website POT push',
+                     slave='transifex',
+                     build_factory=builders.MakeWebsiteTransifexPotPushBuilder())
+    self._AddBuilder(name='Transifex website PO pull',
+                     slave='transifex',
+                     build_factory=builders.MakeWebsiteTransifexPoPullBuilder())
+
 
   def _AddBuilderAndSlave(self, distro, version, is_64_bit, factory):
     bits = '64' if is_64_bit else '32'
@@ -112,6 +129,13 @@ class ClementineBuildbot(object):
           pollinterval=60*5, # seconds
           branch='master',
           workdir="gitpoller_work",
+        ),
+        gitpoller.GitPoller(
+          project="website",
+          repourl=builders.GitBaseUrl("Website"),
+          pollinterval=60*5, # seconds
+          branch='master',
+          workdir="gitpoller_work_website",
         ),
       ],
       'status': [

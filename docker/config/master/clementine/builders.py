@@ -187,3 +187,104 @@ def MakeSpotifyBlobBuilder():
       %(spotifybase)s/%(output-filename)s/blob
   """)))
   return f
+
+
+def _AddTxSetup(f, resource, source_file, pattern, pot=True):
+  set_args = [
+      "tx", "set", "--auto-local", "-r", resource, pattern,
+      "--source-lang", "en", "--execute"]
+
+  if pot:
+    set_args += ["--source-file", source_file]
+
+  f.addStep(shell.ShellCommand(name="transifexrc", haltOnFailure=True,
+      command=["cp", "/config/transifexrc", "/home/buildbot/.transifexrc"]))
+  f.addStep(shell.ShellCommand(name="clean", workdir="source",
+      command=["rm", "-rf", ".tx"]))
+  f.addStep(shell.ShellCommand(name="tx_init", workdir="source", haltOnFailure=True,
+      command=["tx", "init", "--host=https://www.transifex.com"]))
+  f.addStep(shell.ShellCommand(name="tx_set",  workdir="source", haltOnFailure=True,
+      command=set_args))
+
+
+def _AddTxSetupForRepo(f, repo, pot=True):
+  if repo == "Clementine":
+    _AddTxSetup(f, "clementine.clementineplayer",
+        "src/translations/translations.pot",
+        "src/translations/<lang>.po", pot)
+  elif repo == "Website":
+    _AddTxSetup(f, "clementine.website",
+        "www.clementine-player.org/locale/django.pot",
+        "www.clementine-player.org/locale/<lang>.po")
+  elif repo == "Android-Remote":
+    _AddTxSetup(f, "clementine-remote.clementine-remote",
+        "app/src/main/res/values/strings.xml",
+        "app/src/main/res/values-<lang>/strings.xml")
+  else:
+    raise ValueError(repo)
+
+
+def _AddGithubSetup(f):
+  f.addStep(shell.ShellCommand(name="ssh_keys_cp", haltOnFailure=True,
+      command=["cp", "/config/github_id_rsa", "/home/buildbot/.ssh/id_rsa"]))
+  f.addStep(shell.ShellCommand(name="ssh_keys_chmod", haltOnFailure=True,
+      command=["chmod", "0600", "/home/buildbot/.ssh/id_rsa"]))
+  f.addStep(shell.ShellCommand(name="git_config_email", haltOnFailure=True,
+      command=["git", "config", "--global", "user.email", "buildbot@clementine-player.org"]))
+  f.addStep(shell.ShellCommand(name="git_config_username", haltOnFailure=True,
+      command=["git", "config", "--global", "user.name", "Clementine Buildbot"]))
+
+
+def _MakeTransifexPoPullBuilder(repo, po_glob):
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs(repo)))
+  _AddTxSetupForRepo(f, repo, pot=False)
+  _AddGithubSetup(f)
+  f.addStep(shell.ShellCommand(name="tx_pull", workdir="source", haltOnFailure=True,
+      command=["tx", "pull", "-a", "--force"]))
+  f.addStep(shell.ShellCommand(name="git_add", workdir="source", haltOnFailure=True,
+      command="git add --verbose " + po_glob))
+  f.addStep(shell.ShellCommand(name="git_commit", workdir="source", haltOnFailure=True,
+      command=["git",
+               "commit",
+               "--author=Clementine Buildbot <buildbot@clementine-player.org>",
+               "--message=Automatic merge of translations from Transifex "
+               "(https://www.transifex.com/projects/p/clementine/resource/clementineplayer)"]))
+  f.addStep(shell.ShellCommand(name="git_push", workdir="source", haltOnFailure=True,
+      command=["git",
+               "push",
+               "git@github.com:clementine-player/Clementine.git",
+               "master",
+               "--verbose"]))
+  return f
+
+
+def MakeTransifexPoPullBuilder():
+  return _MakeTransifexPoPullBuilder("Clementine", "src/translations/*.po")
+
+
+def MakeWebsiteTransifexPoPullBuilder():
+  return _MakeTransifexPoPullBuilder(
+      "Website", "www.clementine-player.org/locale/*.po")
+
+
+def MakeTransifexPotPushBuilder():
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Clementine")))
+  f.addStep(shell.ShellCommand(name="cmake", haltOnFailure=True,
+      workdir="source/bin", command=["cmake", ".."]))
+  f.addStep(shell.Compile(haltOnFailure=True, workdir="source/bin",
+      command=["make", "-j4"]))
+  _AddTxSetupForRepo(f, "Clementine")
+  f.addStep(shell.ShellCommand(name="tx_push", workdir="source",
+      haltOnFailure=True, command=["tx", "push", "-s"]))
+  return f
+
+
+def MakeWebsiteTransifexPotPushBuilder():
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Website")))
+  _AddTxSetupForRepo(f, "Website")
+  f.addStep(shell.ShellCommand(name="tx_push", workdir="source", haltOnFailure=True,
+      command=["tx", "push", "-s"]))
+  return f
