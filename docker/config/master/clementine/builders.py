@@ -134,7 +134,7 @@ def MakeWindowsBuilder(is_debug):
       name="link output", workdir="source/dist/windows", haltOnFailure=True,
       command=["ln", "-svf"] + ["../../bin/" + x for x in executable_files] + ["."]))
   f.addStep(shell.Compile(
-      command=["make", "-j8"], workdir="source/bin", haltOnFailure=True))
+      command=["make", "-j4"], workdir="source/bin", haltOnFailure=True))
   f.addStep(shell.ShellCommand(
       name="strip", workdir="source/bin", haltOnFailure=True, env=env,
       command=[strip_command] + executable_files))

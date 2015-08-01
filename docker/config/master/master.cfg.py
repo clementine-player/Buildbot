@@ -8,6 +8,7 @@ import pprint
 import re
 
 from buildbot import buildslave
+from buildbot import locks
 from buildbot.changes import gitpoller
 from buildbot.schedulers import basic
 from buildbot.schedulers import filter
@@ -34,6 +35,7 @@ class ClementineBuildbot(object):
     self.slaves = []
     self.builders = []
     self.auto_builder_names = []
+    self.local_builder_lock = locks.MasterLock("local", maxCount=2)
 
     # Add linux slaves and builders.
     for linux_distro, versions in CONFIG['linux'].iteritems():
@@ -78,16 +80,20 @@ class ClementineBuildbot(object):
     # Transifex.
     self._AddBuilder(name='Transifex POT push',
                      slave='transifex',
-                     build_factory=builders.MakeTransifexPotPushBuilder())
+                     build_factory=builders.MakeTransifexPotPushBuilder(),
+                     auto=False)
     self._AddBuilder(name='Transifex PO pull',
                      slave='transifex',
-                     build_factory=builders.MakeTransifexPoPullBuilder())
+                     build_factory=builders.MakeTransifexPoPullBuilder(),
+                     auto=False)
     self._AddBuilder(name='Transifex website POT push',
                      slave='transifex',
-                     build_factory=builders.MakeWebsiteTransifexPotPushBuilder())
+                     build_factory=builders.MakeWebsiteTransifexPotPushBuilder(),
+                     auto=False)
     self._AddBuilder(name='Transifex website PO pull',
                      slave='transifex',
-                     build_factory=builders.MakeWebsiteTransifexPoPullBuilder())
+                     build_factory=builders.MakeWebsiteTransifexPoPullBuilder(),
+                     auto=False)
 
 
   def _AddBuilderAndSlave(self, distro, version, is_64_bit, factory):
@@ -100,14 +106,17 @@ class ClementineBuildbot(object):
     )
     self._AddSlave(slave)
 
-  def _AddBuilder(self, name, slave, build_factory, auto=True):
-    builddir = re.sub(r'[^a-z0-9_-]', '-', name.lower())
-    self.builders.append({
+  def _AddBuilder(self, name, slave, build_factory, auto=True, local=True):
+    builder_def = {
         'name':      str(name),
-        'builddir':  str(builddir),
+        'builddir':  str(re.sub(r'[^a-z0-9_-]', '-', name.lower())),
         'slavename': str(slave),
         'factory':   build_factory,
-    })
+    }
+    if local:
+      builder_def['locks'] = [self.local_builder_lock.access('counting')]
+    self.builders.append(builder_def)
+
     if auto:
       self.auto_builder_names.append(name)
 

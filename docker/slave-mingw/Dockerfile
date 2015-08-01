@@ -28,6 +28,9 @@ run wget --progress=dot:mega -O /mingw.tar.bz2 \
     find /mingw -executable -exec chmod go+rx {} ';' && \
     find /mingw -readable -exec chmod go+r {} ';'
 
+# Work around https://github.com/docker/docker/issues/6047
+run rm -rf /root && mkdir /root --mode 0755
+
 add slave-mingw/first-time-setup.sh /first-time-setup.sh
 run ln -s /persistent-data/mingw/target /target
 run ln -s /persistent-data/mingw/target /usr/i586-mingw32msvc
