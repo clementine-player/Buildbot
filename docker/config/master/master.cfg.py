@@ -1,6 +1,7 @@
 # -*- python -*-
 # ex: set syntax=python:
 
+import functools
 import imp
 import json
 import os
@@ -20,8 +21,8 @@ from buildbot.status.web import authz
 from clementine import builders
 
 LINUX_FACTORIES = {
-  'debian': builders.MakeDebBuilder,
-  'ubuntu': builders.MakeDebBuilder,
+  'debian': functools.partial(builders.MakeDebBuilder, 'debian'),
+  'ubuntu': functools.partial(builders.MakeDebBuilder, 'ubuntu'),
   'fedora': builders.MakeFedoraBuilder,
 }
 DEV_PPA = 'ppa:me-davidsansome/clementine-dev'

@@ -1,10 +1,15 @@
+import os.path
+
+from buildbot.plugins import util
+from buildbot.process import factory
 from buildbot.steps import master
 from buildbot.steps import shell
-from buildbot.process import factory
-from buildbot.process import properties
+from buildbot.steps import transfer
 from buildbot.steps.source import git
 
 SPOTIFYBASE = "/var/www/clementine-player.org/spotify"
+UPLOADBASE  = "/var/www/clementine-player.org/builds"
+UPLOADURL   = "http://builds.clementine-player.org"
 
 
 def GitBaseUrl(repository):
@@ -28,17 +33,33 @@ class OutputFinder(shell.ShellCommand):
     else:
       shell.ShellCommand.__init__(self,
         name="get output filename",
-        command=["sh", "-c", "basename `ls -d " + pattern + "|head -n 1`"],
+        command=["sh", "-c", "ls -d " + pattern + "|head -n 1"],
         workdir="source",
         **kwargs
       )
 
   def commandComplete(self, cmd):
     filename = self.getLog('stdio').readlines()[0].strip()
-    self.setProperty("output-filename", filename)
+    self.setProperty("output-filepath", filename)
+    self.setProperty("output-filename", os.path.basename(filename))
 
 
-def MakeDebBuilder(distro, is_64_bit):
+def UploadPackage(directory):
+  return transfer.FileUpload(
+      mode=0644,
+      workdir="source",
+      slavesrc=util.Interpolate("%(prop:output-filepath)s"),
+      masterdest=util.Interpolate(
+          '%(kw:base)s/%(kw:directory)s/%(prop:output-filename)s',
+          base=UPLOADBASE,
+          directory=directory),
+      url=util.Interpolate(
+          '%(kw:base)s/%(kw:directory)s/%(prop:output-filename)s',
+          base=UPLOADURL,
+          directory=directory))
+
+
+def MakeDebBuilder(distro, version, is_64_bit):
   arch = 'amd64' if is_64_bit else 'i386'
 
   env = {
@@ -49,7 +70,7 @@ def MakeDebBuilder(distro, is_64_bit):
     "cmake", "..",
     "-DWITH_DEBIAN=ON",
     "-DDEB_ARCH=" + arch,
-    "-DDEB_DIST=" + distro,
+    "-DDEB_DIST=" + version,
     "-DENABLE_SPOTIFY_BLOB=OFF",
   ]
   make_cmd = ["make", "deb"]
@@ -59,6 +80,7 @@ def MakeDebBuilder(distro, is_64_bit):
   f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
   f.addStep(shell.Compile(command=make_cmd, haltOnFailure=True, workdir="source/bin", env=env))
   f.addStep(OutputFinder(pattern="bin/clementine_*.deb"))
+  f.addStep(UploadPackage('%s-%s' % (distro, version)))
   return f
 
 
@@ -142,14 +164,14 @@ def MakeWindowsBuilder(is_debug):
       name="makensis", command=["makensis", "clementine.nsi"],
       workdir="source/dist/windows", haltOnFailure=True))
   f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
-
+  f.addStep(UploadPackage('win32/' + ('debug' if is_debug else 'release')))
   return f
 
 
-def MakeFedoraBuilder(unused_distro, unused_is_64_bit):
+def MakeFedoraBuilder(distro, unused_is_64_bit):
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Clementine")))
-  f.addStep(shell.ShellCommand(name="clean", workdir="source/bin", haltOnFailure=True,
+  f.addStep(shell.ShellCommand(name="clean", workdir="source/bin",
       command="find ~/rpmbuild/ -type f -delete"))
   f.addStep(shell.ShellCommand(name="cmake", workdir="source/bin", haltOnFailure=True,
       command=["cmake", ".."]))
@@ -160,6 +182,7 @@ def MakeFedoraBuilder(unused_distro, unused_is_64_bit):
   f.addStep(shell.Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
       command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
+  f.addStep(UploadPackage('fedora-' + distro))
   return f
   
 
@@ -181,11 +204,48 @@ def MakeSpotifyBlobBuilder():
       command="strip spotify/version*/blob"))
   f.addStep(OutputFinder(pattern="bin/spotify/version*-*bit"))
   f.addStep(shell.SetProperty(command=["echo", SPOTIFYBASE], property="spotifybase"))
-  f.addStep(master.MasterShellCommand(name="verify", command=properties.WithProperties("""
-    openssl dgst -sha1 -verify %(spotifybase)s/clementine-spotify-public.pem \
-      -signature %(spotifybase)s/%(output-filename)s/blob.sha1 \
-      %(spotifybase)s/%(output-filename)s/blob
+  f.addStep(master.MasterShellCommand(name="verify", command=util.Interpolate("""
+    openssl dgst -sha1 -verify %(prop:spotifybase)s/clementine-spotify-public.pem \
+      -signature %(prop:spotifybase)s/%(prop:output-filename)s/blob.sha1 \
+      %(prop:spotifybase)s/%(prop:output-filename)s/blob
   """)))
+  return f
+
+
+def MakeMacBuilder():
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Clementine")))
+  f.addStep(shell.ShellCommand(
+      name="cmake",
+      workdir="source/bin",
+      env={'PKG_CONFIG_PATH': '/target/lib/pkgconfig'},
+      command=[
+        "cmake", "..",
+        "-DCMAKE_BUILD_TYPE=Release",
+        "-DCMAKE_OSX_ARCHITECTURES=x86_64",
+        "-DBOOST_ROOT=/target",
+        "-DPROTOBUF_LIBRARY=/target/lib/libprotobuf.dylib",
+        "-DPROTOBUF_INCLUDE_DIR=/target/include/",
+        "-DPROTOBUF_PROTOC_EXECUTABLE=/target/bin/protoc",
+        "-DQT_QMAKE_EXECUTABLE=/target/bin/qmake",
+        "-DSPOTIFY=/target/libspotify.framework",
+        "-DGLEW_INCLUDE_DIRS=/target/include",
+        "-DGLEW_LIBRARIES=/target/lib/libGLEW.dylib",
+        "-DLASTFM_INCLUDE_DIRS=/target/include/",
+        "-DLASTFM_LIBRARIES=/target/lib/liblastfm.dylib",
+        "-DFFTW3_DIR=/target",
+        "-DCMAKE_INCLUDE_PATH=/target/include",
+        "-DCMAKE_LIBRARY_PATH=/target/lib",
+        "-DAPPLE_DEVELOPER_ID='Developer ID Application: John Maguire (CZ8XD8GTGZ)'",
+      ],
+      haltOnFailure=True,
+  ))
+  f.addStep(shell.Compile(command=["make"], workdir="source/bin", haltOnFailure=True))
+  f.addStep(shell.ShellCommand(name="install", command=["make", "install"], haltOnFailure=True, workdir="source/bin"))
+  f.addStep(shell.ShellCommand(name="sign", command=["make", "sign"], haltOnFailure=True, workdir="source/bin"))
+  f.addStep(shell.ShellCommand(name="dmg", command=["make", "dmg"], haltOnFailure=True, workdir="source/bin"))
+  f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
+  f.addStep(UploadPackage('mac'))
   return f
 
 

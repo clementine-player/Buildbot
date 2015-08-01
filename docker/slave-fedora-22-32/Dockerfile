@@ -10,10 +10,10 @@ run setarch i386 yum install --assumeyes \
     pulseaudio-libs-devel qtwebkit-devel sha2-devel desktop-file-utils \
     libechonest-devel libchromaprint-devel cryptopp-devel
 
-run rpmdev-setuptree
-
 run echo "fedora-22-32" > /slave-name
 
 # Create the buildbot user.
 run useradd -r -m -s /bin/false buildbot
+run mkdir -p /home/buildbot/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
+    chown buildbot /home/buildbot/rpmbuild/{,BUILD,RPMS,SOURCES,SPECS,SRPMS}
 cmd ["/usr/bin/python", "/config/slave/start.py"]
