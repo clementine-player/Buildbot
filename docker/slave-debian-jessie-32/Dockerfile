@@ -17,6 +17,9 @@ run apt-get update && apt-get install -y \
 run apt-get update && apt-get install -y libcrypto++-dev libchromaprint-dev
 run apt-get update && apt-get install -y libechonest-dev
 
+# This isn't included in the base package on 32-bit.
+run apt-get update && apt-get install -y fakeroot
+
 # Give the buildslave a name
 run echo "debian-jessie-32" > /slave-name
 
