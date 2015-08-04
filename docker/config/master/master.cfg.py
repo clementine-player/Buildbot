@@ -72,6 +72,7 @@ class ClementineBuildbot(object):
                      build_factory=builders.MakeWindowsBuilder(True))
 
     # Mac.
+    self._AddSlave('mac')
     self._AddBuilder(name='Mac Release',
                      slave='mac',
                      build_factory=builders.MakeMacBuilder())

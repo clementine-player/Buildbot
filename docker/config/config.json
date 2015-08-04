@@ -5,7 +5,6 @@
     "fedora": ["21", "22"]
   },
   "special_slaves": [
-    "mac",
     "mingw",
     "spotify-blob-32",
     "spotify-blob-64",
