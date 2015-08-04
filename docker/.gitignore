@@ -1,5 +1,6 @@
 *.pyc
 config/github_id_rsa
 config/passwords.json
+config/passwords-external.json
 config/ppa-keys
 config/transifexrc

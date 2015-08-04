@@ -48,6 +48,8 @@ builders will try to pull files from config/ when they run:
 
   - config/github_id_rsa: .ssh/id_rsa file used for authenticating to github.
     Used for pushing transifex commits to github.
+  - config/passwords-external.json: Passwords for external (non-docker) slaves
+    to connect to buildbot.
   - config/ppa-keys: Used by the PPA builders for uploading packages to PPAs.
     Get these keys with gpg --export-secret-keys.
   - config/transifexrc: The config file for the transifex client, including the

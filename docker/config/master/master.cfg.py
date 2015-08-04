@@ -29,6 +29,7 @@ DEV_PPA = 'ppa:me-davidsansome/clementine-dev'
 OFFICIAL_PPA = 'ppa:me-davidsansome/clementine'
 CONFIG = json.load(open('/config/config.json'))
 PASSWORDS = json.load(open('/config/passwords.json'))
+PASSWORDS.update(json.load(open('/config/passwords-external.json')))
 
 
 class ClementineBuildbot(object):
@@ -69,6 +70,11 @@ class ClementineBuildbot(object):
     self._AddBuilder(name='Windows Debug',
                      slave='mingw',
                      build_factory=builders.MakeWindowsBuilder(True))
+
+    # Mac.
+    self._AddBuilder(name='Mac Release',
+                     slave='mac',
+                     build_factory=builders.MakeMacBuilder())
 
     # Spotify.
     self._AddBuilder(name='Spofify blob 32-bit',
