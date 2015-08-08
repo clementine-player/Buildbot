@@ -94,7 +94,7 @@ def MakePPABuilder(distro, ppa):
     "-DDEB_DIST=" + distro,
   ]
   buildpackage_cmd = ["dpkg-buildpackage", "-S", "-kF6ABD82E"]
-  keys_cmd = ["gpg", "--import", "/config/ppa-keys"]
+  keys_cmd = "gpg --import /config/ppa-keys || true"
   dput_cmd = "dput %s *_source.changes" % ppa
 
   f = factory.BuildFactory()
