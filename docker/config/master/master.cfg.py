@@ -14,6 +14,7 @@ from buildbot.changes import gitpoller
 from buildbot.schedulers import basic
 from buildbot.schedulers import filter
 from buildbot.schedulers import forcesched
+from buildbot.schedulers import timed
 from buildbot.status import html
 from buildbot.status import mail
 from buildbot.status.web import authz
@@ -88,8 +89,7 @@ class ClementineBuildbot(object):
     # Transifex.
     self._AddBuilder(name='Transifex POT push',
                      slave='transifex',
-                     build_factory=builders.MakeTransifexPotPushBuilder(),
-                     auto=False)
+                     build_factory=builders.MakeTransifexPotPushBuilder())
     self._AddBuilder(name='Transifex PO pull',
                      slave='transifex',
                      build_factory=builders.MakeTransifexPoPullBuilder(),
@@ -189,6 +189,14 @@ class ClementineBuildbot(object):
             'Windows Dependencies',
           ],
         ),
+        basic.SingleBranchScheduler(
+          name="website",
+          change_filter=filter.ChangeFilter(project="website", branch="master"),
+          treeStableTimer=2*60,
+          builderNames=[
+            "Transifex website POT push",
+          ],
+        ),
         forcesched.ForceScheduler(
           name="force",
           reason=forcesched.FixedParameter(name="reason", default="force build"),
@@ -198,7 +206,19 @@ class ClementineBuildbot(object):
           project=forcesched.FixedParameter(name="project", default=""),
           properties=[],
           builderNames=[x['name'] for x in self.builders],
-        )
+        ),
+        timed.Nightly(
+          name="transifex_pull",
+          change_filter=filter.ChangeFilter(project="clementine", branch="master"),
+          hour=10,
+          minute=0,
+          dayOfWeek=0,
+          branch="master",
+          builderNames=[
+            "Transifex PO pull",
+            "Transifex website PO pull",
+          ],
+        ),
       ],
     }
 
