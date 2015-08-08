@@ -39,6 +39,7 @@ class ClementineBuildbot(object):
     self.builders = []
     self.auto_builder_names = []
     self.local_builder_lock = locks.MasterLock("local", maxCount=2)
+    self.deps_lock = locks.SlaveLock("deps", maxCount = 1)
 
     # Add linux slaves and builders.
     for linux_distro, versions in CONFIG['linux'].iteritems():
@@ -64,22 +65,29 @@ class ClementineBuildbot(object):
     self._AddBuilder(name='Windows Dependencies',
                      slave='mingw',
                      build_factory=builders.MakeWindowsDepsBuilder(),
-                     auto=False)
+                     auto=False,
+                     deps_lock='exclusive')
     self._AddBuilder(name='Windows Release',
                      slave='mingw',
-                     build_factory=builders.MakeWindowsBuilder(False))
+                     build_factory=builders.MakeWindowsBuilder(False),
+                     deps_lock='counting')
     self._AddBuilder(name='Windows Debug',
                      slave='mingw',
-                     build_factory=builders.MakeWindowsBuilder(True))
+                     build_factory=builders.MakeWindowsBuilder(True),
+                     deps_lock='counting')
 
     # Mac.
     self._AddSlave('mac')
     self._AddBuilder(name='Mac Dependencies',
                      slave='mac',
-                     build_factory=builders.MakeMacBuilder())
+                     build_factory=builders.MakeMacBuilder(),
+                     local_lock=False,
+                     deps_lock='exclusive')
     self._AddBuilder(name='Mac Release',
                      slave='mac',
-                     build_factory=builders.MakeMacDepsBuilder())
+                     build_factory=builders.MakeMacDepsBuilder(),
+                     local_lock=False,
+                     deps_lock='counting')
 
     # Spotify.
     self._AddBuilder(name='Spofify blob 32-bit',
@@ -117,16 +125,23 @@ class ClementineBuildbot(object):
     )
     self._AddSlave(slave)
 
-  def _AddBuilder(self, name, slave, build_factory, auto=True, local=True):
-    builder_def = {
+  def _AddBuilder(self, name, slave, build_factory,
+                  auto=True,
+                  local_lock=True,
+                  deps_lock=None):
+    locks = []
+    if local_lock:
+      locks.append(self.local_builder_lock.access('counting'))
+    if deps_lock is not None:
+      locks.append(self.deps_lock.access(deps_lock))
+
+    self.builders.append({
         'name':      str(name),
         'builddir':  str(re.sub(r'[^a-z0-9_-]', '-', name.lower())),
         'slavename': str(slave),
         'factory':   build_factory,
-    }
-    if local:
-      builder_def['locks'] = [self.local_builder_lock.access('counting')]
-    self.builders.append(builder_def)
+        'locks':     locks,
+    })
 
     if auto:
       self.auto_builder_names.append(name)
