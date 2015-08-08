@@ -74,9 +74,12 @@ class ClementineBuildbot(object):
 
     # Mac.
     self._AddSlave('mac')
-    self._AddBuilder(name='Mac Release',
+    self._AddBuilder(name='Mac Dependencies',
                      slave='mac',
                      build_factory=builders.MakeMacBuilder())
+    self._AddBuilder(name='Mac Release',
+                     slave='mac',
+                     build_factory=builders.MakeMacDepsBuilder())
 
     # Spotify.
     self._AddBuilder(name='Spofify blob 32-bit',

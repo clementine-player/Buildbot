@@ -249,6 +249,14 @@ def MakeMacBuilder():
   return f
 
 
+def MakeMacDepsBuilder():
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Dependencies")))
+  f.addStep(shell.ShellCommand(name="clean", workdir="/src/macosx", command=["make", "clean"]))
+  f.addStep(shell.ShellCommand(name="compile", workdir="/src/macosx", command=["make"]))
+  return f
+
+
 def _AddTxSetup(f, resource, source_file, pattern, pot=True):
   set_args = [
       "tx", "set", "--auto-local", "-r", resource, pattern,
