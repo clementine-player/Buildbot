@@ -12,10 +12,10 @@ TEMP_DIR=$(mktemp -d)
 
 case "${TYPE}" in
   ubuntu)
-    MIRROR=http://archive.ubuntu.com/ubuntu/
+    MIRROR=${MIRROR:-http://archive.ubuntu.com/ubuntu/}
     ;;
   debian)
-    MIRROR=http://httpredir.debian.org/debian/
+    MIRROR=${MIRROR:-http://httpredir.debian.org/debian/}
     ;;
   *)
     echo "Unknown type '${TYPE}'"

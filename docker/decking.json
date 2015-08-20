@@ -1,25 +1,27 @@
 {
   "images": {
-    "clementine/slave-ubuntu-precise-32": "./slave-ubuntu-precise-32", 
-    "clementine/slave-transifex": "./slave-transifex", 
     "clementine/volumes": "./volumes", 
-    "clementine/slave-ubuntu-utopic-64": "./slave-ubuntu-utopic-64", 
     "clementine/master": "./master", 
+    "clementine/slave-ubuntu-precise-32": "./slave-ubuntu-precise-32", 
+    "clementine/slave-ubuntu-utopic-32": "./slave-ubuntu-utopic-32", 
+    "clementine/slave-fedora-22-32": "./slave-fedora-22-32", 
+    "clementine/slave-ubuntu-wily-64": "./slave-ubuntu-wily-64", 
+    "clementine/slave-spotify-blob-32": "./slave-spotify-blob-32", 
+    "clementine/slave-fedora-21-64": "./slave-fedora-21-64", 
+    "clementine/slave-ubuntu-vivid-32": "./slave-ubuntu-vivid-32", 
+    "clementine/slave-transifex": "./slave-transifex", 
+    "clementine/slave-spotify-blob-64": "./slave-spotify-blob-64", 
+    "clementine/slave-ubuntu-trusty-64": "./slave-ubuntu-trusty-64", 
+    "clementine/slave-debian-jessie-64": "./slave-debian-jessie-64", 
+    "clementine/slave-debian-jessie-32": "./slave-debian-jessie-32", 
     "clementine/slave-ubuntu-vivid-64": "./slave-ubuntu-vivid-64", 
     "clementine/slave-fedora-22-64": "./slave-fedora-22-64", 
     "clementine/slave-ubuntu-precise-64": "./slave-ubuntu-precise-64", 
     "clementine/slave-ubuntu-trusty-32": "./slave-ubuntu-trusty-32", 
-    "clementine/slave-ubuntu-vivid-32": "./slave-ubuntu-vivid-32", 
-    "clementine/slave-debian-jessie-64": "./slave-debian-jessie-64", 
-    "clementine/slave-ubuntu-utopic-32": "./slave-ubuntu-utopic-32", 
     "clementine/slave-mingw": "./slave-mingw", 
-    "clementine/slave-fedora-22-32": "./slave-fedora-22-32", 
     "clementine/slave-fedora-21-32": "./slave-fedora-21-32", 
-    "clementine/slave-spotify-blob-32": "./slave-spotify-blob-32", 
-    "clementine/slave-ubuntu-trusty-64": "./slave-ubuntu-trusty-64", 
-    "clementine/slave-fedora-21-64": "./slave-fedora-21-64", 
-    "clementine/slave-debian-jessie-32": "./slave-debian-jessie-32", 
-    "clementine/slave-spotify-blob-64": "./slave-spotify-blob-64"
+    "clementine/slave-ubuntu-utopic-64": "./slave-ubuntu-utopic-64", 
+    "clementine/slave-ubuntu-wily-32": "./slave-ubuntu-wily-32"
   }, 
   "clusters": {
     "main": [
@@ -39,15 +41,138 @@
       "slave-ubuntu-utopic-32", 
       "slave-ubuntu-vivid-64", 
       "slave-ubuntu-vivid-32", 
+      "slave-ubuntu-wily-64", 
+      "slave-ubuntu-wily-32", 
+      "slave-mingw", 
       "slave-spotify-blob-32", 
       "slave-spotify-blob-64", 
-      "slave-mingw", 
       "slave-transifex"
     ]
   }, 
   "containers": {
     "slave-ubuntu-precise-64": {
       "image": "clementine/slave-ubuntu-precise-64", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-transifex": {
+      "image": "clementine/slave-transifex", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-ubuntu-wily-32": {
+      "image": "clementine/slave-ubuntu-wily-32", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-spotify-blob-32": {
+      "image": "clementine/slave-spotify-blob-32", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-ubuntu-vivid-64": {
+      "image": "clementine/slave-ubuntu-vivid-64", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-debian-jessie-64": {
+      "image": "clementine/slave-debian-jessie-64", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-ubuntu-trusty-32": {
+      "image": "clementine/slave-ubuntu-trusty-32", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "master": {
+      "mount-from": [
+        "volumes"
+      ], 
+      "image": "clementine/master", 
+      "mount": [
+        "./config:/config", 
+        "/var/www/clementine-player.org:/var/www/clementine-player.org"
+      ], 
+      "port": [
+        "8010:8010"
+      ]
+    }, 
+    "slave-fedora-21-32": {
+      "image": "clementine/slave-fedora-21-32", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-ubuntu-utopic-64": {
+      "image": "clementine/slave-ubuntu-utopic-64", 
+      "dependencies": [
+        "master:master"
+      ], 
+      "mount-from": [
+        "volumes"
+      ], 
+      "mount": [
+        "./config:/config"
+      ]
+    }, 
+    "slave-fedora-22-64": {
+      "image": "clementine/slave-fedora-22-64", 
       "dependencies": [
         "master:master"
       ], 
@@ -106,30 +231,6 @@
         "./config:/config"
       ]
     }, 
-    "slave-transifex": {
-      "image": "clementine/slave-transifex", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
-    "slave-ubuntu-vivid-64": {
-      "image": "clementine/slave-ubuntu-vivid-64", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
     "slave-debian-jessie-32": {
       "image": "clementine/slave-debian-jessie-32", 
       "dependencies": [
@@ -142,8 +243,8 @@
         "./config:/config"
       ]
     }, 
-    "slave-spotify-blob-32": {
-      "image": "clementine/slave-spotify-blob-32", 
+    "slave-ubuntu-wily-64": {
+      "image": "clementine/slave-ubuntu-wily-64", 
       "dependencies": [
         "master:master"
       ], 
@@ -166,45 +267,8 @@
         "./config:/config"
       ]
     }, 
-    "slave-ubuntu-trusty-32": {
-      "image": "clementine/slave-ubuntu-trusty-32", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
     "slave-ubuntu-vivid-32": {
       "image": "clementine/slave-ubuntu-vivid-32", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
-    "master": {
-      "mount-from": [
-        "volumes"
-      ], 
-      "image": "clementine/master", 
-      "mount": [
-        "./config:/config", 
-        "/var/www/clementine-player.org:/var/www/clementine-player.org"
-      ], 
-      "port": [
-        "8010:8010"
-      ]
-    }, 
-    "slave-debian-jessie-64": {
-      "image": "clementine/slave-debian-jessie-64", 
       "dependencies": [
         "master:master"
       ], 
@@ -219,18 +283,6 @@
       "image": "clementine/volumes", 
       "data": true
     }, 
-    "slave-fedora-21-32": {
-      "image": "clementine/slave-fedora-21-32", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
     "slave-spotify-blob-64": {
       "image": "clementine/slave-spotify-blob-64", 
       "dependencies": [
@@ -243,32 +295,8 @@
         "./config:/config"
       ]
     }, 
-    "slave-ubuntu-utopic-64": {
-      "image": "clementine/slave-ubuntu-utopic-64", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
     "slave-ubuntu-precise-32": {
       "image": "clementine/slave-ubuntu-precise-32", 
-      "dependencies": [
-        "master:master"
-      ], 
-      "mount-from": [
-        "volumes"
-      ], 
-      "mount": [
-        "./config:/config"
-      ]
-    }, 
-    "slave-fedora-22-64": {
-      "image": "clementine/slave-fedora-22-64", 
       "dependencies": [
         "master:master"
       ], 
