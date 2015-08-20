@@ -10,7 +10,6 @@ import re
 
 from buildbot import buildslave
 from buildbot import locks
-from buildbot.changes import gitpoller
 from buildbot.schedulers import basic
 from buildbot.schedulers import filter
 from buildbot.schedulers import forcesched
@@ -158,20 +157,9 @@ class ClementineBuildbot(object):
       'slaves': self.slaves,
       'builders': self.builders,
       'change_source': [
-        gitpoller.GitPoller(
-          project="clementine",
-          repourl=builders.GitBaseUrl("Clementine"),
-          pollinterval=60*5, # seconds
-          branch='master',
-          workdir="gitpoller_work",
-        ),
-        gitpoller.GitPoller(
-          project="website",
-          repourl=builders.GitBaseUrl("Website"),
-          pollinterval=60*5, # seconds
-          branch='master',
-          workdir="gitpoller_work_website",
-        ),
+        builders.GitPoller("Clementine"),
+        builders.GitPoller("Dependencies"),
+        builders.GitPoller("Website"),
       ],
       'status': [
         html.WebStatus(

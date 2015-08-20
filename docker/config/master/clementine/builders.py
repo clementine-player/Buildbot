@@ -1,5 +1,6 @@
 import os.path
 
+from buildbot.changes import gitpoller
 from buildbot.plugins import util
 from buildbot.process import factory
 from buildbot.steps import master
@@ -24,6 +25,15 @@ def GitArgs(repository):
     "retry": (5*60, 3),
     "workdir": "source",
   }
+
+
+def GitPoller(repository):
+  return gitpoller.GitPoller(
+      project=repository.lower(),
+      repourl=GitBaseUrl(repository),
+      pollinterval=60*5, # seconds
+      branch='master',
+      workdir="gitpoller_%s" % repository.lower())
 
 
 class OutputFinder(shell.ShellCommand):
