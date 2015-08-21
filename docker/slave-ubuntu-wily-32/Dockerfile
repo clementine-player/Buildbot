@@ -16,6 +16,7 @@ run apt-get update && apt-get install -y \
     libqtwebkit-dev
 run apt-get update && apt-get install -y libcrypto++-dev libchromaprint-dev
 run apt-get update && apt-get install -y libechonest-dev
+run apt-get update && apt-get install -y libcdio-cdda1 libmygpo-qt-dev
 
 # This isn't included in the base package on 32-bit.
 run apt-get update && apt-get install -y fakeroot

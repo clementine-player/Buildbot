@@ -16,6 +16,7 @@ run apt-get update && apt-get install -y \
     libqtwebkit-dev
 run apt-get update && apt-get install -y libcrypto++-dev libchromaprint-dev
 run apt-get update && apt-get install -y libechonest-dev
+run apt-get update && apt-get install -y libcdio-cdda1 libmygpo-qt-dev
 
 # Give the buildslave a name
 run echo "ubuntu-wily-64" > /slave-name
