@@ -80,12 +80,12 @@ class ClementineBuildbot(object):
     self._AddSlave('mac')
     self._AddBuilder(name='Mac Dependencies',
                      slave='mac',
-                     build_factory=builders.MakeMacBuilder(),
+                     build_factory=builders.MakeMacDepsBuilder(),
                      local_lock=False,
                      deps_lock='exclusive')
     self._AddBuilder(name='Mac Release',
                      slave='mac',
-                     build_factory=builders.MakeMacDepsBuilder(),
+                     build_factory=builders.MakeMacBuilder(),
                      local_lock=False,
                      deps_lock='counting')
 
