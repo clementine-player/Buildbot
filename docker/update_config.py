@@ -72,7 +72,7 @@ def WriteDeckingJson():
     Add(decking, 'slave-' + slave)
 
   with open('decking.json', 'w') as fh:
-    json.dump(decking, fh, indent=2)
+    json.dump(decking, fh, indent=2, sort_keys=True)
   print 'Wrote decking.json'
 
 
@@ -87,7 +87,7 @@ def WritePasswords():
   passwords = {name: CreatePassword() for name in slaves}
 
   with open('config/passwords.json', 'w') as fh:
-    json.dump(passwords, fh, indent=2)
+    json.dump(passwords, fh, indent=2, sort_keys=True)
   print 'Wrote config/passwords.json'
 
 
