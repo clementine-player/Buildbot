@@ -54,7 +54,8 @@ class ClementineBuildbot(object):
                        build_factory=builders.MakePPABuilder(version, DEV_PPA))
       self._AddBuilder(name='Ubuntu official PPA %s' % version.title(),
                        slave='ubuntu-%s-32' % version,
-                       build_factory=builders.MakePPABuilder(version, OFFICIAL_PPA))
+                       build_factory=builders.MakePPABuilder(version, OFFICIAL_PPA),
+                       auto=False)
 
     # Add special slaves.
     for name in CONFIG['special_slaves']:
