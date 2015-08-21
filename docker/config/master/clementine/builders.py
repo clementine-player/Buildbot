@@ -103,14 +103,20 @@ def MakePPABuilder(distro, ppa):
     "-DWITH_DEBIAN=ON",
     "-DDEB_DIST=" + distro,
   ]
+  clean_cmd = "rm -rvf *.diff.gz *.tar.gz *.dsc *_source.changes source/bin/*"
   buildpackage_cmd = ["dpkg-buildpackage", "-S", "-kF6ABD82E"]
+  movetarball_cmd = "mv -v source/dist/*.orig.tar.gz ."
+  cleanuptarball_cmd = "rm -rfv source/dist/*.tar.gz source/.git"
   keys_cmd = "gpg --import /config/ppa-keys || true"
   dput_cmd = "dput %s *_source.changes" % ppa
 
   f = factory.BuildFactory()
   f.addStep(git.Git(**git_args))
   f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
-  f.addStep(shell.ShellCommand(name="maketarball", command=["dist/maketarball.sh"], haltOnFailure=True, workdir="source"))
+  f.addStep(shell.ShellCommand(name="clean", command=clean_cmd, haltOnFailure=True, workdir="."))
+  f.addStep(shell.ShellCommand(name="maketarball", command=["./maketarball.sh"], haltOnFailure=True, workdir="source/dist"))
+  f.addStep(shell.ShellCommand(name="movetarball", command=movetarball_cmd, haltOnFailure=True, workdir="."))
+  f.addStep(shell.ShellCommand(name="cleanuptarball", command=cleanuptarball_cmd, haltOnFailure=True, workdir="."))
   f.addStep(shell.ShellCommand(name="keys", command=keys_cmd, workdir="."))
   f.addStep(shell.ShellCommand(name="buildpackage", command=buildpackage_cmd, haltOnFailure=True, workdir="source"))
   f.addStep(shell.ShellCommand(name="dput", command=dput_cmd, haltOnFailure=True, workdir="."))
