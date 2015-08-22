@@ -1,6 +1,8 @@
 *.pyc
+config/android-remote-properties.txt
+config/android-remote.keystore.jks
 config/github_id_rsa
-config/passwords.json
 config/passwords-external.json
+config/passwords.json
 config/ppa-keys
 config/transifexrc

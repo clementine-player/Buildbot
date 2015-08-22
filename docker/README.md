@@ -54,6 +54,10 @@ builders will try to pull files from config/ when they run:
     Get these keys with gpg --export-secret-keys.
   - config/transifexrc: The config file for the transifex client, including the
     password for the clementinebuildbot user.
+  - config/android-remote-properties.txt: The properties file for building the
+    android remote.  Contains keystore, keystore.password, key.alias and
+    key.password lines.
+  - config/android-remote.keystore.jks: Keys for signing the android remote apk.
 
 
 Adding new slaves

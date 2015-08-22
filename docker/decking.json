@@ -17,6 +17,7 @@
       "slave-ubuntu-vivid-32", 
       "slave-ubuntu-wily-64", 
       "slave-ubuntu-wily-32", 
+      "slave-android", 
       "slave-mingw", 
       "slave-spotify-blob-32", 
       "slave-spotify-blob-64", 
@@ -35,6 +36,18 @@
       ], 
       "port": [
         "8010:8010"
+      ]
+    }, 
+    "slave-android": {
+      "dependencies": [
+        "master:master"
+      ], 
+      "image": "clementine/slave-android", 
+      "mount": [
+        "./config:/config"
+      ], 
+      "mount-from": [
+        "volumes"
       ]
     }, 
     "slave-debian-jessie-32": {
@@ -260,6 +273,7 @@
   }, 
   "images": {
     "clementine/master": "./master", 
+    "clementine/slave-android": "./slave-android", 
     "clementine/slave-debian-jessie-32": "./slave-debian-jessie-32", 
     "clementine/slave-debian-jessie-64": "./slave-debian-jessie-64", 
     "clementine/slave-fedora-21-32": "./slave-fedora-21-32", 

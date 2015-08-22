@@ -114,6 +114,12 @@ class ClementineBuildbot(object):
                      build_factory=builders.MakeWebsiteTransifexPoPullBuilder(),
                      auto=False)
 
+    # Android.
+    self._AddBuilder(name='Android Remote',
+                     slave='android',
+                     build_factory=builders.MakeAndroidRemoteBuilder(),
+                     auto=False)
+
 
   def _AddBuilderAndSlave(self, distro, version, is_64_bit, factory):
     bits = '64' if is_64_bit else '32'
@@ -158,6 +164,7 @@ class ClementineBuildbot(object):
       'slaves': self.slaves,
       'builders': self.builders,
       'change_source': [
+        builders.GitPoller("Android-Remote"),
         builders.GitPoller("Clementine"),
         builders.GitPoller("Dependencies"),
         builders.GitPoller("Website"),
@@ -202,6 +209,14 @@ class ClementineBuildbot(object):
           treeStableTimer=2*60,
           builderNames=[
             "Transifex website POT push",
+          ],
+        ),
+        basic.SingleBranchScheduler(
+          name="android-remote",
+          change_filter=filter.ChangeFilter(project="android-remote", branch="master"),
+          treeStableTimer=2*60,
+          builderNames=[
+            "Android Remote",
           ],
         ),
         forcesched.ForceScheduler(

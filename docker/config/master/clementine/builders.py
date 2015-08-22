@@ -372,3 +372,25 @@ def MakeWebsiteTransifexPotPushBuilder():
   f.addStep(shell.ShellCommand(name="tx_push", workdir="source", haltOnFailure=True,
       command=["tx", "push", "-s"]))
   return f
+
+
+def MakeAndroidRemoteBuilder():
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Android-Remote")))
+
+  env = {
+    'ANDROID_HOME': '/android-sdk-linux',
+  }
+
+  # Change path to properties file here
+  sed_cmd = [
+    'sed', '-i', '-e', 's:key.properties:/config/android-remote-properties.txt:g',
+    'app/build.gradle']
+
+  f.addStep(shell.ShellCommand(name="sed", command=sed_cmd, haltOnFailure=True,
+      workdir='source'))
+  f.addStep(shell.ShellCommand(name="compile", haltOnFailure=True,
+      workdir='source', env=env, command=["./gradlew", "assembleRelease"]))
+  f.addStep(OutputFinder(pattern="app/build/outputs/apk/ClementineRemote-release-*.apk"))
+  f.addStep(UploadPackage("android"))
+  return f
