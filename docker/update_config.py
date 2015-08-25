@@ -40,9 +40,12 @@ def WriteDeckingJson():
         'data': True,
       },
       'master': {
-        'image':      'clementine/master',
-        'port':       ['8010:8010'],
-        'mount':      [
+        'image': 'clementine/master',
+        'port': [
+          '8010:8010',
+          '9989:9989',
+        ],
+        'mount': [
           './config:/config',
           '/var/www/clementine-player.org:/var/www/clementine-player.org'
         ],
