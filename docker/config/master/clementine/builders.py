@@ -43,7 +43,7 @@ class OutputFinder(shell.ShellCommand):
     else:
       shell.ShellCommand.__init__(self,
         name="get output filename",
-        command=["sh", "-c", "ls -d " + pattern + "|head -n 1"],
+        command=["sh", "-c", "ls -dt " + pattern + "|head -n 1"],
         workdir="source",
         **kwargs
       )
