@@ -81,6 +81,7 @@ def MakeDebBuilder(distro, version, is_64_bit):
     "-DWITH_DEBIAN=ON",
     "-DDEB_ARCH=" + arch,
     "-DDEB_DIST=" + version,
+    "-DFORCE_GIT_REVISION=",
     "-DENABLE_SPOTIFY_BLOB=OFF",
   ]
   make_cmd = ["make", "deb"]
