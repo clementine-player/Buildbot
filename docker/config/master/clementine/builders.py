@@ -132,7 +132,7 @@ def MakeWindowsDepsBuilder():
   return f
 
 
-def MakeWindowsBuilder(is_debug):
+def MakeWindowsBuilder(is_debug, is_portable):
   env = {
     'PKG_CONFIG_LIBDIR': '/target/lib/pkgconfig',
     'PATH': ':'.join([
@@ -161,6 +161,13 @@ def MakeWindowsBuilder(is_debug):
 
   strip_command = 'i686-w64-mingw32-strip'
 
+  if is_portable:
+    nsi_filename = 'clementine-portable.nsi'
+    output_glob = 'Clementine-PortableSetup*.exe'
+  else:
+    nsi_filename = 'clementine.nsi'
+    output_glob = 'ClementineSetup*.exe'
+
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Clementine")))
   f.addStep(shell.ShellCommand(
@@ -178,9 +185,9 @@ def MakeWindowsBuilder(is_debug):
       name="strip", workdir="source/bin", haltOnFailure=True, env=env,
       command=[strip_command] + executable_files))
   f.addStep(shell.ShellCommand(
-      name="makensis", command=["makensis", "clementine.nsi"],
+      name="makensis", command=["makensis", nsi_filename],
       workdir="source/dist/windows", haltOnFailure=True))
-  f.addStep(OutputFinder(pattern="dist/windows/ClementineSetup*.exe"))
+  f.addStep(OutputFinder(pattern="dist/windows/" + output_glob))
   f.addStep(UploadPackage('win32/' + ('debug' if is_debug else 'release')))
   return f
 

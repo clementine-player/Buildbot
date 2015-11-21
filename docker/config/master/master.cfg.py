@@ -69,11 +69,18 @@ class ClementineBuildbot(object):
                      deps_lock='exclusive')
     self._AddBuilder(name='Windows Release',
                      slave='mingw',
-                     build_factory=builders.MakeWindowsBuilder(False),
+                     build_factory=builders.MakeWindowsBuilder(
+                         is_debug=False, is_portable=False),
                      deps_lock='counting')
     self._AddBuilder(name='Windows Debug',
                      slave='mingw',
-                     build_factory=builders.MakeWindowsBuilder(True),
+                     build_factory=builders.MakeWindowsBuilder(
+                         is_debug=True, is_portable=False),
+                     deps_lock='counting')
+    self._AddBuilder(name='Windows Portable',
+                     slave='mingw',
+                     build_factory=builders.MakeWindowsBuilder(
+                         is_debug=False, is_portable=True),
                      deps_lock='counting')
 
     # Mac.
