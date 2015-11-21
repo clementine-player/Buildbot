@@ -81,6 +81,7 @@ class ClementineBuildbot(object):
     self._AddBuilder(name='Mac Dependencies',
                      slave='mac',
                      build_factory=builders.MakeMacDepsBuilder(),
+                     auto=False,
                      local_lock=False,
                      deps_lock='exclusive')
     self._AddBuilder(name='Mac Release',
@@ -200,6 +201,7 @@ class ClementineBuildbot(object):
           change_filter=filter.ChangeFilter(project="dependencies", branch="master"),
           treeStableTimer=2*60,
           builderNames=[
+            'Mac Dependencies',
             'Windows Dependencies',
           ],
         ),
