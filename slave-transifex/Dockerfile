@@ -1,7 +1,8 @@
-from clementine/slave-ubuntu-trusty-64
+from clementine/slave-ubuntu-wily-64
 
 # transifex client
 run pip install transifex-client
+run pip install --upgrade urllib3  # build-in package doesn't have "six"
 
 # .ssh directory for pushing to github.
 # The mkdir and chown are in the same line because of
