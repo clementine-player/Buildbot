@@ -402,3 +402,21 @@ def MakeAndroidRemoteBuilder():
   f.addStep(OutputFinder(pattern="app/build/outputs/apk/ClementineRemote-release-*.apk"))
   f.addStep(UploadPackage("android"))
   return f
+
+
+def MakeSourceBuilder():
+  git_args = GitArgs("Clementine")
+  git_args['mode'] = 'full'
+  git_args['method'] = 'fresh'
+
+  cmake_cmd = [
+      'cmake', '..',
+  ]
+
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**git_args))
+  f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
+  f.addStep(shell.ShellCommand(command=["./maketarball.sh"], haltOnFailure=True, workdir="source/dist"))
+  f.addStep(OutputFinder(pattern="dist/clementine-*.tar.gz"))
+  f.addStep(UploadPackage('source'))
+  return f

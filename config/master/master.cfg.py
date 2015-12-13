@@ -128,6 +128,11 @@ class ClementineBuildbot(object):
                      build_factory=builders.MakeAndroidRemoteBuilder(),
                      auto=False)
 
+    # Source.
+    self._AddBuilder(name='Source',
+                     slave='ubuntu-wily-64',
+                     build_factory=builders.MakeSourceBuilder())
+
 
   def _AddBuilderAndSlave(self, distro, version, is_64_bit, factory):
     bits = '64' if is_64_bit else '32'
