@@ -104,10 +104,10 @@ def MakePPABuilder(distro, ppa):
     "-DWITH_DEBIAN=ON",
     "-DDEB_DIST=" + distro,
   ]
-  clean_cmd = "rm -rvf *.diff.gz *.tar.gz *.dsc *_source.changes source/bin/*"
+  clean_cmd = "rm -rvf *.diff.*z *.tar.*z *.dsc *_source.changes source/bin/*"
   buildpackage_cmd = ["dpkg-buildpackage", "-S", "-kF6ABD82E"]
-  movetarball_cmd = "mv -v source/dist/*.orig.tar.gz ."
-  cleanuptarball_cmd = "rm -rfv source/dist/*.tar.gz source/.git"
+  movetarball_cmd = "mv -v source/dist/*.orig.tar.xz ."
+  cleanuptarball_cmd = "rm -rfv source/dist/*.tar.*z source/.git"
   keys_cmd = "gpg --import /config/ppa-keys || true"
   dput_cmd = "dput %s *_source.changes" % ppa
 
@@ -202,7 +202,7 @@ def MakeFedoraBuilder(distro, unused_is_64_bit):
   f.addStep(shell.ShellCommand(name="maketarball", workdir="source/bin", haltOnFailure=True,
       command=["../dist/maketarball.sh"]))
   f.addStep(shell.ShellCommand(name="movetarball", workdir="source/bin", haltOnFailure=True,
-      command="mv clementine-*.tar.gz ~/rpmbuild/SOURCES"))
+      command="mv clementine-*.tar.xz ~/rpmbuild/SOURCES"))
   f.addStep(shell.Compile(name="rpmbuild", workdir="source/bin", haltOnFailure=True,
       command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
@@ -417,6 +417,6 @@ def MakeSourceBuilder():
   f.addStep(git.Git(**git_args))
   f.addStep(shell.ShellCommand(name="cmake", command=cmake_cmd, haltOnFailure=True, workdir="source/bin"))
   f.addStep(shell.ShellCommand(command=["./maketarball.sh"], haltOnFailure=True, workdir="source/dist"))
-  f.addStep(OutputFinder(pattern="dist/clementine-*.tar.gz"))
+  f.addStep(OutputFinder(pattern="dist/clementine-*.tar.xz"))
   f.addStep(UploadPackage('source'))
   return f
