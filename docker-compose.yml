@@ -1,0 +1,104 @@
+master:
+  build: master
+  ports: ['8010:8010', '9989:9989']
+  volumes: ['./config:/config', /var/www/clementine-player.org]
+  volumes_from: [volumes]
+slave-android:
+  build: slave-android
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-debian-jessie-32:
+  build: slave-debian-jessie-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-debian-jessie-64:
+  build: slave-debian-jessie-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-21-32:
+  build: slave-fedora-21-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-21-64:
+  build: slave-fedora-21-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-22-32:
+  build: slave-fedora-22-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-22-64:
+  build: slave-fedora-22-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-mingw:
+  build: slave-mingw
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-spotify-blob-32:
+  build: slave-spotify-blob-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-spotify-blob-64:
+  build: slave-spotify-blob-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-transifex:
+  build: slave-transifex
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-precise-32:
+  build: slave-ubuntu-precise-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-precise-64:
+  build: slave-ubuntu-precise-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-trusty-32:
+  build: slave-ubuntu-trusty-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-trusty-64:
+  build: slave-ubuntu-trusty-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-vivid-32:
+  build: slave-ubuntu-vivid-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-vivid-64:
+  build: slave-ubuntu-vivid-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-wily-32:
+  build: slave-ubuntu-wily-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-wily-64:
+  build: slave-ubuntu-wily-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+volumes:
+  command: /bin/true
+  image: ubuntu
+  volumes: [/persistent-data]

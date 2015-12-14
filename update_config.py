@@ -6,19 +6,18 @@ import os
 import random
 import string
 import sys
+import yaml
 
 CONFIG = json.load(open('config/config.json'))
 
 
-def Add(decking, name):
-  decking['images']['clementine/' + name] = './' + name
-  decking['containers'][name] = {
-    'image':        'clementine/' + name,
-    'dependencies': ['master:master'],
-    'mount':        ['./config:/config'],
-    'mount-from':   ['volumes'],
+def Add(compose, name):
+  compose[name] = {
+    'build': name,
+    'links': ['master'],
+    'volumes': ['./config:/config'],
+    'volumes_from': ['volumes'],
   }
-  decking['clusters']['main'].append(name)
 
 
 def CreatePassword():
@@ -27,56 +26,38 @@ def CreatePassword():
       for _ in range(16))
 
 
-def WriteDeckingJson():
-  decking = {
-    'images': {
-      'clementine/volumes':     './volumes',
-      'clementine/master':      './master',
-      'clementine/slave-mingw': './slave-mingw',
-    },
-    'containers': {
-      'volumes': {
-        'image': 'clementine/volumes',
-        'data': True,
-      },
-      'master': {
-        'image': 'clementine/master',
-        'port': [
-          '8010:8010',
-          '9989:9989',
-        ],
-        'mount': [
-          './config:/config',
-          '/var/www/clementine-player.org:/var/www/clementine-player.org'
-        ],
-        'mount-from': ['volumes'],
-      },
-      'slave-mingw': {
-        'image':        'clementine/slave-mingw',
-        'dependencies': ['master:master'],
-        'mount':        ['./config:/config'],
-        'mount-from':   ['volumes'],
-      },
-    },
-    'clusters': {
-      'main': [
-        'master',
-        'slave-mingw',
+def WriteComposeYaml():
+  compose = {
+    'master': {
+      'build': 'master',
+      'ports': [
+        '8010:8010',
+        '9989:9989',
       ],
+      'volumes': [
+        './config:/config',
+        '/var/www/clementine-player.org',
+      ],
+      'volumes_from': ['volumes'],
     },
+    'volumes': {
+      'command': '/bin/true',
+      'image': 'ubuntu',
+      'volumes': ['/persistent-data'],
+    }
   }
 
   for distro, versions in CONFIG['linux'].iteritems():
     for version in versions:
       for bits in [64, 32]:
-        Add(decking, 'slave-%s-%s-%d' % (distro, version, bits))
+        Add(compose, str('slave-%s-%s-%d' % (distro, version, bits)))
 
   for slave in CONFIG['special_slaves']:
-    Add(decking, 'slave-' + slave)
+    Add(compose, str('slave-' + slave))
 
-  with open('decking.json', 'w') as fh:
-    json.dump(decking, fh, indent=2, sort_keys=True)
-  print 'Wrote decking.json'
+  with open('docker-compose.yml', 'w') as fh:
+    yaml.dump(compose, fh, indent=2)
+  print 'Wrote docker-compose.yml'
 
 
 def WritePasswords():
@@ -95,7 +76,7 @@ def WritePasswords():
 
 
 def main():
-  WriteDeckingJson()
+  WriteComposeYaml()
   WritePasswords()
 
 
