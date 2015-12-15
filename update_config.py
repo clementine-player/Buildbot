@@ -38,7 +38,7 @@ def WriteComposeYaml():
       ],
       'volumes': [
         './config:/config',
-        '/var/www/clementine-player.org',
+        '/var/www/clementine-player.org:/var/www/clementine-player.org',
       ],
       'volumes_from': ['volumes'],
     },
