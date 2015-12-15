@@ -164,9 +164,11 @@ def MakeWindowsBuilder(is_debug, is_portable):
   if is_portable:
     nsi_filename = 'clementine-portable.nsi'
     output_glob = 'Clementine-PortableSetup*.exe'
+    upload_dest = 'portable'
   else:
     nsi_filename = 'clementine.nsi'
     output_glob = 'ClementineSetup*.exe'
+    upload_dest = ('debug' if is_debug else 'release')
 
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Clementine")))
@@ -188,7 +190,7 @@ def MakeWindowsBuilder(is_debug, is_portable):
       name="makensis", command=["makensis", nsi_filename],
       workdir="source/dist/windows", haltOnFailure=True))
   f.addStep(OutputFinder(pattern="dist/windows/" + output_glob))
-  f.addStep(UploadPackage('win32/' + ('debug' if is_debug else 'release')))
+  f.addStep(UploadPackage('win32/' + upload_dest))
   return f
 
 
