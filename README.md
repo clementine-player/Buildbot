@@ -18,26 +18,24 @@ Containers
     slave.  The container has all the packages required to build Clementine.
 
 
-Containers are built, started and stopped with decking.
+Containers are built, started and stopped with docker-compose.
 
-1. First install decking and build the containers:
+1. First install [docker-compose](https://docs.docker.com/compose/install/).
 
-  ```
-  npm install -g decking
-  decking build all
-  decking create
-  ```
-
-2. Then you can start and stop buildbot:
+1. Build the containers:
 
   ```
-  decking start
-  decking stop
-  decking status
-  decking restart
+  docker-compose build
   ```
 
-3. The master is then accessible on http://localhost:8010/.
+1. Then you can start and stop buildbot:
+
+  ```
+  docker-compose up
+  docker-compose stop
+  ```
+
+1. The master is then accessible on http://localhost:8010/.
 
 
 Credentials
@@ -83,9 +81,8 @@ that you want to add.
 4. Build the images and containers and start the slaves:
 
   ```
-  decking build all
-  decking create
-  decking start
+  docker-compose build
+  docker-compose up
   ```
 
 5. See the builders on http://localhost:8010/builders.
@@ -97,11 +94,8 @@ Recreate an image and container
 You might need to do this occasionaly to update a distro's packages.
 
 ```
-decking build --no-cache clementine/slave-vivid-32
-docker stop slave-vivid-32
-docker rm slave-vivid-32
-decking create
-decking start
+docker-compose build --no-cache --pull slave-ubuntu-vivid-32
+docker-compose up slave-ubuntu-vivid-32
 ```
 
 
@@ -109,6 +103,6 @@ View the master's log
 =====================
 
 ```
-docker run --volumes-from volumes ubuntu tail /persistent-data/master/twistd.log
+docker-compose run --entrypoint tail master /persistent-data/master/twistd.log
 ```
 
