@@ -3,7 +3,7 @@
 master:
   build: master
   ports: ['8010:8010', '9989:9989']
-  volumes: ['./config:/config', /var/www/clementine-player.org]
+  volumes: ['./config:/config', '/var/www/clementine-player.org:/var/www/clementine-player.org']
   volumes_from: [volumes]
 slave-android:
   build: slave-android
@@ -97,6 +97,16 @@ slave-ubuntu-wily-32:
   volumes_from: [volumes]
 slave-ubuntu-wily-64:
   build: slave-ubuntu-wily-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-xenial-32:
+  build: slave-ubuntu-xenial-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-xenial-64:
+  build: slave-ubuntu-xenial-64
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
