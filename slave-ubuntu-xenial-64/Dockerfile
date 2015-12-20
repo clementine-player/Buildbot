@@ -18,6 +18,9 @@ run apt-get update && apt-get install -y libcrypto++-dev libchromaprint-dev
 run apt-get update && apt-get install -y libechonest-dev
 run apt-get update && apt-get install -y libcdio-cdda1 libmygpo-qt-dev
 
+# fakeroot is missing from the base package.
+run apt-get update && apt-get install -y fakeroot
+
 # Give the buildslave a name
 run echo "ubuntu-xenial-64" > /slave-name
 
