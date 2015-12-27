@@ -1,17 +1,14 @@
 from clementine/ubuntu:trusty-i386
 
-# apt-fast
-run apt-get update && apt-get install -y aria2
-add apt-fast /bin/apt-fast
-
-# Buildbot slave
-run apt-fast install -y python-pip python-dev git
-run pip install buildbot_slave
-
-# Build tools
-run apt-fast install -y yasm cmake qt4-dev-tools stow unzip autoconf libtool \
+run apt-get update && apt-get install -y \
+    # Buildbot slave
+    python-pip python-dev git \
+    # Build tools
+    yasm cmake qt4-dev-tools stow unzip autoconf libtool \
     bison flex pkg-config gettext libglib2.0-dev intltool wine git-core \
     sudo texinfo wget nsis
+
+run pip install buildbot_slave
 
 # Install the old version of libtool
 run wget -q -O /libtool.deb 'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb3h6bjQ/libtool_2.2.6b-2ubuntu1_i386.deb' && \
@@ -32,9 +29,9 @@ run wget --progress=dot:mega -O /mingw.tar.bz2 \
 run rm -rf /root && mkdir /root --mode 0755
 
 add first-time-setup.sh /first-time-setup.sh
-run ln -s /persistent-data/mingw/target /target
-run ln -s /persistent-data/mingw/target /usr/i586-mingw32msvc
-run ln -s /persistent-data/mingw/windows-dependencies/source /src
+run ln -s /persistent-data/mingw/target /target && \
+    ln -s /persistent-data/mingw/target /usr/i586-mingw32msvc && \
+    ln -s /persistent-data/mingw/windows-dependencies/source /src
 
 # Give the buildslave a name
 run echo "mingw" > /slave-name

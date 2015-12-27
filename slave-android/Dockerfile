@@ -1,12 +1,12 @@
 from ubuntu:trusty
 
-# Buildbot slave
-run apt-get update && apt-get install -y python-pip python-dev git
-run pip install buildbot_slave
-
-# Android SDK dependencies.
 run apt-get update && apt-get install -y \
+    # Buildbot slave
+    python-pip python-dev git \
+    # Android SDK dependencies.
     openjdk-7-jdk unzip wget libc6-i386 lib32stdc++6 lib32z1
+
+run pip install buildbot_slave
 
 # Android SDK.
 run cd /tmp && wget http://dl.google.com/android/android-sdk_r24.3.4-linux.tgz
