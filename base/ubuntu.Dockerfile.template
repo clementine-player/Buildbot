@@ -26,9 +26,12 @@ RUN rm -rf /var/lib/apt/lists/*
 
 # enable universe, multiverse, restricted, and add -updates and -security
 RUN if grep -q Ubuntu /etc/lsb-release; then \
-  echo 'deb http://archive.ubuntu.com/ubuntu %DISTRO% main universe multiverse restricted' > /etc/apt/sources.list && \
-  echo 'deb http://archive.ubuntu.com/ubuntu %DISTRO%-updates main universe multiverse restricted' >> /etc/apt/sources.list && \
-  echo 'deb http://archive.ubuntu.com/ubuntu %DISTRO%-security main universe multiverse restricted' >> /etc/apt/sources.list; \
+    echo 'deb http://archive.ubuntu.com/ubuntu %DISTRO% main universe multiverse restricted' > /etc/apt/sources.list && \
+    echo 'deb http://archive.ubuntu.com/ubuntu %DISTRO%-updates main universe multiverse restricted' >> /etc/apt/sources.list && \
+    echo 'deb http://archive.ubuntu.com/ubuntu %DISTRO%-security main universe multiverse restricted' >> /etc/apt/sources.list; \
+  fi; \
+  if grep -q precise /etc/lsb-release; then \
+    dpkg-divert --local --rename /usr/bin/ischroot && ln -sf /bin/true /usr/bin/ischroot; \
   fi
 
 # upgrade packages for now, since the tarballs aren't updated frequently enough
