@@ -40,6 +40,16 @@ slave-fedora-22-64:
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
+slave-fedora-23-32:
+  build: slave-fedora-23-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-23-64:
+  build: slave-fedora-23-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
 slave-mingw:
   build: slave-mingw
   links: [master]

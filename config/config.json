@@ -2,7 +2,7 @@
   "linux": {
     "debian": ["jessie"],
     "ubuntu": ["precise", "trusty", "vivid", "wily", "xenial"],
-    "fedora": ["21", "22"]
+    "fedora": ["21", "22", "23"]
   },
   "special_slaves": [
     "android",
