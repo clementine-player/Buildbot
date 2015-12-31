@@ -95,7 +95,7 @@ You might need to do this occasionaly to update a distro's packages.
 
 ```
 docker-compose build --no-cache --pull slave-ubuntu-vivid-32
-docker-compose up slave-ubuntu-vivid-32
+docker-compose up -d slave-ubuntu-vivid-32
 ```
 
 
