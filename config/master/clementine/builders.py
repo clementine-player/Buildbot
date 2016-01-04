@@ -211,7 +211,7 @@ def MakeFedoraBuilder(distro, unused_is_64_bit):
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   f.addStep(UploadPackage('fedora-' + distro))
   return f
-  
+
 
 def MakeSpotifyBlobBuilder():
   cmake_cmd = [
@@ -362,6 +362,9 @@ def MakeWebsiteTransifexPoPullBuilder():
   return _MakeTransifexPoPullBuilder(
       "Website", "www.clementine-player.org/locale/*.po")
 
+def MakeAndroidTransifexPoPullBuilder():
+  return _MakeTransifexPoPullBuilder(
+      "Android-Remote", "app/src/main/res/values-*")
 
 def MakeTransifexPotPushBuilder():
   f = factory.BuildFactory()

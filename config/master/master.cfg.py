@@ -121,6 +121,10 @@ class ClementineBuildbot(object):
                      slave='transifex',
                      build_factory=builders.MakeWebsiteTransifexPoPullBuilder(),
                      auto=False)
+    self._AddBuilder(name='Transifex Android PO pull',
+                     slave='transifex',
+                     build_factory=builders.MakeAndroidTransifexPoPullBuilder(),
+                     auto=False)
 
     # Android.
     self._AddBuilder(name='Android Remote',
