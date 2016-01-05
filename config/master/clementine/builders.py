@@ -337,6 +337,12 @@ def _MakeTransifexPoPullBuilder(repo, po_glob):
   _AddGithubSetup(f)
   f.addStep(shell.ShellCommand(name="tx_pull", workdir="source", haltOnFailure=True,
       command=["tx", "pull", "-a", "--force"]))
+
+  # Dialects must have a '-r' prepended instead of '_'
+  if repo == "Android-Remote":
+    f.addStep(ShellCommand(name="remove_res", workdir="build", haltOnFailure=True, command="rm -rf app/src/main/res/values-??-r*"))
+    f.addStep(ShellCommand(name="rename_res", workdir="build", haltOnFailure=True, command="rename 's/_/-r/g' app/src/main/res/values-*"))
+
   f.addStep(shell.ShellCommand(name="git_add", workdir="source", haltOnFailure=True,
       command="git add --verbose " + po_glob))
   f.addStep(shell.ShellCommand(name="git_commit", workdir="source", haltOnFailure=True,
