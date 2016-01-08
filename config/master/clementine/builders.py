@@ -147,7 +147,7 @@ def MakeWindowsBuilder(is_debug, is_portable):
   cmake_cmd = [
     "cmake", "..",
     "-DCMAKE_TOOLCHAIN_FILE=/src/Toolchain-mingw32.cmake",
-    "-DCMAKE_BUILD_TYPE=Release",
+    "-DCMAKE_BUILD_TYPE=" + ("Debug" if is_debug else "Release"),
     "-DENABLE_WIN32_CONSOLE=" + ("ON" if is_debug else "OFF"),
     "-DQT_HEADERS_DIR=/target/include",
     "-DQT_LIBRARY_DIR=/target/bin",
