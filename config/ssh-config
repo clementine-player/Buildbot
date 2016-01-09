@@ -1,14 +1,14 @@
 Host github-Clementine
   HostName github.com
   User git
-  IdentityFile /config/github_id_rsa.clementine
+  IdentityFile /config/github_id_rsa.Clementine
 
 Host github-Website
   HostName github.com
   User git
-  IdentityFile /config/github_id_rsa.website
+  IdentityFile /config/github_id_rsa.Website
 
 Host github-Android-Remote
   HostName github.com
   User git
-  IdentityFile /config/github_id_rsa.android-remote
+  IdentityFile /config/github_id_rsa.Android-Remote
