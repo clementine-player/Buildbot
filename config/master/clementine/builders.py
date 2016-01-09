@@ -356,7 +356,7 @@ def _MakeTransifexPoPullBuilder(repo, po_glob):
   f.addStep(shell.ShellCommand(name="git_push", workdir="source", haltOnFailure=True,
       command=["git",
                "push",
-               "git@github.com:clementine-player/Clementine.git",
+               "git@github.com:clementine-player/%s.git" % repo,
                "master",
                "--verbose"]))
   return f
