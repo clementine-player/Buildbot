@@ -320,10 +320,8 @@ def _AddTxSetupForRepo(f, repo, pot=True):
 
 
 def _AddGithubSetup(f):
-  f.addStep(shell.ShellCommand(name="ssh_keys_cp", haltOnFailure=True,
-      command=["cp", "/config/github_id_rsa", "/home/buildbot/.ssh/id_rsa"]))
-  f.addStep(shell.ShellCommand(name="ssh_keys_chmod", haltOnFailure=True,
-      command=["chmod", "0600", "/home/buildbot/.ssh/id_rsa"]))
+  f.addStep(shell.ShellCommand(name="ssh_config_cp", haltOnFailure=True,
+      command=["cp", "/config/ssh-config", "/home/buildbot/.ssh/config"]))
   f.addStep(shell.ShellCommand(name="git_config_email", haltOnFailure=True,
       command=["git", "config", "--global", "user.email", "buildbot@clementine-player.org"]))
   f.addStep(shell.ShellCommand(name="git_config_username", haltOnFailure=True,
@@ -356,7 +354,7 @@ def _MakeTransifexPoPullBuilder(repo, po_glob):
   f.addStep(shell.ShellCommand(name="git_push", workdir="source", haltOnFailure=True,
       command=["git",
                "push",
-               "git@github.com:clementine-player/%s.git" % repo,
+               "github-%s" % repo,
                "master",
                "--verbose"]))
   return f

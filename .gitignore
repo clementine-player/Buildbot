@@ -1,7 +1,12 @@
 *.pyc
 config/android-remote-properties.txt
 config/android-remote.keystore.jks
-config/github_id_rsa
+config/github_id_rsa.android-remote
+config/github_id_rsa.android-remote.pub
+config/github_id_rsa.clementine
+config/github_id_rsa.clementine.pub
+config/github_id_rsa.website
+config/github_id_rsa.website.pub
 config/passwords-external.json
 config/passwords.json
 config/ppa-keys
