@@ -257,6 +257,7 @@ class ClementineBuildbot(object):
           builderNames=[
             "Transifex PO pull",
             "Transifex website PO pull",
+            "Transifex Android PO pull",
           ],
         ),
       ],
