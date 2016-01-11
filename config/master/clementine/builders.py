@@ -338,9 +338,9 @@ def _MakeTransifexPoPullBuilder(repo, po_glob):
 
   # Dialects must have a '-r' prepended instead of '_'
   if repo == "Android-Remote":
-    f.addStep(shell.ShellCommand(name="remove_res", workdir="build", haltOnFailure=True,
+    f.addStep(shell.ShellCommand(name="remove_res", workdir="source", haltOnFailure=True,
         command="rm -rf app/src/main/res/values-??-r*"))
-    f.addStep(shell.ShellCommand(name="rename_res", workdir="build", haltOnFailure=True,
+    f.addStep(shell.ShellCommand(name="rename_res", workdir="source", haltOnFailure=True,
         command="rename 's/_/-r/g' app/src/main/res/values-*"))
 
   f.addStep(shell.ShellCommand(name="git_add", workdir="source", haltOnFailure=True,
