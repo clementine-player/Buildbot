@@ -232,8 +232,8 @@ def MakeSpotifyBlobBuilder():
   f.addStep(OutputFinder(pattern="bin/spotify/version*-*bit"))
   f.addStep(shell.SetProperty(command=["echo", SPOTIFYBASE], property="spotifybase"))
   f.addStep(master.MasterShellCommand(name="verify", command=util.Interpolate("""
-    openssl dgst -sha1 -verify %(prop:spotifybase)s/clementine-spotify-public.pem \
-      -signature %(prop:spotifybase)s/%(prop:output-filename)s/blob.sha1 \
+    openssl dgst -sha512 -verify %(prop:spotifybase)s/clementine-spotify-public.pem \
+      -signature %(prop:spotifybase)s/%(prop:output-filename)s/blob.sha512 \
       %(prop:spotifybase)s/%(prop:output-filename)s/blob
   """)))
   return f
