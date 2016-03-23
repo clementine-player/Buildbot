@@ -11,7 +11,7 @@ run pip install buildbot_slave
 # Android SDK.
 run cd /tmp && wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
 run cd / && tar -xvf /tmp/android-sdk_r24.4.1-linux.tgz
-run echo y | /android-sdk-linux/tools/android update sdk --no-ui --all \
+run echo yes | /android-sdk-linux/tools/android update sdk --no-ui --all \
   --filter android-23,build-tools-23.0.3,extra-android-support,extra-android-m2repository
 
 # Give the buildslave a name
