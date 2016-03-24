@@ -4,15 +4,24 @@ run apt-get update && apt-get install -y \
     # Buildbot slave
     python-pip python-dev git \
     # Android SDK dependencies.
-    openjdk-7-jdk unzip wget libc6-i386 lib32stdc++6 lib32z1
+    openjdk-7-jdk unzip wget libc6-i386 lib32stdc++6 lib32z1 \
+    # For accepting licenses.
+    expect
 
 run pip install buildbot_slave
 
 # Android SDK.
 run cd /tmp && wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
 run cd / && tar -xvf /tmp/android-sdk_r24.4.1-linux.tgz
-run yes yes | /android-sdk-linux/tools/android update sdk --no-ui --all \
-  --filter android-23,build-tools-23.0.3,extra-android-support,extra-android-m2repository
+
+run expect -c ' \
+set timeout -1; \
+spawn /android-sdk-linux/tools/android update sdk --no-ui --all --filter android-23,build-tools-23.0.3,extra-android-support,extra-android-m2repository; \
+expect { \
+  "Do you accept the license" { exp_send "y\r" ; exp_continue } \
+  eof \
+} \
+'
 
 # Give the buildslave a name
 run echo "android" > /slave-name
