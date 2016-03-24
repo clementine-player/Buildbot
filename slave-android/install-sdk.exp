@@ -1,0 +1,6 @@
+set timeout -1
+spawn /android-sdk-linux/tools/android update sdk --no-ui --all --filter build-tools-23.0.3
+expect {
+  "Do you accept the license" { exp_send "y\r" ; exp_continue }
+  eof
+}

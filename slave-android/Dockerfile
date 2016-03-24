@@ -14,14 +14,8 @@ run pip install buildbot_slave
 run cd /tmp && wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
 run cd / && tar -xvf /tmp/android-sdk_r24.4.1-linux.tgz
 
-run expect -c ' \
-set timeout -1; \
-spawn /android-sdk-linux/tools/android update sdk --no-ui --all --filter android-23,build-tools-23.0.3,extra-android-support,extra-android-m2repository; \
-expect { \
-  "Do you accept the license" { exp_send "y\r" ; exp_continue } \
-  eof \
-} \
-'
+add install-sdk.exp /install-sdk.exp
+run expect /install-sdk.exp
 
 # Give the buildslave a name
 run echo "android" > /slave-name
