@@ -1,10 +1,10 @@
-from ubuntu:trusty
+from ubuntu:xenial
 
 run apt-get update && apt-get install -y \
     # Buildbot slave
     python-pip python-dev git \
     # Android SDK dependencies.
-    openjdk-7-jdk unzip wget libc6-i386 lib32stdc++6 lib32z1 \
+    openjdk-8-jdk unzip wget libc6-i386 lib32stdc++6 lib32z1 \
     # For accepting licenses.
     expect
 
