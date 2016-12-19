@@ -11,13 +11,13 @@ run apt-get update && apt-get install -y \
 run pip install buildbot_slave
 
 # Install the old version of libtool
-run wget -q -O /libtool.deb 'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb3h6bjQ/libtool_2.2.6b-2ubuntu1_i386.deb' && \
+run wget -q -O /libtool.deb 'https://storage.googleapis.com/clementine-data.appspot.com/Build%20dependencies/libtool_2.2.6b-2ubuntu1_i386.deb' && \
     dpkg -i /libtool.deb && \
     rm /libtool.deb
 
 # Install the mingw toolchain and add it to the path
 run wget --progress=dot:mega -O /mingw.tar.bz2 \
-      'https://googledrive.com/host/0Byds9jlkR0IxbXVUa1Flb3h6bjQ/mingw-w32-bin_i686-linux_20130523.tar.bz2' && \
+      'https://storage.googleapis.com/clementine-data.appspot.com/Build%20dependencies/mingw-w32-bin_i686-linux_20130523.tar.bz2' && \
     mkdir /mingw && \
     tar -xvf /mingw.tar.bz2 -C /mingw && \
     rm /mingw.tar.bz2 && \
