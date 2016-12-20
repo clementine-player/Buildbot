@@ -3,7 +3,7 @@ from clementine/ubuntu:precise-i386
 # Gstreamer developers PPA (required on Precise for gstreamer-1.0)
 run apt-get update && \
     apt-get install -y python-software-properties && \
-    add-apt-repository ppa:gstreamer-developers/ppa  && \
+    add-apt-repository ppa:elementary-os/stable  && \
     apt-get update
 
 run apt-get update && apt-get install -y \
