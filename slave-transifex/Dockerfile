@@ -1,5 +1,9 @@
 from clementine/slave-ubuntu-trusty-64
 
+# Secure version of urllib3 compiles some stuff from source.
+run apt-get update
+run apt-get install -y libffi-dev libssl-dev
+
 # transifex client
 run pip install transifex-client
 run pip install --upgrade urllib3[secure]  # build-in package doesn't have "six"
