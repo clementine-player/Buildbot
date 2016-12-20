@@ -304,7 +304,10 @@ def MakeMacCrossBuilder():
       haltOnFailure=True,
     ))  
   f.addStep(shell.Compile(command=["make"], workdir="source/bin", haltOnFailure=True))
-  # TODO: Build a dmg and upload it to when supported.
+  f.addStep(shell.ShellCommand(name="install", command=["make", "install"], haltOnFailure=True, workdir="source/bin"))
+  f.addStep(shell.ShellCommand(name="dmg", command=["make", "dmg"], haltOnFailure=True, workdir="source/bin"))
+  f.addStep(OutputFinder(pattern="bin/clementine-*.dmg"))
+  f.addStep(UploadPackage('mac'))
   return f
 
 
