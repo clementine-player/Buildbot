@@ -276,6 +276,38 @@ def MakeMacBuilder():
   return f
 
 
+def MakeMacCrossBuilder():
+  f = factory.BuildFactory()
+  f.addStep(git.Git(**GitArgs("Clementine")))
+  f.addStep(shell.ShellCommand(
+      name="cmake",
+      workdir="source/bin",
+      env = { 
+        "PKG_CONFIG_PATH": "/target/lib/pkgconfig",
+        "PATH": "/usr/bin:/bin:/target/bin",
+      },  
+      command = [ 
+        "cmake", "..",
+        "-DCMAKE_TOOLCHAIN_FILE=/src/macosx/Toolchain-Darwin.cmake",
+        "-DCMAKE_OSX_ARCHITECTURES=x86_64",
+        "-DQT_HEADERS_DIR=/target/include",
+        "-DQT_LIBRARY_DIR=/target/lib",
+        "-DQT_BINARY_DIR=/target/bin",
+        "-DQT_USE_FRAMEWORKS=ON",
+        "-DQT_MKSPECS_DIR=/target/mkspecs",
+        "-DQT_QMAKE_EXECUTABLE=/target/bin/qmake",
+        "-DCMAKE_CFLAGS='-m64 -I/target/include --stdlib=libc++ -Qunused-arguments -isysroot /Developer/SDKs/MacOSX10.10.sdk'",
+        "-DCMAKE_CXXFLAGS='-m64 -I/target/include --stdlib=libc++ -Qunused-arguments -isysroot /Developer/SDKs/MacOSX10.10.sdk'",
+        "-DCMAKE_EXE_LINKER_FLAGS='-Wl,-syslibroot,/Developer/SDKs/MacOSX10.10.sdk -m64 -L/target/lib -lc++'",
+        "-DSPOTIFY=/target/libspotify.framework",
+      ],  
+      haltOnFailure=True,
+    ))  
+  f.addStep(shell.Compile(command=["make"], workdir="source/bin", haltOnFailure=True))
+  # TODO: Build a dmg and upload it to when supported.
+  return f
+
+
 def MakeMacDepsBuilder():
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Dependencies")))

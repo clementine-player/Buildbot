@@ -9,6 +9,7 @@
     "mingw",
     "spotify-blob-32",
     "spotify-blob-64",
-    "transifex"
+    "transifex",
+    "mac-cross"
   ]
 }

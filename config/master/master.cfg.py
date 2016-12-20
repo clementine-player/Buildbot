@@ -96,6 +96,9 @@ class ClementineBuildbot(object):
                      build_factory=builders.MakeMacBuilder(),
                      local_lock=False,
                      deps_lock='counting')
+    self._AddBuilder(name='Mac Cross',
+                     slave='mac-cross',
+                     build_factory=builders.MakeMacCrossBuilder())
 
     # Spotify.
     self._AddBuilder(name='Spofify blob 32-bit',
