@@ -137,7 +137,7 @@ class ClementineBuildbot(object):
 
     # Source.
     self._AddBuilder(name='Source',
-                     slave='ubuntu-wily-64',
+                     slave='ubuntu-xenial-64',
                      build_factory=builders.MakeSourceBuilder())
 
 

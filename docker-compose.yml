@@ -20,26 +20,6 @@ slave-debian-jessie-64:
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
-slave-fedora-21-32:
-  build: slave-fedora-21-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-fedora-21-64:
-  build: slave-fedora-21-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-fedora-22-32:
-  build: slave-fedora-22-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-fedora-22-64:
-  build: slave-fedora-22-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
 slave-fedora-23-32:
   build: slave-fedora-23-32
   links: [master]
@@ -47,6 +27,26 @@ slave-fedora-23-32:
   volumes_from: [volumes]
 slave-fedora-23-64:
   build: slave-fedora-23-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-24-32:
+  build: slave-fedora-24-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-24-64:
+  build: slave-fedora-24-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-25-32:
+  build: slave-fedora-25-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-25-64:
+  build: slave-fedora-25-64
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
@@ -95,26 +95,6 @@ slave-ubuntu-trusty-64:
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
-slave-ubuntu-vivid-32:
-  build: slave-ubuntu-vivid-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-ubuntu-vivid-64:
-  build: slave-ubuntu-vivid-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-ubuntu-wily-32:
-  build: slave-ubuntu-wily-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-ubuntu-wily-64:
-  build: slave-ubuntu-wily-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
 slave-ubuntu-xenial-32:
   build: slave-ubuntu-xenial-32
   links: [master]
@@ -122,6 +102,16 @@ slave-ubuntu-xenial-32:
   volumes_from: [volumes]
 slave-ubuntu-xenial-64:
   build: slave-ubuntu-xenial-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-yakkety-32:
+  build: slave-ubuntu-yakkety-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-ubuntu-yakkety-64:
+  build: slave-ubuntu-yakkety-64
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
