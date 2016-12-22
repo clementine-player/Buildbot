@@ -1,4 +1,6 @@
-from clementine/ubuntu:trusty-i386
+from clementine/ubuntu:xenial-i386
+
+run echo ttf-mscorefonts-installer msttcorefonts/accepted-mscorefonts-eula select true | debconf-set-selections
 
 run apt-get update && apt-get install -y \
     # Buildbot slave
@@ -6,7 +8,8 @@ run apt-get update && apt-get install -y \
     # Build tools
     yasm cmake qt4-dev-tools stow unzip autoconf libtool \
     bison flex pkg-config gettext libglib2.0-dev intltool wine git-core \
-    sudo texinfo wget nsis
+    sudo texinfo wget nsis \
+    protobuf-compiler
 
 run pip install buildbot_slave
 
