@@ -1,4 +1,4 @@
-from clementine/fedora:24-i386
+from clementine/fedora:26-i386
 
 run setarch i386 dnf install --assumeyes \
     buildbot-slave git tar rpmdevtools \
@@ -10,7 +10,7 @@ run setarch i386 dnf install --assumeyes \
     pulseaudio-libs-devel qtwebkit-devel sha2-devel desktop-file-utils \
     libechonest-devel libchromaprint-devel cryptopp-devel
 
-run echo "fedora-24-32" > /slave-name
+run echo "fedora-26-32" > /slave-name
 
 # Create the buildbot user.
 run useradd -r -m -s /bin/false buildbot

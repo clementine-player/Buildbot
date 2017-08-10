@@ -20,26 +20,6 @@ slave-debian-jessie-64:
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
-slave-fedora-23-32:
-  build: slave-fedora-23-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-fedora-23-64:
-  build: slave-fedora-23-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-fedora-24-32:
-  build: slave-fedora-24-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-fedora-24-64:
-  build: slave-fedora-24-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
 slave-fedora-25-32:
   build: slave-fedora-25-32
   links: [master]
@@ -47,6 +27,16 @@ slave-fedora-25-32:
   volumes_from: [volumes]
 slave-fedora-25-64:
   build: slave-fedora-25-64
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-26-32:
+  build: slave-fedora-26-32
+  links: [master]
+  volumes: ['./config:/config']
+  volumes_from: [volumes]
+slave-fedora-26-64:
+  build: slave-fedora-26-64
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
@@ -75,16 +65,6 @@ slave-transifex:
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
-slave-ubuntu-precise-32:
-  build: slave-ubuntu-precise-32
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
-slave-ubuntu-precise-64:
-  build: slave-ubuntu-precise-64
-  links: [master]
-  volumes: ['./config:/config']
-  volumes_from: [volumes]
 slave-ubuntu-trusty-32:
   build: slave-ubuntu-trusty-32
   links: [master]
@@ -105,13 +85,13 @@ slave-ubuntu-xenial-64:
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
-slave-ubuntu-yakkety-32:
-  build: slave-ubuntu-yakkety-32
+slave-ubuntu-zesty-32:
+  build: slave-ubuntu-zesty-32
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]
-slave-ubuntu-yakkety-64:
-  build: slave-ubuntu-yakkety-64
+slave-ubuntu-zesty-64:
+  build: slave-ubuntu-zesty-64
   links: [master]
   volumes: ['./config:/config']
   volumes_from: [volumes]

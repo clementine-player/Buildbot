@@ -1,4 +1,4 @@
-from clementine/ubuntu:vivid-i386
+from clementine/ubuntu:zesty-i386
 
 run apt-get update && apt-get install -y \
     # Buildbot slave
@@ -12,6 +12,7 @@ run apt-get update && apt-get install -y \
     protobuf-compiler libprotobuf-dev libqca2-dev libqca2-plugin-ossl \
     libfftw3-dev libsparsehash-dev libsqlite3-dev libpulse-dev \
     libqtwebkit-dev libcrypto++-dev libchromaprint-dev libechonest-dev \
+    libcdio-cdda1 libmygpo-qt-dev \
     # This isn't included in the base package on 32-bit.
     fakeroot \
     # For PPA uploads.
@@ -20,7 +21,7 @@ run apt-get update && apt-get install -y \
 run pip install buildbot_slave
 
 # Give the buildslave a name
-run echo "ubuntu-vivid-32" > /slave-name
+run echo "ubuntu-zesty-32" > /slave-name
 
 # Create the buildbot user.
 run useradd -r -m -s /bin/false buildbot
