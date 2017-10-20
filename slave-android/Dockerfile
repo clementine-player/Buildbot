@@ -11,11 +11,14 @@ run apt-get update && apt-get install -y \
 run pip install buildbot_slave
 
 # Android SDK.
-run cd /tmp && wget https://dl.google.com/android/android-sdk_r24.4.1-linux.tgz
-run cd / && tar -xvf /tmp/android-sdk_r24.4.1-linux.tgz
+run cd /tmp && wget https://dl.google.com/android/repository/sdk-tools-linux-3859397.zip
+run mkdir /android-sdk-linux && chmod 755 /android-sdk-linux
+run unzip -d /android-sdk-linux /tmp/sdk-tools-linux-3859397.zip
 
-add install-sdk.exp /install-sdk.exp
-run expect /install-sdk.exp
+run yes | /android-sdk-linux/tools/bin/sdkmanager --licenses
+run yes | /android-sdk-linux/tools/bin/sdkmanager --update
+run yes | /android-sdk-linux/tools/bin/sdkmanager "platforms;android-25" "build-tools;25.0.3" "extras;google;m2repository" "extras;android;m2repository"
+run yes | /android-sdk-linux/tools/bin/sdkmanager --licenses
 
 # Give the buildslave a name
 run echo "android" > /slave-name
