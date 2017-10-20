@@ -17,3 +17,4 @@ run useradd -r -m -s /bin/false buildbot
 run mkdir -p /home/buildbot/rpmbuild/{BUILD,RPMS,SOURCES,SPECS,SRPMS} && \
     chown buildbot /home/buildbot/rpmbuild/{,BUILD,RPMS,SOURCES,SPECS,SRPMS}
 cmd ["/usr/bin/python", "/config/slave/start.py"]
+entrypoint []
