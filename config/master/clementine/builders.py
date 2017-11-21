@@ -289,7 +289,7 @@ def MakeFedoraBuilder(distro, is_64_bit):
           name="rpmbuild",
           workdir="source/bin",
           haltOnFailure=True,
-          command=["rpmbuild", "-ba", "../dist/clementine.spec"] + ["--target=i686-fedora-linux"] if not is_64_bit else []))
+          command=["rpmbuild", "-ba", "../dist/clementine.spec"] + (["--target=i686-fedora-linux"] if not is_64_bit else [])))
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   f.addStep(UploadPackage("fedora-" + distro))
   return f
