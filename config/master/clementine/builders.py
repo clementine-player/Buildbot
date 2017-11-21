@@ -258,7 +258,7 @@ def MakeWindowsBuilder(is_debug, is_portable):
   return f
 
 
-def MakeFedoraBuilder(distro, unused_is_64_bit):
+def MakeFedoraBuilder(distro, is_64_bit):
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Clementine")))
   f.addStep(
@@ -289,7 +289,7 @@ def MakeFedoraBuilder(distro, unused_is_64_bit):
           name="rpmbuild",
           workdir="source/bin",
           haltOnFailure=True,
-          command=["rpmbuild", "-ba", "../dist/clementine.spec"]))
+          command=["rpmbuild", "-ba", "../dist/clementine.spec"] + ["--target=i686-fedora-linux"] if not is_64_bit else []))
   f.addStep(OutputFinder(pattern="~/rpmbuild/RPMS/*/clementine-*.rpm"))
   f.addStep(UploadPackage("fedora-" + distro))
   return f
