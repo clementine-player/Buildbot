@@ -1,12 +1,9 @@
-from clementine/slave-ubuntu-trusty-64
+from clementine/slave-ubuntu-xenial-64
 
-# Secure version of urllib3 compiles some stuff from source.
-run apt-get update
-run apt-get install -y libffi-dev libssl-dev
+run apt-get install -y transifex-client python-pip
 
-# transifex client
-run pip install transifex-client
-run pip install --upgrade urllib3[secure]  # build-in package doesn't have "six"
+run pip install --upgrade pip
+run pip install --upgrade urllib3[secure]
 
 # .ssh directory for pushing to github.
 # The mkdir and chown are in the same line because of
