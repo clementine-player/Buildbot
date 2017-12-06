@@ -12,9 +12,9 @@ TEMP_DIR=$(mktemp -d)
 docker build -t make-fedora-image make-fedora-image
 docker run -v "${TEMP_DIR}:/data" make-fedora-image "${DISTRO}"
 tar -C "${TEMP_DIR}/fedora-${DISTRO}-i386" -c . | \
-  docker import - "fedora-${DISTRO}-i386-base"
+  docker import - "gcr.io/clementine-data/fedora-${DISTRO}-i386-base"
 sed "s/%DISTRO%/${DISTRO}/g" fedora.Dockerfile.template | \
-  docker build -t "clementine/fedora:${DISTRO}-i386" -
+  docker build -t "gcr.io/clementine-data/fedora:${DISTRO}-i386" -
 
 set +x
 echo
