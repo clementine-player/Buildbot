@@ -1,4 +1,4 @@
-from clementine/debian:jessie-i386
+from i386/debian:jessie-slim
 
 run apt-get update && apt-get install -y \
     # Buildbot slave

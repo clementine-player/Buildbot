@@ -1,4 +1,4 @@
-from clementine/slave-ubuntu-trusty-32
+from gcr.io/clementine-data/slave-ubuntu-trusty-32
 
 # libspotify.
 add https://developer.spotify.com/download/libspotify/libspotify-12.1.51-Linux-i686-release.tar.gz /src/

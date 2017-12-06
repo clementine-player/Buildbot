@@ -1,4 +1,4 @@
-from clementine/slave-ubuntu-trusty-64
+from gcr.io/clementine-data/slave-ubuntu-trusty-64
 
 # libspotify.
 add https://developer.spotify.com/download/libspotify/libspotify-12.1.51-Linux-x86_64-release.tar.gz /src/

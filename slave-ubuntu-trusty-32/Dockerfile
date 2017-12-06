@@ -1,4 +1,4 @@
-from clementine/ubuntu:trusty-i386
+from i386/ubuntu:trusty
 
 run apt-get update && apt-get install -y \
     # Buildbot slave

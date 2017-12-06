@@ -1,4 +1,4 @@
-from clementine/ubuntu:zesty-i386
+from i386/ubuntu:zesty
 
 run apt-get update && apt-get install -y \
     # Buildbot slave

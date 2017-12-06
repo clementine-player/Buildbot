@@ -1,4 +1,4 @@
-from clementine/ubuntu:xenial-amd64
+from ubuntu:xenial
 
 run apt-get update && apt-get install -y \
     # Buildbot slave
