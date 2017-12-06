@@ -1,4 +1,4 @@
-from clementine/slave-ubuntu-xenial-64
+from grc.io/clementine-data/slave-ubuntu-xenial-64:latest
 
 run apt-get install -y transifex-client python-pip
 
