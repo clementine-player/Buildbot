@@ -1,4 +1,4 @@
-from clementine/fedora:25-i386
+from gcr.io/clementine-data/fedora-25-i386
 
 run setarch i386 dnf install --assumeyes \
     buildbot-slave git tar rpmdevtools \
