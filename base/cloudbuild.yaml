@@ -2,7 +2,7 @@ steps:
 - name: 'gcr.io/cloud-builders/docker'
   args: ['build', '-t', 'make-fedora-image', 'make-fedora-image']
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['run', '--mount', 'source=data,target=/data', 'make-fedora-image', '25']
+  args: ['run', '--mount', 'source=data,target=/data', 'make-fedora-image', '${_DISTRO}']
   volumes:
   - name: 'data'
     path: '/persistent-data'
@@ -11,11 +11,11 @@ steps:
   args:
   - '-c'
   - |
-    tar -C /persistent-data/fedora-25-i386 -c . | docker import - 'gcr.io/clementine-data/fedora-25-i386-base'
+    tar -C /persistent-data/fedora-${_DISTRO}-i386 -c . | docker import - 'gcr.io/clementine-data/fedora-${_DISTRO}-i386-base'
   volumes:
   - name: 'data'
     path: '/persistent-data'
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/clementine-data/fedora-25-i386', '--build-arg=DISTRO=25', '.']
+  args: ['build', '-t', 'gcr.io/clementine-data/fedora-${_DISTRO}-i386', '--build-arg=DISTRO=${_DISTRO}', '.']
 
-images: ['gcr.io/clementine-data/fedora-25-i386-base', 'gcr.io/clementine-data/fedora-25-i386']
+images: ['gcr.io/clementine-data/fedora-${_DISTRO}-i386-base', 'gcr.io/clementine-data/fedora-${_DISTRO}-i386']
