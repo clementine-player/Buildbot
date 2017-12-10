@@ -1,0 +1,45 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: master
+spec:
+  selector:
+    matchLabels:
+      app: buildbot-master
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: buildbot-master
+    spec:
+      containers:
+      - name: buildbot-master
+        image: gcr.io/clementine-data/master
+        ports:
+        - containerPort: 8010
+        - containerPort: 9989
+        volumeMounts:
+        - name: git-volume
+          mountPath: /config
+          subPath: Buildbot/config
+        - name: persistent-data
+          mountPath: /persistent-data
+        - name: secrets
+          mountPath: /config/passwords.json
+          subPath: passwords.json
+        - name: secrets
+          mountPath: /config/passwords-external.json
+          subPath: passwords-external.json
+      volumes:
+      - name: git-volume
+        gitRepo:
+          repository: "https://github.com/clementine-player/Buildbot"
+      - name: persistent-data
+      - name: secrets
+        secret:
+          secretName: slave-passwords
+          items:
+          - key: passwords.json
+            path: passwords.json
+          - key: passwords-external.json
+            path: passwords-external.json
