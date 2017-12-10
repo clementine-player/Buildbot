@@ -1,3 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: master
+  labels:
+    app: master
+spec:
+  type: NodePort
+  ports:
+  - port: 8010
+    protocol: TCP
+  selector:
+    app: buildbot-master
+---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
