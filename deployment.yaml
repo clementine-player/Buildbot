@@ -12,6 +12,20 @@ spec:
   selector:
     app: buildbot-master
 ---
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-service
+  labels:
+    app: master
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9989
+    protocol: TCP
+  selector:
+    app: buildbot-master
+---
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
@@ -57,3 +71,46 @@ spec:
             path: passwords.json
           - key: passwords-external.json
             path: passwords-external.json
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: slave-ubuntu-trusty-32
+spec:
+  selector:
+    matchLabels:
+      app: slave-ubuntu-trusty-32
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: slave-ubuntu-trusty-32
+    spec:
+      containers:
+      - name: slave-ubuntu-trusty-32
+        image: gcr.io/clementine-data/slave-ubuntu-trusty-32
+        env:
+        - name: "MASTER_PORT_9989_TCP_ADDR"
+          value: "master-service"
+        - name: "MASTER_PORT_9989_TCP_PORT"
+          value: "9989"
+        volumeMounts:
+        - name: git-volume
+          mountPath: /config
+          subPath: Buildbot/config
+        - name: persistent-data
+          mountPath: /persistent-data
+        - name: secrets
+          mountPath: /config/passwords.json
+          subPath: passwords.json
+      volumes:
+      - name: secrets
+        secret:
+          secretName: slave-passwords
+          items:
+          - key: passwords.json
+            path: passwords.json
+      - name: persistent-data
+      - name: git-volume
+        gitRepo:
+          repository: "https://github.com/clementine-player/Buildbot"
