@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: kapprover-account
+  namespace: kube-system
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: read-write-csr
+rules:
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests"]
+  verbs: ["watch", "get", "list", "update"]
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests/approval"]
+  verbs: ["update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: read-write-csr-binding
+roleRef:
+  kind: ClusterRole
+  name: read-write-csr
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: kapprover-account
+  namespace: kube-system
+---
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: kubelet-approver
+  namespace: kube-system
+  labels:
+    k8s-app: kubelet-approver
+spec:
+  replicas: 1
+  template:
+    metadata:
+      name: kubelet-approver
+      labels:
+        k8s-app: kubelet-approver
+    spec:
+      serviceAccountName: kapprover-account
+      containers:
+      - name: kubelet-approver
+        imagePullPolicy: IfNotPresent
+        image: gcr.io/clementine-data/kapprover:latest
+        command: ["/go/bin/kapprover"]
+        args:
+        - -service-account=certificate-init
+        - -service-account-namespace=default
+        - -approver=service
+        resources:
+          requests:
+            cpu: 100m
+            memory: 50Mi
+          limits:
+            cpu: 100m
+            memory: 50Mi
