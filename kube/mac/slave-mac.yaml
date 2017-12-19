@@ -1,0 +1,111 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: certificate-init
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRole
+metadata:
+  name: create-client-csr
+rules:
+- apiGroups: ["certificates.k8s.io"]
+  resources: ["certificatesigningrequests"]
+  verbs: ["create", "get", "watch", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: certificate-init
+roleRef:
+  kind: ClusterRole
+  name: create-client-csr
+  apiGroup: rbac.authorization.k8s.io
+subjects:
+- kind: ServiceAccount
+  name: certificate-init
+  namespace: default
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: codesigner
+spec:
+  selector:
+    app: codesigner
+  ports:
+  - protocol: TCP
+    port: 5001
+  type: NodePort
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: slave-mac
+spec:
+  selector:
+    matchLabels:
+      app: codesigner
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: codesigner
+    spec:
+      serviceAccountName: certificate-init
+      initContainers:
+      - name: certificate-init-container
+        image: gcr.io/hightowerlabs/certificate-init-container:0.0.1
+        env:
+        - name: NAMESPACE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: POD_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        args:
+        - "-cert-dir=/etc/tls"
+        - "-namespace=$(NAMESPACE)"
+        - "-pod-ip=$(POD_IP)"
+        - "-pod-name=$(POD_NAME)"
+        - "-service-names=codesigner"
+        volumeMounts:
+        - name: tls
+          mountPath: /etc/tls
+      containers:
+      - name: mac-vm
+        image: gcr.io/clementine-data/mac-vm
+        ports:
+        - containerPort: 5001
+        securityContext:
+          privileged: true
+        volumeMounts:
+        - name: backing
+          mountPath: /backing/mac_hdd-backing.img
+        - name: snapshot
+          mountPath: /snapshot
+      - name: mac-sidecar
+        image: gcr.io/clementine-data/mac-sidecar
+        volumeMounts:
+        - name: secrets
+          mountPath: /secrets
+        - name: tls
+          mountPath: /etc/tls
+
+      volumes:
+      - name: backing
+        hostPath:
+          path: /stuff/mac_hdd-backing.img
+          type: File
+      - name: snapshot
+        emptyDir: {}
+      - name: secrets
+        secret:
+          secretName: mac-ssh-password
+      - name: tls
+        emptyDir: {}
