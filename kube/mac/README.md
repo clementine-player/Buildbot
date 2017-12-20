@@ -12,12 +12,6 @@ This directory contains tools for running clementine-player/codesigner as a serv
 
 ```kubectl apply -f slave-mac.yaml```
 
-### Approve the Server Certificate Request
-
-1. ```kubectl get csr```
-1. Find the newest CSR from `system:serviceaccount:default:certificate-init`.
-1. ```kubectl certificate approve <csr name>```
-
 ### Check things are working fine
 
 ```kubectl get pods -l app=codesigner```
