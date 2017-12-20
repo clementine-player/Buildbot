@@ -1,0 +1,82 @@
+# Public Buildbot master status page service on port 8010.
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-status
+  labels:
+    app: buildbot-master
+spec:
+  type: NodePort
+  ports:
+  - port: 8010
+    protocol: TCP
+    name: status
+  selector:
+    app: buildbot-master
+---
+# Buildbot master port for slaves to connect to.
+apiVersion: v1
+kind: Service
+metadata:
+  name: master-service
+  labels:
+    app: buildbot-master
+spec:
+  type: ClusterIP
+  ports:
+  - port: 9989
+    protocol: TCP
+  selector:
+    app: buildbot-master
+---
+# Actual Buildbot master
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: buildbot-master
+spec:
+  selector:
+    matchLabels:
+      app: buildbot-master
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: buildbot-master
+    spec:
+      containers:
+      - name: buildbot-master
+        image: gcr.io/clementine-data/master
+        ports:
+        - containerPort: 8010 # Status page
+        - containerPort: 9989 # Slave port
+        volumeMounts:
+        # Buildbot config
+        - name: git-volume
+          mountPath: /config
+          subPath: Buildbot/config
+        # Cache of previous state
+        - name: persistent-data
+          mountPath: /persistent-data
+        # Passwords
+        - name: secrets
+          mountPath: /config/passwords.json
+          subPath: passwords.json
+        - name: secrets
+          mountPath: /config/passwords-external.json
+          subPath: passwords-external.json
+      volumes:
+      - name: git-volume
+        gitRepo:
+          repository: "https://github.com/clementine-player/Buildbot"
+      # TODO: Make this actually persistent.
+      - name: persistent-data
+        emptyDir: {}
+      - name: secrets
+        secret:
+          secretName: slave-passwords
+          items:
+          - key: passwords.json
+            path: passwords.json
+          - key: passwords-external.json
+            path: passwords-external.json
