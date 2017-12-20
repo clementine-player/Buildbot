@@ -11,10 +11,13 @@ metadata:
 rules:
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests"]
-  verbs: ["watch", "get", "list", "update"]
+  verbs: ["watch", "get", "list", "update", "delete"]
 - apiGroups: ["certificates.k8s.io"]
   resources: ["certificatesigningrequests/approval"]
   verbs: ["update"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
@@ -48,12 +51,10 @@ spec:
       containers:
       - name: kubelet-approver
         imagePullPolicy: IfNotPresent
-        image: gcr.io/clementine-data/kapprover:latest
-        command: ["/go/bin/kapprover"]
+        image: gcr.io/clementine-data/kapprover:proofpoint
         args:
-        - -service-account=certificate-init
-        - -service-account-namespace=default
-        - -approver=service
+        - -filter=group=system:serviceaccounts
+        - -denier=subjectispodforuser
         resources:
           requests:
             cpu: 100m
