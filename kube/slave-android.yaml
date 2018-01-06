@@ -1,20 +1,20 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: slave-ubuntu-trusty-32
+  name: slave-android
 spec:
   selector:
     matchLabels:
-      app: slave-ubuntu-trusty-32
+      app: slave-android
   replicas: 1
   template:
     metadata:
       labels:
-        app: slave-ubuntu-trusty-32
+        app: slave-android
     spec:
       containers:
-      - name: slave-ubuntu-trusty-32
-        image: gcr.io/clementine-data/slave-ubuntu-trusty-32
+      - name: slave-android
+        image: gcr.io/clementine-data/slave-android
         env:
         - name: MASTER_PORT_9989_TCP_ADDR
           value: "master-service"

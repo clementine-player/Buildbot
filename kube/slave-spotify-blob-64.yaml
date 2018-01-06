@@ -1,20 +1,20 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: slave-ubuntu-trusty-32
+  name: slave-spotify-blob-64
 spec:
   selector:
     matchLabels:
-      app: slave-ubuntu-trusty-32
+      app: slave-spotify-blob-64
   replicas: 1
   template:
     metadata:
       labels:
-        app: slave-ubuntu-trusty-32
+        app: slave-spotify-blob-64
     spec:
       containers:
-      - name: slave-ubuntu-trusty-32
-        image: gcr.io/clementine-data/slave-ubuntu-trusty-32
+      - name: slave-spotify-blob-64
+        image: gcr.io/clementine-data/slave-spotify-blob-64
         env:
         - name: MASTER_PORT_9989_TCP_ADDR
           value: "master-service"

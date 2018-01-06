@@ -1,20 +1,20 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: slave-ubuntu-trusty-32
+  name: slave-mingw
 spec:
   selector:
     matchLabels:
-      app: slave-ubuntu-trusty-32
+      app: slave-mingw
   replicas: 1
   template:
     metadata:
       labels:
-        app: slave-ubuntu-trusty-32
+        app: slave-mingw
     spec:
       containers:
-      - name: slave-ubuntu-trusty-32
-        image: gcr.io/clementine-data/slave-ubuntu-trusty-32
+      - name: slave-mingw
+        image: gcr.io/clementine-data/slave-mingw
         env:
         - name: MASTER_PORT_9989_TCP_ADDR
           value: "master-service"
