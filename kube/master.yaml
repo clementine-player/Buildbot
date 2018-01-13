@@ -55,6 +55,13 @@ spec:
         - name: git-volume
           mountPath: /config
           subPath: Buildbot/config
+        # Directory for build output on host
+        - name: web
+          mountPath: /var/www/clementine-player.org/builds
+          subPath: builds
+        - name: web
+          mountPath: /var/www/clementine-player.org/spotify
+          subPath: spotify
         # Cache of previous state
         - name: persistent-data
           mountPath: /persistent-data
@@ -72,6 +79,10 @@ spec:
       # TODO: Make this actually persistent.
       - name: persistent-data
         emptyDir: {}
+      - name: web
+        hostPath:
+          path: /var/www/clementine-player.org
+          type: Directory
       - name: secrets
         secret:
           secretName: slave-passwords
