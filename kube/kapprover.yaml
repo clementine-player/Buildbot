@@ -54,7 +54,7 @@ spec:
         image: gcr.io/clementine-data/kapprover:proofpoint
         args:
         - -filter=group=system:serviceaccounts
-        - -denier=subjectispodforuser
+        - -warner=subjectispodforuser
         resources:
           requests:
             cpu: 100m
