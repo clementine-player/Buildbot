@@ -1,0 +1,43 @@
+# Serves up clementine builds
+apiVersion: v1
+kind: Service
+metadata:
+  name: builds
+  labels:
+    app: builds-nginx
+spec:
+  type: ClusterIP
+  ports:
+  - port: 80
+    protocol: TCP
+    name: http
+  selector:
+    app: builds-nginx
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: builds
+spec:
+  selector:
+    matchLabels:
+      app: builds-nginx
+  template:
+    metadata:
+      labels:
+        app: builds-nginx
+    spec:
+      containers:
+      - name: nginx
+        image: nginx:alpine
+        ports:
+        - containerPort: 80
+        volumeMounts:
+        - name: builds-root
+          mountPath: /usr/share/nginx/html
+      volumes:
+      - name: builds-root
+        hostPath:
+          path: /var/www/clementine-player.org/builds
+          type: Directory
+

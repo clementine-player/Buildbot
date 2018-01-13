@@ -3,6 +3,20 @@ kind: Ingress
 metadata:
   name: test-ingress
 spec:
+  rules:
+  - host: builds.clementine-player.org
+    http:
+      paths:
+      - backend:
+          serviceName: builds
+          servicePort: http
+  - host: buildbot.clementine-player.org
+    http:
+      paths:
+      - backend:
+          serviceName: master-status
+          servicePort: status
+# Default backend
   backend:
     serviceName: master-status
     servicePort: status
