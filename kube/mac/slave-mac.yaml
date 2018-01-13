@@ -100,7 +100,7 @@ spec:
       volumes:
       - name: backing
         hostPath:
-          path: /stuff/mac_hdd-backing.img
+          path: /var/lib/kubelet/mac_hdd-backing.img
           type: File
       - name: snapshot
         emptyDir: {}
