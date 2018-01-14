@@ -34,10 +34,36 @@ spec:
         - containerPort: 80
         volumeMounts:
         - name: builds-root
-          mountPath: /usr/share/nginx/html
+          mountPath: /web
+          readOnly: true
+        - name: config
+          mountPath: /etc/nginx
+          readOnly: true
       volumes:
       - name: builds-root
         hostPath:
           path: /var/www/clementine-player.org/builds
           type: Directory
-
+      - name: config
+        configMap:
+          name: builds-nginx-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: builds-nginx-config
+data:
+  nginx.conf: |
+    worker_processes 1;
+    events {
+    }
+    http {
+      server {
+        listen 80;
+        server_name builds.clementine-player.org;
+        location / {
+          autoindex on;
+          root /web;
+        }
+      }
+    }
