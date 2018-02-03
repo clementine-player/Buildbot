@@ -72,10 +72,19 @@ spec:
         - name: secrets
           mountPath: /config/passwords-external.json
           subPath: passwords-external.json
+        - name: config
+          mountPath: /config/config.json
+          subPath: config.json
       volumes:
       - name: git-volume
         gitRepo:
           repository: "https://github.com/clementine-player/Buildbot"
+      - name: config
+        configMap:
+          name: master-config
+          items:
+          - key: config.json
+            path: config.json
       # TODO: Make this actually persistent.
       - name: persistent-data
         emptyDir: {}
@@ -91,3 +100,25 @@ spec:
             path: passwords.json
           - key: passwords-external.json
             path: passwords-external.json
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: master-config
+data:
+  config.json: |
+    {
+      "linux": {
+        "debian": ["jessie"],
+        "ubuntu": ["trusty", "xenial", "zesty", "bionic"],
+        "fedora": ["25", "26"]
+      },
+      "special_slaves": [
+        "android",
+        "mingw",
+        "spotify-blob-32",
+        "spotify-blob-64",
+        "transifex",
+        "mac-cross"
+      ]
+    }
