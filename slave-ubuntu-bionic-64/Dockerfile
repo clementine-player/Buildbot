@@ -12,7 +12,7 @@ run apt-get update && apt-get install -y \
     protobuf-compiler libprotobuf-dev libqca2-dev libqca2-plugin-ossl \
     libfftw3-dev libsparsehash-dev libsqlite3-dev libpulse-dev \
     libqtwebkit-dev libcrypto++-dev libchromaprint-dev \
-    libmygpo-qt-dev \
+    libmygpo-qt-dev qt5-default qtbase5-private-dev qttools5-dev libqt5x11extras5-dev \
     # Fakeroot is missing from the base package
     fakeroot
 

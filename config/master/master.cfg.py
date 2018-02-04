@@ -216,6 +216,14 @@ class ClementineBuildbot(object):
           builderNames=self.auto_builder_names,
         ),
         basic.SingleBranchScheduler(
+          name="qt5",
+          change_filter=filter.ChangeFilter(project="clementine", branch="qt5"),
+          treeStableTimer=2*60,
+          builderNames=[
+            'Ubuntu Bionic 64-bit',
+          ],
+        ),
+        basic.SingleBranchScheduler(
           name="dependencies",
           change_filter=filter.ChangeFilter(project="dependencies", branch="master"),
           treeStableTimer=2*60,
