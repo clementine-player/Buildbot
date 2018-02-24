@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: clang-in-the-cloud
+  labels:
+    app: clang-in-the-cloud
+spec:
+  type: NodePort
+  ports:
+  - port: 10000
+    protocol: TCP
+    name: main
+  selector:
+    app: clang-in-the-cloud
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: clang-in-the-cloud
+spec:
+  selector:
+    matchLabels:
+      app: clang-in-the-cloud
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: clang-in-the-cloud
+    spec:
+      containers:
+      - name: clang-in-the-cloud
+        image: gcr.io/clementine-data/clang-in-the-cloud
+        command: ["/opt/clang-in-the-cloud"]
+        args: ["-address", "0.0.0.0", "-github", "$(GITHUB_PAT)"]
+        ports:
+        - containerPort: 10000
+        env:
+          - name: GITHUB_PAT
+            valueFrom:
+              secretKeyRef:
+                name: github
+                key: pat

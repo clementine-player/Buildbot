@@ -16,6 +16,12 @@ spec:
       - backend:
           serviceName: master-status
           servicePort: status
+  - host: clang.clementine-player.org
+    http:
+      paths:
+      - backend:
+          serviceName: clang-in-the-cloud
+          servicePort: main
 # Default backend
   backend:
     serviceName: master-status
