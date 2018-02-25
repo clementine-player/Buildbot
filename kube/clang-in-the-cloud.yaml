@@ -31,12 +31,20 @@ spec:
       - name: clang-in-the-cloud
         image: gcr.io/clementine-data/clang-in-the-cloud
         command: ["/opt/clang-in-the-cloud"]
-        args: ["-address", "0.0.0.0", "-github", "$(GITHUB_PAT)"]
+        args: ["-address", "0.0.0.0", "-private-key", "/etc/secrets/clang-formatter.2018-02-24.private-key.pem", "-webhook-secret", "$(WEBHOOK_SECRET)"]
         ports:
         - containerPort: 10000
         env:
-          - name: GITHUB_PAT
+          - name: WEBHOOK_SECRET
             valueFrom:
               secretKeyRef:
-                name: github
-                key: pat
+                name: github-clang-app
+                key: webhook-secret
+        volumeMounts:
+        - name: secrets
+          mountPath: /etc/secrets
+          readOnly: true
+      volumes:
+      - name: secrets
+        secret:
+          secretName: github-clang-app
