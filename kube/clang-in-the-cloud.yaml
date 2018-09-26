@@ -17,6 +17,10 @@ apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
   name: clang-in-the-cloud
+  labels:
+    name: clang-in-the-cloud
+    keel.sh/policy: force
+    keel.sh/trigger: pubsub
 spec:
   selector:
     matchLabels:
@@ -31,7 +35,17 @@ spec:
       - name: clang-in-the-cloud
         image: gcr.io/clementine-data/clang-in-the-cloud
         command: ["/opt/clang-in-the-cloud"]
-        args: ["-address", "0.0.0.0", "-private-key", "/etc/secrets/clang-formatter.2018-02-24.private-key.pem", "-webhook-secret", "$(WEBHOOK_SECRET)"]
+        args:
+          - -address
+          - 0.0.0.0
+          - -private-key
+          - /etc/secrets/clang-formatter.2018-02-24.private-key.pem
+          - -webhook-secret
+          - $(WEBHOOK_SECRET)
+          - -client-id
+          - $(GITHUB_CLIENT_ID)
+          - -client-secret
+          - $(GITHUB_CLIENT_SECRET)
         ports:
         - containerPort: 10000
         env:
@@ -40,6 +54,16 @@ spec:
               secretKeyRef:
                 name: github-clang-app
                 key: webhook-secret
+          - name: GITHUB_CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: github-clang-app
+                key: github-client-id
+          - name: GITHUB_CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: github-clang-app
+                key: github-client-secret
         volumeMounts:
         - name: secrets
           mountPath: /etc/secrets
