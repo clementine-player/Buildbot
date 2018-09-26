@@ -1,4 +1,4 @@
-FROM clementine/mac:1.2
+FROM clementine/mac:1.3
 
 RUN apt-get update && apt-get install -y python-pip python-dev
 RUN pip install buildbot_slave

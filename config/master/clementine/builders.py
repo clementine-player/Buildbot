@@ -419,9 +419,9 @@ def MakeMacCrossBuilder():
               "-DQT_USE_FRAMEWORKS=ON",
               "-DQT_MKSPECS_DIR=/target/mkspecs",
               "-DQT_QMAKE_EXECUTABLE=/target/bin/qmake",
-              "-DCMAKE_CFLAGS='-m64 -I/target/include --stdlib=libc++ -Qunused-arguments -isysroot /Developer/SDKs/MacOSX10.10.sdk'",
-              "-DCMAKE_CXXFLAGS='-m64 -I/target/include --stdlib=libc++ -Qunused-arguments -isysroot /Developer/SDKs/MacOSX10.10.sdk'",
-              "-DCMAKE_EXE_LINKER_FLAGS='-Wl,-syslibroot,/Developer/SDKs/MacOSX10.10.sdk -m64 -L/target/lib -lc++'",
+              "-DCMAKE_CFLAGS='-m64 -I/target/include --stdlib=libc++ -Qunused-arguments -isysroot /Developer/SDKs/MacOSX10.13.sdk'",
+              "-DCMAKE_CXXFLAGS='-m64 -I/target/include --stdlib=libc++ -Qunused-arguments -isysroot /Developer/SDKs/MacOSX10.13.sdk'",
+              "-DCMAKE_EXE_LINKER_FLAGS='-Wl,-syslibroot,/Developer/SDKs/MacOSX10.13.sdk -m64 -L/target/lib -lc++'",
               "-DSPOTIFY=/target/libspotify.framework",
           ],
           haltOnFailure=True,))
