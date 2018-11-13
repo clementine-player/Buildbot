@@ -6,6 +6,9 @@ run apt-get update && apt-get install -y \
 
 run pip install buildbot_slave
 
+run chgrp -R buildbot /opt/android-sdk
+run chmod -R g+w /opt/android-sdk
+
 # Give the buildslave a name
 run echo "android" > /slave-name
 

@@ -653,7 +653,7 @@ def MakeAndroidRemoteBuilder():
           command=["./gradlew", "assembleRelease"]))
   f.addStep(
       OutputFinder(
-          pattern="app/build/outputs/apk/ClementineRemote-release-*.apk"))
+          pattern="app/build/outputs/apk/release/ClementineRemote-release-*.apk"))
   f.addStep(UploadPackage("android"))
   return f
 
