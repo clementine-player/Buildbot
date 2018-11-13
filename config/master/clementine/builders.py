@@ -650,7 +650,6 @@ def MakeAndroidRemoteBuilder():
           name="compile",
           haltOnFailure=True,
           workdir="source",
-          env=env,
           command=["./gradlew", "assembleRelease"]))
   f.addStep(
       OutputFinder(
