@@ -635,8 +635,6 @@ def MakeAndroidRemoteBuilder():
   f = factory.BuildFactory()
   f.addStep(git.Git(**GitArgs("Android-Remote")))
 
-  env = {"ANDROID_HOME": "/android-sdk-linux",}
-
   # Change path to properties file here
   sed_cmd = [
       "sed", "-i", "-e",
