@@ -15,6 +15,7 @@ spec:
       containers:
       - name: slave-ubuntu-bionic-32
         image: gcr.io/clementine-data/slave-ubuntu-bionic-32
+        imagePullPolicy: Always
         env:
         - name: MASTER_PORT_9989_TCP_ADDR
           value: "master-service"

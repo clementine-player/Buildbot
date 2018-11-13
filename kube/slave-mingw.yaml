@@ -15,6 +15,7 @@ spec:
       containers:
       - name: slave-mingw
         image: gcr.io/clementine-data/slave-mingw
+        imagePullPolicy: Always
         env:
         - name: MASTER_PORT_9989_TCP_ADDR
           value: "master-service"
