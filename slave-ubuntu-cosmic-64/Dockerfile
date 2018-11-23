@@ -19,7 +19,7 @@ run apt-get update && apt-get install -y \
 run pip install buildbot_slave
 
 # Give the buildslave a name
-run echo "ubuntu-bionic-64" > /slave-name
+run echo "ubuntu-cosmic-64" > /slave-name
 
 # Create the buildbot user.
 run useradd -r -m -s /bin/false buildbot
