@@ -110,7 +110,7 @@ data:
     {
       "linux": {
         "debian": ["jessie"],
-        "ubuntu": ["trusty", "xenial", "zesty", "bionic"],
+        "ubuntu": ["trusty", "xenial", "zesty", "bionic", "cosmic"],
         "fedora": ["25", "26"]
       },
       "special_slaves": [

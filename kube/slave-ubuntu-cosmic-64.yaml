@@ -1,0 +1,44 @@
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: slave-ubuntu-cosmic-64
+spec:
+  selector:
+    matchLabels:
+      app: slave-ubuntu-cosmic-64
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: slave-ubuntu-cosmic-64
+    spec:
+      containers:
+      - name: slave-ubuntu-cosmic-64
+        image: gcr.io/clementine-data/slave-ubuntu-cosmic-64
+        imagePullPolicy: Always
+        env:
+        - name: MASTER_PORT_9989_TCP_ADDR
+          value: "master-service"
+        - name: MASTER_PORT_9989_TCP_PORT
+          value: "9989"
+        volumeMounts:
+        - name: git-volume
+          mountPath: /config
+          subPath: Buildbot/config
+        - name: persistent-data
+          mountPath: /persistent-data
+        - name: secrets
+          mountPath: /config/passwords.json
+          subPath: passwords.json
+      volumes:
+      - name: git-volume
+        gitRepo:
+          repository: "https://github.com/clementine-player/Buildbot"
+      - name: persistent-data
+        emptyDir: {}
+      - name: secrets
+        secret:
+          secretName: slave-passwords
+          items:
+          - key: passwords.json
+            path: passwords.json

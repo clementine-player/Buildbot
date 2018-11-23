@@ -29,6 +29,8 @@ var (
 		"slave-ubuntu-zesty-64",
 		"slave-ubuntu-bionic-32",
 		"slave-ubuntu-bionic-64",
+		"slave-ubuntu-cosmic-32",
+		"slave-ubuntu-cosmic-64",
 	}
 )
 
