@@ -62,11 +62,6 @@ class ClementineBuildbot(object):
       self._AddSlave(name)
 
     # Windows.
-    self._AddBuilder(name='Windows Dependencies',
-                     slave='mingw',
-                     build_factory=builders.MakeWindowsDepsBuilder(),
-                     auto=False,
-                     deps_lock='exclusive')
     self._AddBuilder(name='Windows Release',
                      slave='mingw',
                      build_factory=builders.MakeWindowsBuilder(
@@ -85,17 +80,6 @@ class ClementineBuildbot(object):
 
     # Mac.
     self._AddSlave('mac')
-    self._AddBuilder(name='Mac Dependencies',
-                     slave='mac',
-                     build_factory=builders.MakeMacDepsBuilder(),
-                     auto=False,
-                     local_lock=False,
-                     deps_lock='exclusive')
-    self._AddBuilder(name='Mac Release',
-                     slave='mac',
-                     build_factory=builders.MakeMacBuilder(),
-                     local_lock=False,
-                     deps_lock='counting')
     self._AddBuilder(name='Mac Cross',
                      slave='mac-cross',
                      build_factory=builders.MakeMacCrossBuilder())
@@ -109,21 +93,6 @@ class ClementineBuildbot(object):
                      build_factory=builders.MakeSpotifyBlobBuilder())
 
     # Transifex.
-    self._AddBuilder(name='Transifex POT push',
-                     slave='transifex',
-                     build_factory=builders.MakeTransifexPotPushBuilder())
-    self._AddBuilder(name='Transifex PO pull',
-                     slave='transifex',
-                     build_factory=builders.MakeTransifexPoPullBuilder(),
-                     auto=False)
-    self._AddBuilder(name='Transifex website POT push',
-                     slave='transifex',
-                     build_factory=builders.MakeWebsiteTransifexPotPushBuilder(),
-                     auto=False)
-    self._AddBuilder(name='Transifex website PO pull',
-                     slave='transifex',
-                     build_factory=builders.MakeWebsiteTransifexPoPullBuilder(),
-                     auto=False)
     self._AddBuilder(name='Transifex Android PO pull',
                      slave='transifex',
                      build_factory=builders.MakeAndroidTransifexPoPullBuilder(),
