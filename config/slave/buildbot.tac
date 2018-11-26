@@ -1,10 +1,7 @@
 import json
 import os
 
-from buildslave.bot import BuildSlave
 from twisted.application import service
-
-application = service.Application('buildslave')
 
 slavename = open('/slave-name').read().strip()
 basedir = os.path.join('/persistent-data', slavename)
@@ -19,7 +16,17 @@ umask = None
 maxdelay = 300
 allow_shutdown = None
 
-s = BuildSlave(buildmaster_host, port, slavename, passwd, basedir,
-               keepalive, usepty, umask=umask, maxdelay=maxdelay,
-               allow_shutdown=allow_shutdown)
+try:
+  from buildslave.bot import BuildSlave as Worker
+  application = service.Application('buildslave')
+  s = Worker(buildmaster_host, port, slavename, passwd, basedir,
+             keepalive, usepty, umask=umask, maxdelay=maxdelay,
+             allow_shutdown=allow_shutdown)
+except:
+  from buildbot_worker.bot import Worker
+  application = service.Application('buildbot-worker')
+  s = Worker(buildmaster_host, port, slavename, passwd, basedir,
+             keepalive, umask=umask, maxdelay=maxdelay,
+             allow_shutdown=allow_shutdown)
+
 s.setServiceParent(application)
