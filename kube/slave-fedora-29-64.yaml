@@ -1,20 +1,20 @@
 apiVersion: apps/v1beta2
 kind: Deployment
 metadata:
-  name: slave-fedora-25-64
+  name: slave-fedora-29-64
 spec:
   selector:
     matchLabels:
-      app: slave-fedora-25-64
+      app: slave-fedora-29-64
   replicas: 1
   template:
     metadata:
       labels:
-        app: slave-fedora-25-64
+        app: slave-fedora-29-64
     spec:
       containers:
-      - name: slave-fedora-25-64
-        image: gcr.io/clementine-data/slave-fedora-25-64
+      - name: slave-fedora-29-64
+        image: gcr.io/clementine-data/slave-fedora-29-64
         imagePullPolicy: Always
         env:
         - name: MASTER_PORT_9989_TCP_ADDR

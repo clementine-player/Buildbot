@@ -111,7 +111,7 @@ data:
       "linux": {
         "debian": ["jessie"],
         "ubuntu": ["trusty", "xenial", "zesty", "bionic"],
-        "fedora": ["25", "26"]
+        "fedora": ["29"]
       },
       "special_slaves": [
         "android",
