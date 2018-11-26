@@ -1,7 +1,7 @@
 from fedora:29
 
 run dnf install --assumeyes \
-    buildbot-slave git tar rpmdevtools \
+    python-pip python-devel git tar rpmdevtools \
     gcc-c++ liblastfm-devel taglib-devel gettext boost-devel \
     qt-devel cmake gstreamer1-devel gstreamer1-plugins-base-devel glew-devel \
     libgpod-devel qjson-devel libplist-devel \
@@ -9,6 +9,8 @@ run dnf install --assumeyes \
     libcdio-devel qca-ossl fftw-devel sparsehash-devel sqlite-devel \
     pulseaudio-libs-devel qtwebkit-devel sha2-devel desktop-file-utils \
     libechonest-devel libchromaprint-devel cryptopp-devel
+
+run pip install buildbot_slave==0.8.14
 
 run echo "fedora-29-64" > /slave-name
 
