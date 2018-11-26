@@ -47,6 +47,7 @@ spec:
       containers:
       - name: buildbot-master
         image: gcr.io/clementine-data/master
+        imagePullPolicy: Always
         ports:
         - containerPort: 8010 # Status page
         - containerPort: 9989 # Slave port

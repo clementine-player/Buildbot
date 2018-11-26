@@ -38,6 +38,6 @@ if args.debug:
 elif args.reconfig:
   argv = ['buildbot', 'reconfig', BASEDIR]
 else:
-  argv = ['buildbot', 'start', '--nodaemon', BASEDIR]
+  argv = ['buildbot', '--verbose', 'start', '--nodaemon', BASEDIR]
 
-os.execv('/usr/local/bin/buildbot', argv)
+sys.exit(os.execv('/usr/local/bin/buildbot', argv))

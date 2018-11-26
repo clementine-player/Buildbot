@@ -62,11 +62,6 @@ class ClementineBuildbot(object):
       self._AddSlave(name)
 
     # Windows.
-    self._AddBuilder(name='Windows Dependencies',
-                     slave='mingw',
-                     build_factory=builders.MakeWindowsDepsBuilder(),
-                     auto=False,
-                     deps_lock='exclusive')
     self._AddBuilder(name='Windows Release',
                      slave='mingw',
                      build_factory=builders.MakeWindowsBuilder(
@@ -84,18 +79,6 @@ class ClementineBuildbot(object):
                      deps_lock='counting')
 
     # Mac.
-    self._AddSlave('mac')
-    self._AddBuilder(name='Mac Dependencies',
-                     slave='mac',
-                     build_factory=builders.MakeMacDepsBuilder(),
-                     auto=False,
-                     local_lock=False,
-                     deps_lock='exclusive')
-    self._AddBuilder(name='Mac Release',
-                     slave='mac',
-                     build_factory=builders.MakeMacBuilder(),
-                     local_lock=False,
-                     deps_lock='counting')
     self._AddBuilder(name='Mac Cross',
                      slave='mac-cross',
                      build_factory=builders.MakeMacCrossBuilder())
@@ -109,21 +92,6 @@ class ClementineBuildbot(object):
                      build_factory=builders.MakeSpotifyBlobBuilder())
 
     # Transifex.
-    self._AddBuilder(name='Transifex POT push',
-                     slave='transifex',
-                     build_factory=builders.MakeTransifexPotPushBuilder())
-    self._AddBuilder(name='Transifex PO pull',
-                     slave='transifex',
-                     build_factory=builders.MakeTransifexPoPullBuilder(),
-                     auto=False)
-    self._AddBuilder(name='Transifex website POT push',
-                     slave='transifex',
-                     build_factory=builders.MakeWebsiteTransifexPotPushBuilder(),
-                     auto=False)
-    self._AddBuilder(name='Transifex website PO pull',
-                     slave='transifex',
-                     build_factory=builders.MakeWebsiteTransifexPoPullBuilder(),
-                     auto=False)
     self._AddBuilder(name='Transifex Android PO pull',
                      slave='transifex',
                      build_factory=builders.MakeAndroidTransifexPoPullBuilder(),
@@ -224,23 +192,6 @@ class ClementineBuildbot(object):
           ],
         ),
         basic.SingleBranchScheduler(
-          name="dependencies",
-          change_filter=filter.ChangeFilter(project="dependencies", branch="master"),
-          treeStableTimer=2*60,
-          builderNames=[
-            'Mac Dependencies',
-            'Windows Dependencies',
-          ],
-        ),
-        basic.SingleBranchScheduler(
-          name="website",
-          change_filter=filter.ChangeFilter(project="website", branch="master"),
-          treeStableTimer=2*60,
-          builderNames=[
-            "Transifex website POT push",
-          ],
-        ),
-        basic.SingleBranchScheduler(
           name="android-remote",
           change_filter=filter.ChangeFilter(project="android-remote", branch="master"),
           treeStableTimer=2*60,
@@ -257,19 +208,6 @@ class ClementineBuildbot(object):
           project=forcesched.FixedParameter(name="project", default=""),
           properties=[],
           builderNames=[x['name'] for x in self.builders],
-        ),
-        timed.Nightly(
-          name="transifex_pull",
-          change_filter=filter.ChangeFilter(project="clementine", branch="master"),
-          hour=10,
-          minute=0,
-          dayOfWeek=0,
-          branch="master",
-          builderNames=[
-            "Transifex PO pull",
-            "Transifex website PO pull",
-            "Transifex Android PO pull",
-          ],
         ),
       ],
     }
