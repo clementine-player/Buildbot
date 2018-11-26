@@ -1,7 +1,7 @@
 from ubuntu
 
 run apt-get update && apt-get install -y python-pip python-dev git
-run pip install sqlalchemy==0.7.10 buildbot==0.8.14
+run pip install buildbot==1.6.0
 
 run useradd -r -s /bin/false buildbot
 

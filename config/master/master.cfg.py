@@ -14,9 +14,6 @@ from buildbot.schedulers import basic
 from buildbot.schedulers import filter
 from buildbot.schedulers import forcesched
 from buildbot.schedulers import timed
-from buildbot.status import html
-from buildbot.status import mail
-from buildbot.status.web import authz
 
 from clementine import builders
 
@@ -189,25 +186,7 @@ class ClementineBuildbot(object):
         builders.GitPoller("Dependencies"),
         builders.GitPoller("Website"),
       ],
-      'status': [
-        html.WebStatus(
-          http_port="tcp:8010",
-          authz=authz.Authz(
-            forceBuild=True,
-            forceAllBuilds=True,
-            stopBuild=True,
-            stopAllBuilds=True,
-            cancelPendingBuild=True,
-            cancelAllPendingBuilds=True,
-            stopChange=True,
-          ),
-        ),
-        mail.MailNotifier(
-          fromaddr="buildmaster@zaphod.purplehatstands.com",
-          lookup="gmail.com",
-          mode="failing",
-        ),
-      ],
+      'www': dict(port=8010, plugins=dict(waterfall_view={}, console_view={})),
       'schedulers': [
         basic.SingleBranchScheduler(
           name="automatic",
