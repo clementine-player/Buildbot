@@ -1,6 +1,6 @@
-from fedora-%DISTRO%-i386-base
+from gcr.io/clementine-data/fedora-%DISTRO%-i386-base
 
-run rpm --import /etc/pki/rpm-gpg/RPM-GPG-KEY-fedora-%DISTRO%-i386
+run rpm --import https://src.fedoraproject.org/rpms/fedora-repos/raw/master/f/RPM-GPG-KEY-fedora-%DISTRO%-primary
 run rm -rf /usr/lib/locale/locale-archive /var/cache/yum/*
 
 entrypoint ["/bin/setarch", "i386"]

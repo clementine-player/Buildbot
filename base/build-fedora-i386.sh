@@ -20,5 +20,5 @@ set +x
 echo
 echo "Done!  Upload this image to dockerhub with:"
 echo
-echo "  docker push clementine/fedora:${DISTRO}-i386"
+echo "  docker push gcr.io/clementine-data/fedora:${DISTRO}-i386"
 echo
