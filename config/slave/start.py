@@ -11,6 +11,7 @@ creating_basedir = False
 
 # Create the BASEDIR if it doesn't exist.
 if not os.path.exists(BASEDIR):
+  print(BASEDIR)
   os.mkdir(BASEDIR)
   os.chown(BASEDIR, pwd_entry.pw_uid, pwd_entry.pw_gid)
   creating_basedir = True
@@ -41,5 +42,5 @@ if os.path.exists(pidfile):
   os.unlink(pidfile)
 
 os.execlp(
-    'buildslave',
-    'buildslave', 'start', '--nodaemon', BASEDIR)
+    'buildbot-worker',
+    'buildbot-worker', 'start', '--nodaemon', BASEDIR)
