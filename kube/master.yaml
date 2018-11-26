@@ -44,6 +44,30 @@ spec:
       labels:
         app: buildbot-master
     spec:
+      initContainers:
+      - name: init-git
+        image: alpine/git
+        command: ['git', 'clone', '--progress', 'https://github.com/clementine-player/Buildbot', '/config']
+        volumeMounts:
+        - name: git-volume
+          mountPath: /config
+
+      - name: debug
+        image: alpine/git
+        command: ['cat', '/config/passwords.json']
+        volumeMounts:
+        - name: secrets
+          mountPath: /config/passwords.json
+          subPath: passwords.json
+
+      - name: debug2
+        image: alpine/git
+        command: ['cat', '/config/master/start.py']
+        volumeMounts:
+        - name: git-volume
+          mountPath: /config
+          subPath: config
+
       containers:
       - name: buildbot-master
         image: gcr.io/clementine-data/master
@@ -55,7 +79,7 @@ spec:
         # Buildbot config
         - name: git-volume
           mountPath: /config
-          subPath: Buildbot/config
+          subPath: config
         # Directory for build output on host
         - name: web
           mountPath: /var/www/clementine-player.org/builds
@@ -76,10 +100,10 @@ spec:
         - name: config
           mountPath: /config/config.json
           subPath: config.json
+
       volumes:
       - name: git-volume
-        gitRepo:
-          repository: "https://github.com/clementine-player/Buildbot"
+        emptyDir: {}
       - name: config
         configMap:
           name: master-config
